@@ -23,18 +23,14 @@ function Login( props  )
 
         axios.post('http://localhost:8080/verifyCredentials', newPost)
             .then(response => {
-                console.log('New post created:', response.data);
                 setMessage("User " + userName + " has logged in");
                 let nextScreen = new ScreenTransition(itemQuery, 'NONE', response.data);
                 ScreenStack.pushToNextScreen(nextScreen);
-                props.stackLengthCallback( 1 );
-                console.log( "Response without error"  + ScreenStack.items.length );
-
+                props.stackLengthCallback( ScreenStack.items.length );
             })
             .catch(error => {
                 console.error('Error creating post:', error);
             });
-        console.log('Fell through to here?post:' );
     }
 
     return (

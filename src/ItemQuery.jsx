@@ -17,7 +17,6 @@ const ItemQuery = ( props ) => {
     if ( !props.visible ) {
         return (
             <div>
-                <p>ItemQuery is not visible</p>
             </div>
         );
     }
