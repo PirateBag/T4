@@ -1,3 +1,7 @@
 body {
     background-color: antiquewhite;
 }
+
+.place-holder-input::placeholder {
+    font-size: 10px;
+}

@@ -1,7 +1,7 @@
 import React, {useState} from 'react';
 import {ScreenTransition} from "./ScreenTransition.js";
 import {ScreenStack} from "./Stack.js";
-
+import LoginSummary from './Objects/LoginSummary.jsx';
 
 const ItemQuery = ( props ) => {
     const [id, setId]  = useState('1');

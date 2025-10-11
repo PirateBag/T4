@@ -3,6 +3,10 @@ import axios from 'axios';
 import {ScreenTransition} from "./ScreenTransition.js";
 import itemQuery from "./ItemQuery.jsx";
 import {ScreenStack} from "./Stack.js";
+import LoginSummary from "./Objects/LoginSummary.jsx"
+import PlaceHolderInput from "./PlaceHolderInput.jsx";
+import "./styles.css";
+
 
 function Login( props  )
 {
@@ -26,7 +30,7 @@ function Login( props  )
                 setMessage("User " + userName + " has logged in");
                 let nextScreen = new ScreenTransition(itemQuery, 'NONE', response.data);
                 ScreenStack.pushToNextScreen(nextScreen);
-                props.stackLengthCallback( ScreenStack.items.length );
+                props.stackLengthCallback( ScreenStack.items.length, new LoginSummary( userName, response.data.token ));
             })
             .catch(error => {
                 console.error('Error creating post:', error);
@@ -51,6 +55,7 @@ function Login( props  )
                            required/>
                 </label>
                 <br/>
+                <PlaceHolderInput type={"text"} name={"clown"} placeholder={"entefffrff the clone"} className="place-holder-input"/>
                 <button type="submit">Log In</button>
             </form>
         </div>
