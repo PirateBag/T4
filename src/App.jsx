@@ -3,6 +3,7 @@ import {ScreenStack} from "./Stack.js";
 import Login from './Login.jsx';
 import ItemQuery from "./ItemQuery.jsx";
 import './styles.css'
+import MenuBar from "./Menubar.jsx";
 
 function App() {
     const EMPTY_STACK_SIZE = 0;
@@ -21,10 +22,8 @@ function App() {
     return (
         <React.Fragment>
             <div>
-            <header style={{height: '100px', backgroundColor: 'antiquewhite'}}>
-                {/* Replace 'Header Content' with your own content */}
-                <h1>Inman</h1>
-            </header>
+                <MenuBar/>
+
             </div>
             {(stackSize === EMPTY_STACK_SIZE) && <Login visible={true} stackLengthCallback={setStackLength}/>}
             <ItemQuery visible={stackSize > EMPTY_STACK_SIZE}/>
