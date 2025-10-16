@@ -2,7 +2,7 @@ class LoginSummary {
     constructor(username, token, lastLoginTime) {
         this.username = username;
         this.token = token;
-        this.lastLoginTime = lastLoginTime;
+        this.lastLoginTime = (lastLoginTime == null) ? "yyyy-mm-dd hh:mm:ss" : lastLoginTime ;
     }
 
     toString() {

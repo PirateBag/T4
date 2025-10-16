@@ -6,12 +6,14 @@ import {ScreenStack} from "./Stack.js";
 import LoginSummary from "./Objects/LoginSummary.jsx"
 import PlaceHolderInput from "./PlaceHolderInput.jsx";
 import "./styles.css";
+import { ValidationRules } from './Metadata/BasicValidation.js';
+import {getValidationRuleByName} from "./Metadata/Domain.js";
 
 
 function Login( props  )
 {
-    const [userName, setUserName] = useState('fred');
-    const [password, setPassword] = useState('dilban');
+    const [userName, ] = useState('fred');
+    const [password, ] = useState('dilban');
     const [message, setMessage] = useState( "" );
 
     if ( !props.visible) return null;
@@ -23,6 +25,7 @@ function Login( props  )
                 "userName": userName,
                 "password": password
         };
+
 
 
         axios.post('http://localhost:8080/verifyCredentials', newPost)
@@ -37,25 +40,31 @@ function Login( props  )
             });
     }
 
+    const fieldValidation = (event) => {
+        setMessage( "" );
+        const name = event.target.name;
+        const value = event.target.value;
+
+        console.log( "Name " + name + " value " + value  );
+
+        const resultsOfValidation = getValidationRuleByName( name ).validate( value );
+
+        if( resultsOfValidation != null  ) {
+            setMessage( "Validation Rule: " + resultsOfValidation);
+            console.log( "Validation Rule: " + resultsOfValidation);
+        }
+    }
+
     return (
         <div>
+
             <form onSubmit={handleSubmit}>
                 {message}
                 <br/>
-                <label>
-                    Username:
-                    <input type="text" name="userName" onChange={e => setUserName(e.target.value)}
-                           value={userName} required/>
-                </label>
+                    <PlaceHolderInput type={"text"} name={"userName"} placeholder={"user"}  onChangeHandler={fieldValidation} />
                 <br/>
-                <label>
-                    Password:
-                    <input type="text" name="password" onChange={e => setPassword(e.target.value)}
-                           value={password}
-                           required/>
-                </label>
+                    <PlaceHolderInput type={"text"} name={"password"} placeholder={"password"} onChangeHandler={fieldValidation} />
                 <br/>
-                <PlaceHolderInput type={"text"} name={"clown"} placeholder={"entefffrff the clone"} className="place-holder-input"/>
                 <button type="submit">Log In</button>
             </form>
         </div>
