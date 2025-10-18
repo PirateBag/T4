@@ -24,7 +24,7 @@ const USERNAME_VALIDATION = new ValidationRules(
  */
 const PASSWORD_VALIDATION = new ValidationRules(
     'Password',
-    8,
+    6,
     50,
     CaseConversion.NONE,
     'password'
@@ -63,4 +63,8 @@ export const validateField = (fieldName, value) => {
     }
     return rule.validate(value);
 };
+
+
+
+
 

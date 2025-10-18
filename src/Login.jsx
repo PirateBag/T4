@@ -7,33 +7,48 @@ import LoginSummary from "./Objects/LoginSummary.jsx"
 import PlaceHolderInput from "./PlaceHolderInput.jsx";
 import "./styles.css";
 import { ValidationRules } from './Metadata/BasicValidation.js';
-import {getValidationRuleByName} from "./Metadata/Domain.js";
+import {getValidationRuleByName} from "./Metadata/Domain.jsx";
 
 
 function Login( props  )
 {
-    const [userName, ] = useState('fred');
-    const [password, ] = useState('dilban');
     const [message, setMessage] = useState( "" );
 
     if ( !props.visible) return null;
 
+    const fieldValidation = (event) => {
+        const formData = new FormData(event.target);
+        const fieldsForValidation = Object.fromEntries(formData.entries());
+        let messages = "";
+
+        for ( const [key, value] of Object.entries(fieldsForValidation) ) {
+            const resultsOfValidation = getValidationRuleByName( key ).validate( value );
+            if( resultsOfValidation != null  ) {
+                messages = messages + resultsOfValidation;
+                return;
+            }
+        }
+        return messages;
+    );
+
+
+    }
+
     const handleSubmit = async (event) => {
         event.preventDefault();
 
-        const newPost = {
-                "userName": userName,
-                "password": password
-        };
+        if ( message.length > 0 ) return;
 
+        const formData = new FormData(event.target);
+        const newPost = Object.fromEntries(formData.entries());
 
 
         axios.post('http://localhost:8080/verifyCredentials', newPost)
             .then(response => {
-                setMessage("User " + userName + " has logged in");
+                setMessage("User has logged in");
                 let nextScreen = new ScreenTransition(itemQuery, 'NONE', response.data);
                 ScreenStack.pushToNextScreen(nextScreen);
-                props.stackLengthCallback( ScreenStack.items.length, new LoginSummary( userName, response.data.token ));
+                props.stackLengthCallback( ScreenStack.items.length, new LoginSummary( newPost.userName, response.data.token ));
             })
             .catch(error => {
                 console.error('Error creating post:', error);
@@ -50,8 +65,7 @@ function Login( props  )
         const resultsOfValidation = getValidationRuleByName( name ).validate( value );
 
         if( resultsOfValidation != null  ) {
-            setMessage( "Validation Rule: " + resultsOfValidation);
-            console.log( "Validation Rule: " + resultsOfValidation);
+            setMessage(  resultsOfValidation );
         }
     }
 
@@ -61,7 +75,7 @@ function Login( props  )
             <form onSubmit={handleSubmit}>
                 {message}
                 <br/>
-                    <PlaceHolderInput type={"text"} name={"userName"} placeholder={"user"}  onChangeHandler={fieldValidation} />
+                    <PlaceHolderInput type={"text"} name={"userName"} placeholder={"user"} onChangeHandler={fieldValidation} />
                 <br/>
                     <PlaceHolderInput type={"text"} name={"password"} placeholder={"password"} onChangeHandler={fieldValidation} />
                 <br/>
