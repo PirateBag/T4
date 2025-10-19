@@ -63,8 +63,3 @@ export const validateField = (fieldName, value) => {
     }
     return rule.validate(value);
 };
-
-
-
-
-
