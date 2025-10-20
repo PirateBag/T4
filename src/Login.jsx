@@ -8,6 +8,7 @@ import PlaceHolderInput from "./PlaceHolderInput.jsx";
 import "./styles.css";
 import { ValidationRules } from './Metadata/BasicValidation.js';
 import {getValidationRuleByName} from "./Metadata/Domain.jsx";
+import ErrorMessage from "./ErrorMessage.jsx";
 
 
 function Login( props  )
@@ -77,15 +78,17 @@ function Login( props  )
         if( resultsOfValidation != null  ) {
             setMessage(  resultsOfValidation );
         }
+
     }
 
     return (
         <div>
+            <ErrorMessage message={message} />
 
             <form onSubmit={handleSubmit}>
                 {message}
                 <br/>
-                    <PlaceHolderInput type={"text"} name={"userName"} placeholder={"user"} onChangeHandler={fieldValidation} />
+                    <PlaceHolderInput type={"text"} name={"userName"} placeholder={"user"} setMessage={"setMessage"} />
                 <br/>
                     <PlaceHolderInput type={"text"} name={"password"} placeholder={"password"} onChangeHandler={fieldValidation} />
                 <br/>

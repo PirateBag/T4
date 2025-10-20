@@ -1,6 +1,26 @@
 import React from "react";
 import {getValidationRuleByName} from "./Metadata/Domain.jsx";
 
+/**
+ * Generic field validation event handler
+ * @param {Event} event - The input event
+ * @param {Function} setMessageCallback - Callback to set error message
+ */
+const handleFieldValidation = (event, setMessageCallback) => {
+    setMessageCallback(""); // Clear previous messages
+
+    const name = event.target.name;
+    const value = event.target.value;
+
+    console.log("Name " + name + " value " + value);
+
+    const resultsOfValidation = validateField(name, value);
+
+    if (resultsOfValidation != null) {
+        setMessageCallback(resultsOfValidation);
+    }
+};
+
 function PlaceHolderInput(props) {
     const normalizedClassname = props.className ?? 'place-holder-input';
     const domain = getValidationRuleByName( props.name );
@@ -18,7 +38,7 @@ function PlaceHolderInput(props) {
                     style={{
                         fontSize: '20px',
                     }}
-                    onBlur={e => props.onChangeHandler(e)}
+                    onBlur=={(event) => handleFieldValidation(event, props.setMessage)}
                 />
             )
 
