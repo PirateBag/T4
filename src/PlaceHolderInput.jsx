@@ -14,6 +14,7 @@ function PlaceHolderInput(props) {
                     placeholder={props.placeholder}
                     className={normalizedClassname}
                     size={domain.minLength}
+                    defaultValue={domain.defaultValue != null ? domain.defaultValue : ''}
                     style={{
                         fontSize: '20px',
                     }}
@@ -29,6 +30,7 @@ function PlaceHolderInput(props) {
                     size={domain.minLength}
                     placeholder={props.placeholder}
                     className={normalizedClassname}
+                    value={props.defaultValue != null ? props.defaultValue : ''}
                     style={{
                         fontSize: '20px',
                     }}

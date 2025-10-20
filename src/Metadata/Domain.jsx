@@ -1,4 +1,4 @@
-import { ValidationRules, CaseConversion } from './BasicValidation.js';
+import {CaseConversion, ValidationRules} from './BasicValidation.js';
 
 /**
  * Validation rules for username field
@@ -12,7 +12,8 @@ const USERNAME_VALIDATION = new ValidationRules(
     3,
     20,
     CaseConversion.NONE,
-    'user'
+    'user',
+    'fred'
 );
 
 /**
@@ -31,11 +32,43 @@ const PASSWORD_VALIDATION = new ValidationRules(
 );
 
 /**
+ * Validation rules for SummaryId field
+ * - Min length: 6 characters
+ * - Max length: 50 characters
+ * - Case: none
+ * - Prevents default value 'password'
+ */
+const SUMMARYID_VALIDATION = new ValidationRules(
+    'SummaryId',
+    6,
+    10,
+    CaseConversion.NONE,
+);
+SUMMARYID_VALIDATION.setDefaultValue('password');
+
+/**
+ * Validation rules for Description field
+ * - Min length: 6 characters
+ * - Max length: 50 characters
+ * - Case: none
+ * - Prevents default value 'password'
+ */
+const DESCRIPTION_VALIDATION = new ValidationRules(
+    'Description',
+    6,
+    30,
+    CaseConversion.NONE,
+);
+DESCRIPTION_VALIDATION.setDefaultValue('password');
+
+/**
  * Array of all validation rules
  */
 export const VALIDATION_RULES = [
     USERNAME_VALIDATION,
-    PASSWORD_VALIDATION
+    PASSWORD_VALIDATION,
+    SUMMARYID_VALIDATION,
+    DESCRIPTION_VALIDATION
 ];
 
 /**

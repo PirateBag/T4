@@ -1,3 +1,5 @@
+import {getValidationRuleByName} from "./Domain.jsx";
+
 export const CaseConversion = {
     NONE: 'NONE',
     UPPERCASE: 'UPPERCASE',
@@ -17,6 +19,7 @@ export class ValidationRules {
         this.type = Object;
         this.preventThisValue = null;
         this.values = null;
+        this.defaultValue = null;
 
         // Determine which constructor to use based on arguments
         if (args.length >= 3 && typeof args[0] === 'number' && typeof args[1] === 'number') {
@@ -25,7 +28,7 @@ export class ValidationRules {
                 this._initWithValues(fieldName, ...args);
             } else {
                 // Check if it's string-based (minLength, maxLength) or numeric (minValue, maxValue)
-                if (args.length === 4 && typeof args[2] === 'string') {
+                if (args.length === 5 && typeof args[2] === 'string') {
                     // String constructor: (fieldName, minLength, maxLength, caseConversion, preventThisValue)
                     this._initString(fieldName, ...args);
                 } else if (args.length === 3 && typeof args[0] === 'number' && typeof args[1] === 'number') {
@@ -39,24 +42,26 @@ export class ValidationRules {
         }
     }
 
-    _initString(fieldName, minLength, maxLength, caseConversion, preventThisValue) {
+    _initString(fieldName, minLength, maxLength, caseConversion, preventThisValue, defaultValue = null) {
         this.fieldName = fieldName;
         this.minLength = minLength;
         this.maxLength = maxLength;
         this.caseConversion = caseConversion;
         this.type = String;
         this.preventThisValue = preventThisValue;
+        this.defaultValue = defaultValue;
     }
 
-    _initNumeric(fieldName, minValue, maxValue, preventThisValue) {
+    _initNumeric(fieldName, minValue, maxValue, preventThisValue, defaultValue ) {
         this.fieldName = fieldName;
         this.minValue = minValue;
         this.maxValue = maxValue;
         this.type = Number;
         this.preventThisValue = preventThisValue;
+        this.defaultValue = defaultValue;
     }
 
-    _initWithValues(fieldName, values, minLength, maxLength, caseConversion, preventThisValue) {
+    _initWithValues(fieldName, values, minLength, maxLength, caseConversion, preventThisValue, defaultValue) {
         this.fieldName = fieldName;
         this.values = values;
         this.minLength = minLength;
@@ -66,6 +71,7 @@ export class ValidationRules {
         this.maxValue = null;
         this.type = String;
         this.preventThisValue = preventThisValue;
+        this.defaultValue = defaultValue;
     }
 
     /**
@@ -129,9 +135,7 @@ export class ValidationRules {
      * @returns {string|null} - Returns null if no error detected, otherwise a String message with the error
      */
     doesStringComplyWithRules(xValue) {
-        const valueAfterReformat = this.reformatStringUsingRules(xValue.trim());
-        const resultOfVerification = this.applyRulesToStringValue(xValue.trim());
-        return resultOfVerification;
+        return this.applyRulesToStringValue(xValue.trim());
     }
 
     /**
@@ -200,4 +204,18 @@ export class ValidationRules {
     valuesAsString() {
         return this.values;
     }
+}
+
+
+export const fieldValidation = (event) => {
+
+    const name = event.target.name;
+    const value = event.target.value;
+
+    let rValue = null;
+
+    console.log( "Name " + name + " value " + value  );
+
+    rValue = getValidationRuleByName( name ).validate( value );
+    return rValue;
 }

@@ -2,10 +2,9 @@ import React, {useState} from 'react';
 import {ScreenTransition} from "./ScreenTransition.js";
 import {ScreenStack} from "./Stack.js";
 import LoginSummary from './Objects/LoginSummary.jsx';
+import PlaceHolderInput from "./PlaceHolderInput.jsx";
 
 const ItemQuery = ( props ) => {
-    const [id, setId]  = useState('1');
-    const [summary, setSummary ] = useState('W-00x');
 
     /*  const handleChange = (e) => {
         setCredentials({
@@ -32,19 +31,10 @@ const ItemQuery = ( props ) => {
         <div>
                 <form onSubmit={handleSubmit}>
                 <br/>
-                <label>
-                    Id:
-                    <input type="text" name="id"  onChange={e => setId(e.target.value)}
-                           value={id} required/>
-                </label>
-                <br/>
-                <label>
-                    Summary:
-                    <input type="text" name="summary"     onChange={e => setSummary(e.target.value)}
-                           value={summary}
-                           required/>
-                </label>
-                <br/>
+                    <PlaceHolderInput type={"text"} name={"userName"} placeholder={"user"} onChangeHandler={fieldValidation} />
+                    <br/>
+                    <PlaceHolderInput type={"text"} name={"password"} placeholder={"password"} onChangeHandler={fieldValidation} />
+
                 <button type="submit">Query</button>
             </form>
         </div>

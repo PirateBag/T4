@@ -16,32 +16,41 @@ function Login( props  )
 
     if ( !props.visible) return null;
 
-    const fieldValidation = (event) => {
+    /**
+     *
+     * @param event belonging to a form.  One of the "submit" buttons.
+     * @returns {string} contains error messages if any.  Otherwise, zero length string.
+     */
+    const validateAllFieldsOnForm = (event) => {
+
         const formData = new FormData(event.target);
         const fieldsForValidation = Object.fromEntries(formData.entries());
-        let messages = "";
+        let combinedMessages = "";
 
-        for ( const [key, value] of Object.entries(fieldsForValidation) ) {
-            const resultsOfValidation = getValidationRuleByName( key ).validate( value );
-            if( resultsOfValidation != null  ) {
-                messages = messages + resultsOfValidation;
-                return;
+
+        for (const [key, value] of Object.entries(fieldsForValidation)) {
+            console.log(key + " " + value);
+            const resultsOfValidation = getValidationRuleByName(key).validate(value);
+            if (resultsOfValidation != null) {
+                combinedMessages = combinedMessages + "\n" + resultsOfValidation;
             }
         }
-        return messages;
-    );
-
-
+        return combinedMessages;
     }
+
 
     const handleSubmit = async (event) => {
         event.preventDefault();
 
         if ( message.length > 0 ) return;
 
+        let messagesFromFormValidation = validateAllFieldsOnForm(event);
+        setMessage( messagesFromFormValidation );
+
+        if ( messagesFromFormValidation.length > 0 ) return;
+
         const formData = new FormData(event.target);
         const newPost = Object.fromEntries(formData.entries());
-
 
         axios.post('http://localhost:8080/verifyCredentials', newPost)
             .then(response => {
@@ -53,6 +62,7 @@ function Login( props  )
             .catch(error => {
                 console.error('Error creating post:', error);
             });
+
     }
 
     const fieldValidation = (event) => {
