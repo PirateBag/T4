@@ -7,14 +7,14 @@ import {CaseConversion, ValidationRules} from './BasicValidation.js';
  * - Case: lowercase
  * - Prevents default value 'user'
  */
-const USERNAME_VALIDATION = new ValidationRules(
-    'Username',
-    3,
-    20,
-    CaseConversion.NONE,
-    'user',
-    'fred'
-);
+const USERNAME_VALIDATION = new ValidationRules({
+    fieldName: 'Username',
+    minLength: 3,
+    maxLength: 20,
+    caseConversion: CaseConversion.NONE,
+    preventThisValue: 'user',
+    defaultValue: 'fred'
+});
 
 /**
  * Validation rules for password field
@@ -23,13 +23,13 @@ const USERNAME_VALIDATION = new ValidationRules(
  * - Case: none (case-sensitive)
  * - Prevents default value 'password'
  */
-const PASSWORD_VALIDATION = new ValidationRules(
-    'Password',
-    6,
-    50,
-    CaseConversion.NONE,
-    'password'
-);
+const PASSWORD_VALIDATION = new ValidationRules({
+    fieldName: 'Password',
+    minLength: 6,
+    maxLength: 50,
+    caseConversion: CaseConversion.NONE,
+    preventThisValue: 'dilban'
+});
 
 /**
  * Validation rules for SummaryId field
@@ -38,13 +38,13 @@ const PASSWORD_VALIDATION = new ValidationRules(
  * - Case: none
  * - Prevents default value 'password'
  */
-const SUMMARYID_VALIDATION = new ValidationRules(
-    'SummaryId',
-    6,
-    10,
-    CaseConversion.NONE,
-);
-SUMMARYID_VALIDATION.setDefaultValue('password');
+const SUMMARYID_VALIDATION = new ValidationRules({
+    fieldName: 'SummaryId',
+    minLength: 6,
+    maxLength: 10,
+    caseConversion: CaseConversion.NONE
+});
+
 
 /**
  * Validation rules for Description field
@@ -53,13 +53,13 @@ SUMMARYID_VALIDATION.setDefaultValue('password');
  * - Case: none
  * - Prevents default value 'password'
  */
-const DESCRIPTION_VALIDATION = new ValidationRules(
-    'Description',
-    6,
-    30,
-    CaseConversion.NONE,
-);
-DESCRIPTION_VALIDATION.setDefaultValue('password');
+const DESCRIPTION_VALIDATION = new ValidationRules({
+    fieldName: 'Description',
+    minLength: 6,
+    maxLength: 30,
+    caseConversion: CaseConversion.NONE
+});
+
 
 /**
  * Array of all validation rules

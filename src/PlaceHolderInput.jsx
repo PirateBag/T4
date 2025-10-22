@@ -1,5 +1,5 @@
 import React from "react";
-import {getValidationRuleByName} from "./Metadata/Domain.jsx";
+import {getValidationRuleByName, validateField} from "./Metadata/Domain.jsx";
 
 /**
  * Generic field validation event handler
@@ -36,16 +36,16 @@ function PlaceHolderInput(props) {
                     size={domain.minLength}
                     defaultValue={domain.defaultValue != null ? domain.defaultValue : ''}
                     style={{
-                        fontSize: '20px',
+                        fontSize: '20px'
                     }}
-                    onBlur=={(event) => handleFieldValidation(event, props.setMessage)}
+                    onBlur={(event) => handleFieldValidation(event, props.setMessage)}
                 />
             )
 
         case 'password':
             return (
                 <input
-                    type={"password"}
+                    type={"text"}
                     name={props.name}
                     size={domain.minLength}
                     placeholder={props.placeholder}
@@ -54,22 +54,16 @@ function PlaceHolderInput(props) {
                     style={{
                         fontSize: '20px',
                     }}
-                    onBlur={e => props.onChangeHandler(e)}
+                    onBlur={(event) => handleFieldValidation(event, props.setMessage)}
                 />
             )
     }
 
-
+    console.log( "Unsupported placeholder type: " + props.type );
     return (
-        <input
-            type={"text"}
-            name={"unsupported type."}
-            placeholder={"you have stumbled into an unsupported type."}
-            className={normalizedClassname}
-            style={{
-                fontSize: '20px',
-            }}
-        />
+        <div>
+        "Unsupported placeholder type: " + props.type
+        </div>
     );
 }
 

@@ -82,7 +82,7 @@ export class ValidationRules {
     validate(value) {
         if (this.type === Number) {
             return this.applyRulesToDoubleValue(Number(value));
-        } else if (this.type === String) {
+        } else if (this.type === String  ) {
             return this.applyRulesToStringValue(String(value));
         } else {
             throw new Error('Cannot enforce rules on this type.');
@@ -212,10 +212,9 @@ export const fieldValidation = (event) => {
     const name = event.target.name;
     const value = event.target.value;
 
-    let rValue = null;
 
     console.log( "Name " + name + " value " + value  );
 
-    rValue = getValidationRuleByName( name ).validate( value );
+    let rValue = getValidationRuleByName( name ).validate( value );
     return rValue;
 }

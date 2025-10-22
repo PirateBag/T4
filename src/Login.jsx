@@ -66,6 +66,7 @@ function Login( props  )
 
     }
 
+    /*
     const fieldValidation = (event) => {
         setMessage( "" );
         const name = event.target.name;
@@ -80,6 +81,7 @@ function Login( props  )
         }
 
     }
+*/
 
     return (
         <div>
@@ -88,9 +90,9 @@ function Login( props  )
             <form onSubmit={handleSubmit}>
                 {message}
                 <br/>
-                    <PlaceHolderInput type={"text"} name={"userName"} placeholder={"user"} setMessage={"setMessage"} />
+                    <PlaceHolderInput type={"text"} name={"userName"} placeholder={"user"} setMessage={setMessage} />
                 <br/>
-                    <PlaceHolderInput type={"text"} name={"password"} placeholder={"password"} onChangeHandler={fieldValidation} />
+                    <PlaceHolderInput type={"text"} name={"password"} placeholder={"password"}  setMessage={setMessage} />
                 <br/>
                 <button type="submit">Log In</button>
             </form>
