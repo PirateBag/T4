@@ -6,7 +6,7 @@ import {ScreenStack} from "./Stack.js";
 import LoginSummary from "./Objects/LoginSummary.jsx"
 import PlaceHolderInput from "./PlaceHolderInput.jsx";
 import "./styles.css";
-import { ValidationRules } from './Metadata/BasicValidation.js';
+import { ValidationRule } from './Metadata/ValidateRule.js';
 import {getValidationRuleByName} from "./Metadata/Domain.jsx";
 import ErrorMessage from "./ErrorMessage.jsx";
 

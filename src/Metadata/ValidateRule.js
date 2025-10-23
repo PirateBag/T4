@@ -8,70 +8,20 @@ export const CaseConversion = {
     LOWER: 'LOWERCASE'  // Alias for compatibility
 };
 
-export class ValidationRules {
-    constructor(fieldName, ...args) {
-        this.minLength = 0;
-        this.maxLength = 0;
-        this.caseConversion = CaseConversion.NONE;
-        this.fieldName = fieldName;
-        this.minValue = -Number.MAX_VALUE;
-        this.maxValue = Number.MAX_VALUE;
-        this.type = Object;
-        this.preventThisValue = null;
-        this.values = null;
-        this.defaultValue = null;
+export class ValidationRule {
+    constructor(options) {
+        // Set defaults
+        this.fieldName = options.fieldName;
+        this.minLength = options.minLength ?? 0;
+        this.maxLength = options.maxLength ?? 0;
+        this.caseConversion = options.caseConversion ?? CaseConversion.NONE;
+        this.minValue = options.minValue ?? -Number.MAX_VALUE;
+        this.maxValue = options.maxValue ?? Number.MAX_VALUE;
+        this.type = options.type;
+        this.preventThisValue = options.preventThisValue ?? null;
+        this.values = options.values ?? null;
+        this.defaultValue = options.defaultValue ?? null;
 
-        // Determine which constructor to use based on arguments
-        if (args.length >= 3 && typeof args[0] === 'number' && typeof args[1] === 'number') {
-            if (Array.isArray(args[0])) {
-                // Constructor with values array
-                this._initWithValues(fieldName, ...args);
-            } else {
-                // Check if it's string-based (minLength, maxLength) or numeric (minValue, maxValue)
-                if (args.length === 5 && typeof args[2] === 'string') {
-                    // String constructor: (fieldName, minLength, maxLength, caseConversion, preventThisValue)
-                    this._initString(fieldName, ...args);
-                } else if (args.length === 3 && typeof args[0] === 'number' && typeof args[1] === 'number') {
-                    // Numeric constructor: (fieldName, minValue, maxValue, preventThisValue)
-                    this._initNumeric(fieldName, ...args);
-                }
-            }
-        } else if (args.length === 5 && Array.isArray(args[0])) {
-            // Constructor with values array
-            this._initWithValues(fieldName, ...args);
-        }
-    }
-
-    _initString(fieldName, minLength, maxLength, caseConversion, preventThisValue, defaultValue = null) {
-        this.fieldName = fieldName;
-        this.minLength = minLength;
-        this.maxLength = maxLength;
-        this.caseConversion = caseConversion;
-        this.type = String;
-        this.preventThisValue = preventThisValue;
-        this.defaultValue = defaultValue;
-    }
-
-    _initNumeric(fieldName, minValue, maxValue, preventThisValue, defaultValue ) {
-        this.fieldName = fieldName;
-        this.minValue = minValue;
-        this.maxValue = maxValue;
-        this.type = Number;
-        this.preventThisValue = preventThisValue;
-        this.defaultValue = defaultValue;
-    }
-
-    _initWithValues(fieldName, values, minLength, maxLength, caseConversion, preventThisValue, defaultValue) {
-        this.fieldName = fieldName;
-        this.values = values;
-        this.minLength = minLength;
-        this.maxLength = maxLength;
-        this.caseConversion = caseConversion;
-        this.minValue = null;
-        this.maxValue = null;
-        this.type = String;
-        this.preventThisValue = preventThisValue;
-        this.defaultValue = defaultValue;
     }
 
     /**
@@ -80,12 +30,12 @@ export class ValidationRules {
      * @returns {string|null} - Returns null if valid, otherwise returns error message
      */
     validate(value) {
-        if (this.type === Number) {
+        if (this.type === "number") {
             return this.applyRulesToDoubleValue(Number(value));
-        } else if (this.type === String  ) {
+        } else if (this.type === "text" || this.type === "password" ) {
             return this.applyRulesToStringValue(String(value));
         } else {
-            throw new Error('Cannot enforce rules on this type.');
+            throw new Error('Cannot enforce rules on this type.  ' + this.type);
         }
     }
 
@@ -206,15 +156,11 @@ export class ValidationRules {
     }
 }
 
-
 export const fieldValidation = (event) => {
-
     const name = event.target.name;
     const value = event.target.value;
-
-
     console.log( "Name " + name + " value " + value  );
 
-    let rValue = getValidationRuleByName( name ).validate( value );
-    return rValue;
+    return getValidationRuleByName( name ).validate( value );
 }
+

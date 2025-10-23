@@ -1,4 +1,4 @@
-import {CaseConversion, ValidationRules} from './BasicValidation.js';
+import {CaseConversion, ValidationRule} from './ValidateRule.js';
 
 /**
  * Validation rules for username field
@@ -7,12 +7,12 @@ import {CaseConversion, ValidationRules} from './BasicValidation.js';
  * - Case: lowercase
  * - Prevents default value 'user'
  */
-const USERNAME_VALIDATION = new ValidationRules({
+const USERNAME_VALIDATION = new ValidationRule({
     fieldName: 'Username',
+    type: 'text',
     minLength: 3,
     maxLength: 20,
     caseConversion: CaseConversion.NONE,
-    preventThisValue: 'user',
     defaultValue: 'fred'
 });
 
@@ -23,12 +23,13 @@ const USERNAME_VALIDATION = new ValidationRules({
  * - Case: none (case-sensitive)
  * - Prevents default value 'password'
  */
-const PASSWORD_VALIDATION = new ValidationRules({
+const PASSWORD_VALIDATION = new ValidationRule({
     fieldName: 'Password',
+    type: 'password',
     minLength: 6,
     maxLength: 50,
     caseConversion: CaseConversion.NONE,
-    preventThisValue: 'dilban'
+    defaultValue: 'dilban'
 });
 
 /**
@@ -38,8 +39,9 @@ const PASSWORD_VALIDATION = new ValidationRules({
  * - Case: none
  * - Prevents default value 'password'
  */
-const SUMMARYID_VALIDATION = new ValidationRules({
+const SUMMARYID_VALIDATION = new ValidationRule({
     fieldName: 'SummaryId',
+    type: 'text',
     minLength: 6,
     maxLength: 10,
     caseConversion: CaseConversion.NONE
@@ -53,7 +55,8 @@ const SUMMARYID_VALIDATION = new ValidationRules({
  * - Case: none
  * - Prevents default value 'password'
  */
-const DESCRIPTION_VALIDATION = new ValidationRules({
+const DESCRIPTION_VALIDATION = new ValidationRule({
+    type: 'text',
     fieldName: 'Description',
     minLength: 6,
     maxLength: 30,
@@ -74,7 +77,7 @@ export const VALIDATION_RULES = [
 /**
  * Get validation rule by field name
  * @param {string} fieldName - The name of the field to find validation rules for
- * @returns {ValidationRules|null} - The validation rule or null if not found
+ * @returns {ValidationRule|null} - The validation rule or null if not found
  */
 export const getValidationRuleByName = (fieldName) => {
     return VALIDATION_RULES.find(rule =>
