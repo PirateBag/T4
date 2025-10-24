@@ -43,8 +43,6 @@ function Login( props  )
     const handleSubmit = async (event) => {
         event.preventDefault();
 
-        if ( message.length > 0 ) return;
-
         let messagesFromFormValidation = validateAllFieldsOnForm(event);
         setMessage( messagesFromFormValidation );
 
@@ -63,7 +61,6 @@ function Login( props  )
             .catch(error => {
                 console.error('Error creating post:', error);
             });
-
     }
 
     /*
@@ -85,10 +82,8 @@ function Login( props  )
 
     return (
         <div>
-            <ErrorMessage message={message} />
-
             <form onSubmit={handleSubmit}>
-                {message}
+                <ErrorMessage message={message} />
                 <br/>
                     <PlaceHolderInput type={"text"} name={"userName"} placeholder={"user"} setMessage={setMessage} />
                 <br/>
