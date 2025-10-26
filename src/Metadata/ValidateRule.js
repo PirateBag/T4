@@ -8,6 +8,9 @@ export const CaseConversion = {
     LOWER: 'LOWERCASE'  // Alias for compatibility
 };
 
+
+
+
 export class ValidationRule {
     constructor(options) {
         // Set defaults
@@ -154,6 +157,28 @@ export class ValidationRule {
     valuesAsString() {
         return this.values;
     }
+}
+
+/**
+ *
+ * @param event belonging to a form.  One of the "submit" buttons.
+ * @returns {string} contains error messages if any.  Otherwise, zero length string.
+ */
+export const validateAllFieldsOnForm = (event) => {
+
+    const formData = new FormData(event.target);
+    const fieldsForValidation = Object.fromEntries(formData.entries());
+    let combinedMessages = "";
+
+
+    for (const [key, value] of Object.entries(fieldsForValidation)) {
+        console.log(key + " " + value);
+        const resultsOfValidation = getValidationRuleByName(key).validate(value);
+        if (resultsOfValidation != null) {
+            combinedMessages = combinedMessages + "\n" + resultsOfValidation;
+        }
+    }
+    return combinedMessages;
 }
 
 export const fieldValidation = (event) => {

@@ -47,6 +47,23 @@ const SUMMARYID_VALIDATION = new ValidationRule({
     caseConversion: CaseConversion.NONE
 });
 
+/**
+ * Validation rules for any ID reference, be it Primary or foreign key.
+ * It is likely additional support will be required to provide picklists.
+ * - Min length: 1 character
+ * - Max length: 10 characters
+ * - Case: none
+ * - Prevents default value 'password'
+ */
+const ID_VALIDATION = new ValidationRule({
+    fieldName: 'Id',
+    type: 'number',
+    minLength: 1,
+    maxLength: 10,
+    caseConversion: CaseConversion.NONE
+});
+
+
 
 /**
  * Validation rules for Description field
@@ -71,7 +88,8 @@ export const VALIDATION_RULES = [
     USERNAME_VALIDATION,
     PASSWORD_VALIDATION,
     SUMMARYID_VALIDATION,
-    DESCRIPTION_VALIDATION
+    DESCRIPTION_VALIDATION,
+    ID_VALIDATION
 ];
 
 /**

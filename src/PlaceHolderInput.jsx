@@ -4,7 +4,7 @@ import {getValidationRuleByName, validateField} from "./Metadata/Domain.jsx";
 /**
  * Generic field validation event handler
  * @param {Event} event - The input event
- * @param {Function} setMessageCallback - Callback to set error message
+ * @param {Function} setMessageCallback - Callback to set the error message
  */
 const handleFieldValidation = (event, setMessageCallback) => {
     setMessageCallback(""); // Clear previous messages
@@ -31,9 +31,9 @@ function PlaceHolderInput(props) {
                 <input
                     type={"text"}
                     name={props.name}
-                    placeholder={props.placeholder}
                     className={normalizedClassname}
-                    size={domain.minLength}
+                    placeholder={props.placeholder}
+                    size={domain.maxLength}
                     defaultValue={domain.defaultValue != null ? domain.defaultValue : ''}
                     style={{
                         fontSize: '20px'
@@ -46,10 +46,10 @@ function PlaceHolderInput(props) {
             return (
                 <input
                     type={"text"}
-                    name={props.name}
-                    size={domain.minLength}
-                    placeholder={props.placeholder}
                     className={normalizedClassname}
+                    name={props.name}
+                    size={domain.maxLength}
+                    placeholder={props.placeholder}
                     value={props.defaultValue != null ? props.defaultValue : ''}
                     style={{
                         fontSize: '20px',
@@ -62,7 +62,7 @@ function PlaceHolderInput(props) {
     console.log( "Unsupported placeholder type: " + props.type );
     return (
         <div>
-        "Unsupported placeholder type: " + props.type
+        "Unsupported placeholder type: " + {props.type} on {props.name}
         </div>
     );
 }

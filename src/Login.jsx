@@ -1,19 +1,16 @@
 import React, {useState} from 'react';
-import axios from 'axios';
-import {ScreenTransition} from "./ScreenTransition.js";
-import itemQuery from "./ItemQuery.jsx";
-import {ScreenStack} from "./Stack.js";
-import LoginSummary from "./Objects/LoginSummary.jsx"
 import PlaceHolderInput from "./PlaceHolderInput.jsx";
 import "./styles.css";
-import { ValidationRule } from './Metadata/ValidateRule.js';
-import {getValidationRuleByName} from "./Metadata/Domain.jsx";
 import ErrorMessage from "./ErrorMessage.jsx";
+import {FormService} from "./FormService.jsx";
 
 
 function Login( props  )
 {
     const [message, setMessage] = useState( "" );
+    const formService = new FormService( { messageFromFormSetter: setMessage,
+        messagesFromForm: message,
+        url: 'http://localhost:8080/verifyCredentials' } );
 
     if ( !props.visible) return null;
 
@@ -22,7 +19,7 @@ function Login( props  )
      * @param event belonging to a form.  One of the "submit" buttons.
      * @returns {string} contains error messages if any.  Otherwise, zero length string.
      */
-    const validateAllFieldsOnForm = (event) => {
+/*    const validateAllFieldsOnForm = (event) => {
 
         const formData = new FormData(event.target);
         const fieldsForValidation = Object.fromEntries(formData.entries());
@@ -38,8 +35,8 @@ function Login( props  )
         }
         return combinedMessages;
     }
-
-
+*/
+/*
     const handleSubmit = async (event) => {
         event.preventDefault();
 
@@ -82,7 +79,7 @@ function Login( props  )
 
     return (
         <div>
-            <form onSubmit={handleSubmit}>
+            <form onSubmit={formService.handleSubmit}>
                 <ErrorMessage message={message} />
                 <br/>
                     <PlaceHolderInput type={"text"} name={"userName"} placeholder={"user"} setMessage={setMessage} />
