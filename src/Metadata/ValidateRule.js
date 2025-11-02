@@ -1,4 +1,4 @@
-import {getValidationRuleByName} from "./Domain.jsx";
+import {getValidationRuleByName, REQUIRED_NONE} from "./Domain.jsx";
 
 export const CaseConversion = {
     NONE: 'NONE',
@@ -23,8 +23,8 @@ export class ValidationRule {
         this.type = options.type;
         this.preventThisValue = options.preventThisValue ?? null;
         this.values = options.values ?? null;
+        this.whenRequired = options.whenRequired ?? REQUIRED_NONE;
         this.defaultValue = options.defaultValue ?? null;
-
     }
 
     /**
@@ -164,7 +164,7 @@ export class ValidationRule {
  * @param event belonging to a form.  One of the "submit" buttons.
  * @returns {string} contains error messages if any.  Otherwise, zero length string.
  */
-export const validateAllFieldsOnForm = (event) => {
+export const validateAllFieldsOnForm = (event ) => {
 
     const formData = new FormData(event.target);
     const fieldsForValidation = Object.fromEntries(formData.entries());
@@ -173,19 +173,11 @@ export const validateAllFieldsOnForm = (event) => {
 
     for (const [key, value] of Object.entries(fieldsForValidation)) {
         console.log(key + " " + value);
-        const resultsOfValidation = getValidationRuleByName(key).validate(value);
+        const resultsOfValidation = getValidationRuleByName(key).validate(value );
         if (resultsOfValidation != null) {
             combinedMessages = combinedMessages + "\n" + resultsOfValidation;
         }
     }
     return combinedMessages;
-}
-
-export const fieldValidation = (event) => {
-    const name = event.target.name;
-    const value = event.target.value;
-    console.log( "Name " + name + " value " + value  );
-
-    return getValidationRuleByName( name ).validate( value );
 }
 

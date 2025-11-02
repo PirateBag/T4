@@ -7,13 +7,22 @@ import {CaseConversion, ValidationRule} from './ValidateRule.js';
  * - Case: lowercase
  * - Prevents default value 'user'
  */
+
+export const REQUIRED_NONE = 'none';
+export const REQUIRED_ADD = 'add';
+
+
+
+
 const USERNAME_VALIDATION = new ValidationRule({
     fieldName: 'Username',
     type: 'text',
     minLength: 3,
     maxLength: 20,
     caseConversion: CaseConversion.NONE,
-    defaultValue: 'fred'
+    defaultValue: 'fred',
+    whenRequired: [ REQUIRED_ADD ]
+
 });
 
 /**
@@ -29,7 +38,8 @@ const PASSWORD_VALIDATION = new ValidationRule({
     minLength: 6,
     maxLength: 50,
     caseConversion: CaseConversion.NONE,
-    defaultValue: 'dilban'
+    defaultValue: 'dilban',
+    whenRequired: REQUIRED_ADD
 });
 
 /**
@@ -44,7 +54,9 @@ const SUMMARYID_VALIDATION = new ValidationRule({
     type: 'text',
     minLength: 6,
     maxLength: 10,
-    caseConversion: CaseConversion.NONE
+    caseConversion: CaseConversion.NONE,
+    whenRequired: REQUIRED_ADD
+
 });
 
 /**
@@ -60,7 +72,8 @@ const ID_VALIDATION = new ValidationRule({
     type: 'number',
     minLength: 1,
     maxLength: 10,
-    caseConversion: CaseConversion.NONE
+    caseConversion: CaseConversion.NONE,
+    whenRequired: REQUIRED_ADD
 });
 
 
@@ -107,13 +120,17 @@ export const getValidationRuleByName = (fieldName) => {
  * Validate a field by name
  * @param {string} fieldName - The name of the field
  * @param {string|number} value - The value to validate
+ * @param whenRequired See one of the REQUIRED_* constants.
  * @returns {string|null} - Error message or null if valid
  */
-export const validateField = (fieldName, value) => {
-    const rule = getValidationRuleByName(fieldName);
+export const validateField = (fieldName, value, whenRequired ) => {
+    const rule = getValidationRuleByName(fieldName );
+    if ( rule.whenRequired.includes( whenRequired )) {
+        return rule.validate(value);
+    }
     if (!rule) {
         console.warn(`No validation rule found for field: ${fieldName}`);
         return null;
     }
-    return rule.validate(value);
+    return null;
 };

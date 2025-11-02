@@ -6,7 +6,7 @@ import {getValidationRuleByName, validateField} from "./Metadata/Domain.jsx";
  * @param {Event} event - The input event
  * @param {Function} setMessageCallback - Callback to set the error message
  */
-const handleFieldValidation = (event, setMessageCallback) => {
+const handleFieldValidation = (event, setMessageCallback, whenRequired) => {
     setMessageCallback(""); // Clear previous messages
 
     const name = event.target.name;
@@ -14,7 +14,7 @@ const handleFieldValidation = (event, setMessageCallback) => {
 
     console.log("Name " + name + " value " + value);
 
-    const resultsOfValidation = validateField(name, value);
+    const resultsOfValidation = validateField(name, value, whenRequired );
 
     if (resultsOfValidation != null) {
         setMessageCallback(resultsOfValidation);
@@ -38,7 +38,7 @@ function PlaceHolderInput(props) {
                     style={{
                         fontSize: '20px'
                     }}
-                    onBlur={(event) => handleFieldValidation(event, props.setMessage)}
+                    onBlur={(event) => handleFieldValidation(event, props.setMessage, props.whenRequired )}
                 />
             )
 
@@ -54,7 +54,7 @@ function PlaceHolderInput(props) {
                     style={{
                         fontSize: '20px',
                     }}
-                    onBlur={(event) => handleFieldValidation(event, props.setMessage)}
+                    onBlur={(event) => handleFieldValidation(event, props.setMessage, props.whenRequired )}
                 />
             )
     }

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import {ScreenStack} from "./Stack.js";
-import Login from './Login.jsx';
-import ItemQuery from "./ItemQuery.jsx";
+import Login from './Forms/Login.jsx';
+import ItemQuery from "./Forms/ItemQuery.jsx";
 import './styles.css'
 import MenuBar from "./Menubar.jsx";
 import LoginSummary from "./Objects/LoginSummary.jsx";
@@ -9,7 +9,7 @@ import LoginSummary from "./Objects/LoginSummary.jsx";
 function App() {
     const EMPTY_STACK_SIZE = 0;
      //  co[stackSize, setStackSize] = useState(EMPTY_STACK_SIZE);
-    //  const [currentUser, setCurrentUser] = useState( new LoginSummary( "none", "none", "none"));
+    const [currentUser, setCurrentUser] = useState( new LoginSummary( "none", "none", "none"));
 
     /*
     function setStackLength(size, newCurrentUser ) {
@@ -38,11 +38,11 @@ function App() {
     return (
         <React.Fragment>
             <div>
-                <MenuBar/>
+                <MenuBar currentUser={currentUser}/>
 
             </div>
             {
-                <Login visible={stackLength === 0 } stackLengthCallback={setStackLength} />}
+                <Login visible={stackLength === 0 } stackLengthCallback={setStackLength} setCurentUser={setCurrentUser} />}
                 <ItemQuery visible={stackLength > EMPTY_STACK_SIZE}/>
         </React.Fragment>
     );
