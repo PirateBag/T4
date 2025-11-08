@@ -1,39 +1,41 @@
 import React from "react";
 import {getValidationRuleByName, validateField} from "./Metadata/Domain.jsx";
+import TextField from '@mui/material/TextField';
 
 /**
  * Generic field validation event handler
  * @param {Event} event - The input event
  * @param {Function} setMessageCallback - Callback to set the error message
+ * @param whenRequired For the future!
  */
 const handleFieldValidation = (event, setMessageCallback, whenRequired) => {
-    setMessageCallback(""); // Clear previous messages
+        setMessageCallback(""); // Clear previous messages
 
-    const name = event.target.name;
-    const value = event.target.value;
+        const name = event.target.name;
+        const value = event.target.value;
 
-    console.log("Name " + name + " value " + value);
+       console.log("Name " + name + " value " + value);
 
-    const resultsOfValidation = validateField(name, value, whenRequired );
+       const resultsOfValidation = validateField(name, value, whenRequired );
 
-    if (resultsOfValidation != null) {
-        setMessageCallback(resultsOfValidation);
-    }
-};
+       if (resultsOfValidation != null) {
+           setMessageCallback(resultsOfValidation);
+       }
+    };
 
-function PlaceHolderInput(props) {
+function ImTextField(props) {
     const normalizedClassname = props.className ?? 'place-holder-input';
     const domain = getValidationRuleByName( props.name );
 
     switch (props.type) {
         case 'text':
             return (
-                <input
+                <TextField
                     type={"text"}
                     name={props.name}
                     className={normalizedClassname}
                     placeholder={props.placeholder}
-                    size={domain.maxLength}
+                    maxLength={domain.maxLength}
                     defaultValue={domain.defaultValue != null ? domain.defaultValue : ''}
                     style={{
                         fontSize: '20px'
@@ -44,13 +46,13 @@ function PlaceHolderInput(props) {
 
         case 'password':
             return (
-                <input
+                <TextField
                     type={"text"}
                     className={normalizedClassname}
                     name={props.name}
-                    size={domain.maxLength}
+                    maxLength={domain.maxLength}
                     placeholder={props.placeholder}
-                    value={props.defaultValue != null ? props.defaultValue : ''}
+                    defaultValue={domain.defaultValue != null ? domain.defaultValue : ''}
                     style={{
                         fontSize: '20px',
                     }}
@@ -59,12 +61,15 @@ function PlaceHolderInput(props) {
             )
     }
 
+
     console.log( "Unsupported placeholder type: " + props.type );
     return (
         <div>
         "Unsupported placeholder type: " + {props.type} on {props.name}
         </div>
     );
+
+
 }
 
-export default PlaceHolderInput;
+export default ImTextField;

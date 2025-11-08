@@ -21,7 +21,7 @@ const USERNAME_VALIDATION = new ValidationRule({
     maxLength: 20,
     caseConversion: CaseConversion.NONE,
     defaultValue: 'fred',
-    whenRequired: [ REQUIRED_ADD ]
+    whenRequired: REQUIRED_ADD
 
 });
 

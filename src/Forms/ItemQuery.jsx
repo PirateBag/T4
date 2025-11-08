@@ -1,7 +1,8 @@
 import React, {useState} from 'react';
-import PlaceHolderInput from "../PlaceHolderInput.jsx";
+import ImTextField from "../ImTextField.jsx";
 import ErrorMessage from "../ErrorMessage.jsx";
 import {FormService} from "../FormService.jsx";
+import DataGridExample from "../DataGridExample.jsx";
 
 export const itemQueryUrl = 'http://localhost:8080/item/crudQuery'
 export const itemQueryUrlRequestTemplate = '{ "updatedRows" : [ ${rowWithQuery} ] }';
@@ -31,6 +32,7 @@ const ItemQuery = ( props ) => {
             setMessage( "Error" );
             queryResults = { data: [] }
         }
+        console.log( "Response " + JSON.stringify( queryResults ));
     }
 
     const formService = new FormService( { messageFromFormSetter: setMessage,
@@ -46,16 +48,16 @@ const ItemQuery = ( props ) => {
             <form onSubmit={formService.handleSubmit}>
                     <ErrorMessage message={message}/>
                     <br/>
-                    <PlaceHolderInput type={"text"} name={"id"} placeholder={"Id"}  setMessage={setMessage} />
+                    <ImTextField type={"text"} name={"id"} placeholder={"Id"} setMessage={setMessage} />
                     <br/>
-                    <PlaceHolderInput type={"text"} name={"summaryId"} placeholder={"SummaryId"}  setMessage={setMessage} />
+                    <ImTextField type={"text"} name={"summaryId"} placeholder={"SummaryId"} setMessage={setMessage} />
                     <br/>
-                    <PlaceHolderInput type={"text"} name={"description"} placeholder={"Description"}  setMessage={setMessage} />
+                    <ImTextField type={"text"} name={"description"} placeholder={"Description"} setMessage={setMessage} />
                     <br/>
                     <button type="submit">Search</button>
                 </form>
 
-            Query Results {queryResults.data ?? 'undefined' }
+            <DataGridExample/>
 
         </div>
     );
