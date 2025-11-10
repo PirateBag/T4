@@ -85,10 +85,6 @@ export class FormService {
                 if (this.onErrorCallback) {
                     this.onErrorCallback(error);
                 }
-
-                console.error('Error submitting form:', error);
-
-
                 console.error('Error creating post:', error);
             });
     }

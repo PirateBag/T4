@@ -11,9 +11,6 @@ import {CaseConversion, ValidationRule} from './ValidateRule.js';
 export const REQUIRED_NONE = 'none';
 export const REQUIRED_ADD = 'add';
 
-
-
-
 const USERNAME_VALIDATION = new ValidationRule({
     fieldName: 'Username',
     type: 'text',

@@ -2,13 +2,17 @@ import React, {useState} from 'react';
 import ImTextField from "../ImTextField.jsx";
 import ErrorMessage from "../ErrorMessage.jsx";
 import {FormService} from "../FormService.jsx";
-import DataGridExample from "../DataGridExample.jsx";
+import {ItemQueryResultsGrid} from "../ItemQueryResultsGrid.jsx";
 
 export const itemQueryUrl = 'http://localhost:8080/item/crudQuery'
 export const itemQueryUrlRequestTemplate = '{ "updatedRows" : [ ${rowWithQuery} ] }';
 const ItemQuery = ( props ) => {
 
+    const emptyResponse = { responseType: "MULTILINE", data: [], errors : []  };
+
     const [message, setMessage] = useState( "" );
+    const [queryResults, setQueryResults] = useState( {data: [] } );
+
     /*  const handleChange = (e) => {
         setCredentials({
             ...credentials,
@@ -23,14 +27,14 @@ const ItemQuery = ( props ) => {
         );
     }
 
-    let queryResults = { data: [] }
     const afterPostCallback = ( response ) => {
+        console.log( "afterPostCallback received:", response );
         if ( response.status === 200 ) {
             setMessage( "Success" );
-            queryResults = response;
+            setQueryResults( response || emptyResponse );
         } else {
             setMessage( "Error" );
-            queryResults = { data: [] }
+            setQueryResults( response || emptyResponse );
         }
         console.log( "Response " + JSON.stringify( queryResults ));
     }
@@ -45,6 +49,7 @@ const ItemQuery = ( props ) => {
 
     return (
         <div>
+
             <form onSubmit={formService.handleSubmit}>
                     <ErrorMessage message={message}/>
                     <br/>
@@ -56,9 +61,7 @@ const ItemQuery = ( props ) => {
                     <br/>
                     <button type="submit">Search</button>
                 </form>
-
-            <DataGridExample/>
-
+            <ItemQueryResultsGrid data={queryResults.data} />
         </div>
     );
 };
