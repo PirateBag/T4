@@ -30,7 +30,7 @@ const USERNAME_VALIDATION = new ValidationRule({
  * - Prevents default value 'password'
  */
 const PASSWORD_VALIDATION = new ValidationRule({
-    fieldName: 'Password',
+    fieldName: 'password',
     type: 'password',
     minLength: 6,
     maxLength: 50,
@@ -47,7 +47,7 @@ const PASSWORD_VALIDATION = new ValidationRule({
  * - Prevents default value 'password'
  */
 const SUMMARYID_VALIDATION = new ValidationRule({
-    fieldName: 'SummaryId',
+    fieldName: 'summaryId',
     type: 'text',
     minLength: 6,
     maxLength: 10,
@@ -65,12 +65,48 @@ const SUMMARYID_VALIDATION = new ValidationRule({
  * - Prevents default value 'password'
  */
 const ID_VALIDATION = new ValidationRule({
-    fieldName: 'Id',
+    fieldName: 'id',
     type: 'number',
     minLength: 1,
     maxLength: 10,
     caseConversion: CaseConversion.NONE,
     whenRequired: REQUIRED_ADD
+});
+
+
+/**
+ * Validation rules for any cost reference.
+ * PIt is likely additional support will be required to provide picklists.
+ * - Min length: 1 character
+ * - Max length: 10 characters
+ * - Case: none
+ * - Prevents default value 'password'
+ */
+const COST_VALIDATION = new ValidationRule({
+    fieldName: 'cost',
+    type: 'number',
+    minLength: 1,
+    maxLength: 10,
+    caseConversion: CaseConversion.NONE,
+    whenRequired: REQUIRED_ADD,
+    defaultValue: 0.0 });
+
+/**
+ * Validation rules for Sourcing.  Presentation is a three character upper case string.
+ * - Min length: 3 characters
+ * - Max length: 3 characters
+ * - Case: none
+ * - Prevents default value 'password'
+ */
+const SOURCING_VALIDATION = new ValidationRule({
+    fieldName: 'sourcing',
+    type: 'text',
+    minLength: 3,
+    maxLength: 3,
+    caseConversion: CaseConversion.NONE,
+    whenRequired: REQUIRED_ADD,
+    values: ['MAN', 'PUR' ],
+    defaultValue: 'MAN'
 });
 
 
@@ -84,12 +120,58 @@ const ID_VALIDATION = new ValidationRule({
  */
 const DESCRIPTION_VALIDATION = new ValidationRule({
     type: 'text',
-    fieldName: 'Description',
+    fieldName: 'description',
     minLength: 6,
     maxLength: 30,
     caseConversion: CaseConversion.NONE
 });
 
+
+/* Validation rules for any depth reference.
+* - Min length: 1 character
+* - Max length: 3 characters
+* - Case: none
+*/
+const MAX_DEPTH_VALIDATION = new ValidationRule({
+    fieldName: 'maxDepth',
+    type: 'number',
+    minLength: 1,
+    maxLength: 3,
+    caseConversion: CaseConversion.NONE,
+    whenRequired: REQUIRED_ADD,
+    defaultValue: 0
+});
+
+/* Validation rules for any depth reference.
+* - Min length: 1 character
+* - Max length: 3 characters
+* - Case: none
+*/
+const LEAD_TIME_VALIDATION = new ValidationRule({
+    fieldName: 'leadTime',
+    type: 'number',
+    minLength: 1,
+    maxLength: 3,
+    caseConversion: CaseConversion.NONE,
+    whenRequired: REQUIRED_ADD,
+    defaultValue: 0
+});
+
+
+/* Validation rules for any depth reference.
+* - Min length: 1 character
+* - Max length: 3 characters
+* - Case: none
+*/
+const QUANTITY_VALIDATION = new ValidationRule({
+    fieldName: 'quantity',
+    type: 'number',
+    minLength: 1,
+    maxLength: 10,
+    caseConversion: CaseConversion.NONE,
+    whenRequired: REQUIRED_ADD,
+    defaultValue: 0.0
+});
 
 /**
  * Array of all validation rules
@@ -99,7 +181,12 @@ export const VALIDATION_RULES = [
     PASSWORD_VALIDATION,
     SUMMARYID_VALIDATION,
     DESCRIPTION_VALIDATION,
-    ID_VALIDATION
+    ID_VALIDATION,
+    COST_VALIDATION,
+    SOURCING_VALIDATION,
+    MAX_DEPTH_VALIDATION,
+    LEAD_TIME_VALIDATION,
+    QUANTITY_VALIDATION
 ];
 
 /**

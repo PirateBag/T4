@@ -1,13 +1,14 @@
 
 import { VALIDATION_RULES } from './Domain.jsx';
 
+
 /**
  * Converts validation rules to GridColDef array for Material-UI DataGrid
  * @returns {Array} Array of GridColDef objects
  */
 export const getGridColumns = () => {
     return VALIDATION_RULES.map(rule => ({
-        field: rule.fieldName.toLowerCase(),
+        field: rule.fieldName,
         headerName: rule.fieldName,
         width: calculateColumnWidth(rule),
         editable: true,
