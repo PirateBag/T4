@@ -9,8 +9,8 @@ import { VALIDATION_RULES } from './Domain.jsx';
 export const getGridColumns = () => {
     return VALIDATION_RULES.map(rule => ({
         field: rule.fieldName,
-        headerName: rule.fieldName,
-        width: calculateColumnWidth(rule),
+        headerName: rule.defaultHeader,
+        width: rule.defaultWidthInCharacters * 11+2,
         editable: true,
         type: rule.type === 'number' ? 'number' : 'string',
         ...(rule.type === 'number' && {
@@ -23,10 +23,10 @@ export const getGridColumns = () => {
  * Calculate column width based on validation rule constraints
  * @param {ValidationRule} rule - The validation rule
  * @returns {number} Suggested column width in pixels
- */
+
 const calculateColumnWidth = (rule) => {
     if (rule.type === 'number') {
-        return 120;
+        return 60;
     }
 
     const maxLength = rule.maxLength || 150;

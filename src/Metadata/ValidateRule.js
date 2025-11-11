@@ -25,6 +25,8 @@ export class ValidationRule {
         this.values = options.values ?? null;
         this.whenRequired = options.whenRequired ?? REQUIRED_NONE;
         this.defaultValue = options.defaultValue ?? null;
+        this.defaultHeader = options.defaultHeader ?? options.fieldName;
+        this.defaultWidthInCharacters = Math.max( this.maxLength, options.fieldName.length );
     }
 
     /**

@@ -52,8 +52,8 @@ const SUMMARYID_VALIDATION = new ValidationRule({
     minLength: 6,
     maxLength: 10,
     caseConversion: CaseConversion.NONE,
-    whenRequired: REQUIRED_ADD
-
+    whenRequired: REQUIRED_ADD,
+    defaultHeader: 'Summary ID'
 });
 
 /**
@@ -68,9 +68,10 @@ const ID_VALIDATION = new ValidationRule({
     fieldName: 'id',
     type: 'number',
     minLength: 1,
-    maxLength: 10,
+    maxLength: 4,
     caseConversion: CaseConversion.NONE,
-    whenRequired: REQUIRED_ADD
+    whenRequired: REQUIRED_ADD,
+    defaultHeader: 'Id'
 });
 
 
@@ -83,13 +84,15 @@ const ID_VALIDATION = new ValidationRule({
  * - Prevents default value 'password'
  */
 const COST_VALIDATION = new ValidationRule({
-    fieldName: 'cost',
+    fieldName: 'unitCost',
     type: 'number',
     minLength: 1,
     maxLength: 10,
     caseConversion: CaseConversion.NONE,
     whenRequired: REQUIRED_ADD,
-    defaultValue: 0.0 });
+    defaultValue: 0.0,
+    defaultHeader: 'Unit Cost'
+});
 
 /**
  * Validation rules for Sourcing.  Presentation is a three character upper case string.
@@ -106,7 +109,8 @@ const SOURCING_VALIDATION = new ValidationRule({
     caseConversion: CaseConversion.NONE,
     whenRequired: REQUIRED_ADD,
     values: ['MAN', 'PUR' ],
-    defaultValue: 'MAN'
+    defaultValue: 'MAN',
+    defaultHeader: 'Source'
 });
 
 
@@ -121,6 +125,7 @@ const SOURCING_VALIDATION = new ValidationRule({
 const DESCRIPTION_VALIDATION = new ValidationRule({
     type: 'text',
     fieldName: 'description',
+    defaultHeader: 'Description',
     minLength: 6,
     maxLength: 30,
     caseConversion: CaseConversion.NONE
@@ -139,7 +144,8 @@ const MAX_DEPTH_VALIDATION = new ValidationRule({
     maxLength: 3,
     caseConversion: CaseConversion.NONE,
     whenRequired: REQUIRED_ADD,
-    defaultValue: 0
+    defaultValue: 0,
+    defaultHeader: 'Depth'
 });
 
 /* Validation rules for any depth reference.
@@ -151,10 +157,11 @@ const LEAD_TIME_VALIDATION = new ValidationRule({
     fieldName: 'leadTime',
     type: 'number',
     minLength: 1,
-    maxLength: 3,
+    maxLength: 9,
     caseConversion: CaseConversion.NONE,
     whenRequired: REQUIRED_ADD,
-    defaultValue: 0
+    defaultValue: 0,
+    defaultHeader: 'Lead Time'
 });
 
 
@@ -164,13 +171,14 @@ const LEAD_TIME_VALIDATION = new ValidationRule({
 * - Case: none
 */
 const QUANTITY_VALIDATION = new ValidationRule({
-    fieldName: 'quantity',
+    fieldName: 'quantityOnHand',
     type: 'number',
     minLength: 1,
-    maxLength: 10,
+    maxLength: 8,
     caseConversion: CaseConversion.NONE,
     whenRequired: REQUIRED_ADD,
-    defaultValue: 0.0
+    defaultValue: 0.0,
+    defaultHeader: 'On Hand'
 });
 
 /**
