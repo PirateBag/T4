@@ -2,10 +2,14 @@ import React, {useState} from 'react';
 import ImTextField from "../ImTextField.jsx";
 import ErrorMessage from "../ErrorMessage.jsx";
 import {FormService} from "../FormService.jsx";
-import {ItemQueryResultsGrid} from "../ItemQueryResultsGrid.jsx";
+import {ItemQueryResultsGrid2} from "../ItemQueryResultsGrid2.jsx";
+import * as PropTypes from "prop-types";
+import { Button, Box } from '@mui/material';
 
 export const itemQueryUrl = 'http://localhost:8080/item/crudQuery'
 export const itemQueryUrlRequestTemplate = '{ "updatedRows" : [ ${rowWithQuery} ] }';
+
+
 const ItemQuery = ( props ) => {
 
     const emptyResponse = { responseType: "MULTILINE", data: [], errors : []  };
@@ -61,7 +65,9 @@ const ItemQuery = ( props ) => {
                     <br/>
                     <button type="submit">Search</button>
                 </form>
-            <ItemQueryResultsGrid data={queryResults.data} />
+            <Box sx={{ height: 400, width: '100%', mb: 10 }}>
+            <ItemQueryResultsGrid2 data={queryResults.data}/>
+            </Box>
         </div>
     );
 };
