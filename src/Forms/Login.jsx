@@ -8,6 +8,9 @@ import {REQUIRED_ADD} from "../Metadata/Domain.jsx";
 import Button from '@mui/material/Button';
 
 import {UserContext} from "../UserContext.jsx";
+import {ScreenTransition} from "../ScreenTransition.js";
+import {ScreenStack} from "../Stack.js";
+import itemQuery from "./ItemQuery.jsx";
 
 function Login(  )
 {
@@ -16,6 +19,8 @@ function Login(  )
 
     const afterPostCallback = (response) => {
         setCurrentUser( new LoginSummary( "fred", response.token, "2025-10-31 2359" ))
+        let nextScreen = new ScreenTransition(itemQuery, 'NONE', response.data);
+        ScreenStack.pushToNextScreen(nextScreen);
     }
 
 

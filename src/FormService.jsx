@@ -1,8 +1,5 @@
 import {validateAllFieldsOnForm} from "./Metadata/ValidateRule.js";
 import axios from "axios";
-import itemQuery from "./Forms/ItemQuery.jsx";
-import {ScreenTransition} from "./ScreenTransition.js";
-import {ScreenStack} from "./Stack.js";
 
 export class FormService {
     constructor(options) {
@@ -75,8 +72,6 @@ export class FormService {
     postData = (finalRequestAsObject) => {
         axios.post( this.url, finalRequestAsObject )
             .then(response => {
-                let nextScreen = new ScreenTransition(itemQuery, 'NONE', response.data);
-                ScreenStack.pushToNextScreen(nextScreen);
                 this.afterPostCallback( response );
             })
             .catch(error => {

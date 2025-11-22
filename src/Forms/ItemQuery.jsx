@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import ImTextField from "../ImTextField.jsx";
 import ErrorMessage from "../ErrorMessage.jsx";
 import {FormService} from "../FormService.jsx";
@@ -7,6 +7,8 @@ import { Button, Box } from '@mui/material';
 
 export const itemQueryUrl = 'http://localhost:8080/item/crudQuery'
 export const itemQueryUrlRequestTemplate = '{ "updatedRows" : [ ${rowWithQuery} ] }';
+const itemQueryAll = { "updatedRows" : [  ] };
+
 
 
 const ItemQuery = (  ) => {
@@ -23,13 +25,7 @@ const ItemQuery = (  ) => {
         });
     }  */
 
-    /*if ( !props.visible ) {
-        return (
-            <div>
-            </div>
-        );
-    }
-*/
+
     const afterPostCallback = ( response ) => {
         console.log( "afterPostCallback received:", response );
         if ( response.status === 200 ) {
@@ -50,9 +46,17 @@ const ItemQuery = (  ) => {
         afterPostCallback: afterPostCallback,
         requestTemplate : itemQueryUrlRequestTemplate } );
 
-    if ( queryResults.data.length === 0 ) {
+    // Fetch data on mount if empty
+    useEffect(() => {
+        const fetchData = async () => {
+            if (queryResults.data.length === 0) {
+                // Trigger search with empty values
+                await formService.postData( itemQueryAll );
+            }
+        };
+        fetchData();
+    }, []); // Dependency array ensures this runs only on mount
 
-    }
 
     return (
         <div>
