@@ -68,8 +68,11 @@ export class FormService {
         const requestParameters = Object.fromEntries(formData.entries());
 
         const finalRequestAsObject = this.requestTemplate == null ? requestParameters :
-            JSON.parse( this.requestTemplate.replace("${rowWithQuery}", JSON.stringify(requestParameters)));
+            JSON.parse(this.requestTemplate.replace("${rowWithQuery}", JSON.stringify(requestParameters)));
+        this.postData(finalRequestAsObject);
+    }
 
+    postData = (finalRequestAsObject) => {
         axios.post( this.url, finalRequestAsObject )
             .then(response => {
                 let nextScreen = new ScreenTransition(itemQuery, 'NONE', response.data);

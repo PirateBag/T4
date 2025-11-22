@@ -3,14 +3,13 @@ import ImTextField from "../ImTextField.jsx";
 import ErrorMessage from "../ErrorMessage.jsx";
 import {FormService} from "../FormService.jsx";
 import {ItemQueryResultsGrid2} from "../ItemQueryResultsGrid2.jsx";
-import * as PropTypes from "prop-types";
 import { Button, Box } from '@mui/material';
 
 export const itemQueryUrl = 'http://localhost:8080/item/crudQuery'
 export const itemQueryUrlRequestTemplate = '{ "updatedRows" : [ ${rowWithQuery} ] }';
 
 
-const ItemQuery = ( props ) => {
+const ItemQuery = (  ) => {
 
     const emptyResponse = { responseType: "MULTILINE", data: [], errors : []  };
 
@@ -24,13 +23,13 @@ const ItemQuery = ( props ) => {
         });
     }  */
 
-    if ( !props.visible ) {
+    /*if ( !props.visible ) {
         return (
             <div>
             </div>
         );
     }
-
+*/
     const afterPostCallback = ( response ) => {
         console.log( "afterPostCallback received:", response );
         if ( response.status === 200 ) {
@@ -50,6 +49,10 @@ const ItemQuery = ( props ) => {
         isValidateForm: false,
         afterPostCallback: afterPostCallback,
         requestTemplate : itemQueryUrlRequestTemplate } );
+
+    if ( queryResults.data.length === 0 ) {
+
+    }
 
     return (
         <div>
