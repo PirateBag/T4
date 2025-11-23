@@ -9,8 +9,6 @@ export const itemQueryUrl = 'http://localhost:8080/item/crudQuery'
 export const itemQueryUrlRequestTemplate = '{ "updatedRows" : [ ${rowWithQuery} ] }';
 const itemQueryAll = { "updatedRows" : [  ] };
 
-
-
 const ItemQuery = (  ) => {
 
     const emptyResponse = { responseType: "MULTILINE", data: [], errors : []  };
@@ -72,6 +70,9 @@ const ItemQuery = (  ) => {
                     <br/>
                     <button type="submit">Search</button>
                 </form>
+            <br/>
+            <hr style={{ margin: "20px 0", borderTop: "1px solid #ccc" }} />
+            <br/>
             <Box sx={{ height: 400, width: '100%', mb: 10 }}>
             <ItemQueryResultsGrid2 data={queryResults.data}/>
             </Box>

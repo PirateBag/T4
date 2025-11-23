@@ -18,7 +18,6 @@ class GridColDefBuilder {
     buildColumnDefs( presentationFields ){
 
         const updatedGridColumns = [];
-        if ( presentationFields.length === 0 ) return updatedGridColumns;
 
         for( const presentationField of presentationFields ){
             const updatedGridColumn = this.buildGridColDef( presentationField.rawGridfieldName,

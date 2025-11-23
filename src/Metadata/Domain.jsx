@@ -103,12 +103,12 @@ const COST_VALIDATION = new ValidationRule({
  */
 const SOURCING_VALIDATION = new ValidationRule({
     fieldName: 'sourcing',
-    type: 'text',
+    type: 'singleSelect',
     minLength: 3,
     maxLength: 3,
     caseConversion: CaseConversion.NONE,
     whenRequired: REQUIRED_ADD,
-    values: ['MAN', 'PUR' ],
+    valueOptions: ['MAN', 'PUR' ],
     defaultValue: 'MAN',
     defaultHeader: 'Source'
 });

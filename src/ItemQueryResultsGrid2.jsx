@@ -1,5 +1,5 @@
 import { DataGrid } from '@mui/x-data-grid';
-import { getGridColumns } from './Metadata/GridColumns.jsx';
+import { getGridColumns } from './Metadata/ValidationRulesToGridColumn.jsx';
 
 import GridColDefBuilder from "./Metadata/GridColDefBuilder.js";
 
@@ -10,12 +10,11 @@ export function ItemQueryResultsGrid2( props ) {
     const GridColDefBuilderService = new GridColDefBuilder( getGridColumns() );
 
     const selectColumns  = [
-        { "rawGridfieldName" : "id", "girdfieldOptions" : {  } },
-        { "rawGridfieldName" : "summaryId", "girdfieldOptions" : { } },
+        { "rawGridfieldName" : "id", "girdfieldOptions" : { editable: false } },
         { "rawGridfieldName" : "description", "girdfieldOptions" : { } },
         { "rawGridfieldName" : "unitCost", "girdfieldOptions" : {  } },
-        { "rawGridfieldName" : "sourcing", "girdfieldOptions" : { } },
-        { "rawGridfieldName" : "maxDepth", "girdfieldOptions" : { } },
+        { "rawGridfieldName" : "sourcing", "girdfieldOptions" : {  }   },
+        { "rawGridfieldName" : "maxDepth", "girdfieldOptions" :  { editable: false } },
         { "rawGridfieldName" : "leadTime", "girdfieldOptions" : { } },
         { "rawGridfieldName" : "quantityOnHand", "girdfieldOptions" : { } } ];
 

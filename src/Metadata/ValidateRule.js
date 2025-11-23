@@ -22,7 +22,7 @@ export class ValidationRule {
         this.maxValue = options.maxValue ?? Number.MAX_VALUE;
         this.type = options.type;
         this.preventThisValue = options.preventThisValue ?? null;
-        this.values = options.values ?? null;
+        this.valueOptions = options.valueOptions ?? null;
         this.whenRequired = options.whenRequired ?? REQUIRED_NONE;
         this.defaultValue = options.defaultValue ?? null;
         this.defaultHeader = options.defaultHeader ?? options.fieldName;
@@ -64,9 +64,9 @@ export class ValidationRule {
             errorMessages.push(`Please enter a value for '${this.fieldName}', the default is not sufficient.`);
         } else {
             // Did the creator provide a list of allowed values, and is the input in that list
-            if (this.values !== null) {
+            if (this.valueOptions !== null) {
                 let oneMatch = false;
-                for (const value of this.values) {
+                for (const value of this.valueOptions) {
                     if (value === reformattedTextOfField) {
                         oneMatch = true;
                         break;
@@ -145,11 +145,11 @@ export class ValidationRule {
      * @returns {string|null} - List of values, or null if no values or not String type
      */
     getListOfPermittedValues() {
-        if (this.values === null || this.type !== String) {
+        if (this.valueOptions === null ) {
             return null;
         }
 
-        return this.values.join(',');
+        return this.valueOptions;
     }
 
     /**
@@ -157,7 +157,7 @@ export class ValidationRule {
      * @returns {string[]} - The values array
      */
     valuesAsString() {
-        return this.values;
+        return this.valueOptions;
     }
 }
 
