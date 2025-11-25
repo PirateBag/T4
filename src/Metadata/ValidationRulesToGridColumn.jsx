@@ -13,6 +13,7 @@ export const getGridColumns = () => {
         editable: true,
         type: rule.type,
         valueOptions: rule.valueOptions,
+        defaultValue: rule.defaultValue,
         ...(rule.type === 'number' && {
             valueParser: (value) => Number(value),
         }),

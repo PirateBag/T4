@@ -3,7 +3,7 @@ import { getGridColumns } from './Metadata/ValidationRulesToGridColumn.jsx';
 
 import GridColDefBuilder from "./Metadata/GridColDefBuilder.js";
 
-export function ItemQueryResultsGrid2( props ) {
+export function ItemQueryResultsGrid(props ) {
 
     if ( (props?.data?.data?.length ?? 0 ) === 0 ) return null;
 

@@ -28,4 +28,13 @@ class GridColDefBuilder {
     }
 }
 
+export function createDefaultObjectFromGridColumns(gridColumns ) {
+    const defaultObject = { 'id' : 0 };
+    for( const gridColumn of gridColumns ) {
+        if ( gridColumn.field === 'id' ) continue;
+        defaultObject[ gridColumn.field ] = gridColumn.defaultValue;
+    }
+    return [ defaultObject ];
+}
+
 export default GridColDefBuilder

@@ -2,8 +2,11 @@ import React, {useEffect, useState} from 'react';
 import ImTextField from "../ImTextField.jsx";
 import ErrorMessage from "../ErrorMessage.jsx";
 import {FormService} from "../FormService.jsx";
-import {ItemQueryResultsGrid2} from "../ItemQueryResultsGrid2.jsx";
+import {ItemQueryResultsGrid} from "../ItemQueryResultsGrid.jsx";
 import { Button, Box } from '@mui/material';
+import { DataGrid } from '@mui/x-data-grid';
+import { getGridColumns } from '../Metadata/ValidationRulesToGridColumn.jsx';
+import GridColDefBuilder, {createDefaultObjectFromGridColumns} from "../Metadata/GridColDefBuilder.js";
 
 export const itemQueryUrl = 'http://localhost:8080/item/crudQuery'
 export const itemQueryUrlRequestTemplate = '{ "updatedRows" : [ ${rowWithQuery} ] }';
@@ -55,26 +58,44 @@ const ItemQuery = (  ) => {
         fetchData();
     }, []); // Dependency array ensures this runs only on mount
 
+    function ItemQueryEntry() {
+        const GridColDefBuilderService = new GridColDefBuilder( getGridColumns() );
+
+        const selectColumns  = [
+            { "rawGridfieldName" : "id", "girdfieldOptions" : { editable: false } },
+            { "rawGridfieldName" : "description", "girdfieldOptions" : { defaultValue: "*" } },
+            { "rawGridfieldName" : "unitCost", "girdfieldOptions" : { defaultValue: "*"  } },
+            { "rawGridfieldName" : "sourcing", "girdfieldOptions" : { valueOptions: ["MAN", "PUR", "*"],
+                defaultValue: "*" }   },
+            { "rawGridfieldName" : "maxDepth", "girdfieldOptions" :  { editable: false,defaultValue: "*"  } },
+            { "rawGridfieldName" : "leadTime", "girdfieldOptions" : {defaultValue: "*"  } },
+            { "rawGridfieldName" : "quantityOnHand", "girdfieldOptions" : { defaultValue: "*" } } ];
+        return GridColDefBuilderService.buildColumnDefs( selectColumns )
+    }
+
+    const GridColumns = ItemQueryEntry();
+    const defaultObject = createDefaultObjectFromGridColumns( GridColumns );
+
+    console.log( "defaultObject " + defaultObject );
 
     return (
         <div>
-
             <form onSubmit={formService.handleSubmit}>
                     <ErrorMessage message={message}/>
                     <br/>
                     <ImTextField type={"text"} name={"id"} placeholder={"Id"} setMessage={setMessage} />
                     <br/>
-                    <ImTextField type={"text"} name={"summaryId"} placeholder={"SummaryId"} setMessage={setMessage} />
-                    <br/>
                     <ImTextField type={"text"} name={"description"} placeholder={"Description"} setMessage={setMessage} />
                     <br/>
                     <button type="submit">Search</button>
                 </form>
+
+            <DataGrid columns={GridColumns}  density="compact" hideFooter  rows={defaultObject} />;
             <br/>
             <hr style={{ margin: "20px 0", borderTop: "1px solid #ccc" }} />
             <br/>
             <Box sx={{ height: 400, width: '100%', mb: 10 }}>
-            <ItemQueryResultsGrid2 data={queryResults.data}/>
+            <ItemQueryResultsGrid data={queryResults.data}/>
             </Box>
         </div>
     );
