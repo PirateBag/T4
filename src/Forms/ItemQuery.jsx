@@ -12,20 +12,23 @@ export const itemQueryUrl = 'http://localhost:8080/item/crudQuery'
 export const itemQueryUrlRequestTemplate = '{ "updatedRows" : [ ${rowWithQuery} ] }';
 const itemQueryAll = { "updatedRows" : [  ] };
 
+const removeDefaultsFromRow = ( rowWithDefaultValues ) => {
+    const newRow = { };
+    Object.keys(rowWithDefaultValues).forEach(key => {
+        if ( key !== "id" && rowWithDefaultValues[key] !== "*" ) {
+            newRow[key] = (rowWithDefaultValues[key] ?? "")
+        }
+    });
+    return newRow;
+}
+
 const ItemQuery = (  ) => {
 
     const emptyResponse = { responseType: "MULTILINE", data: [], errors : []  };
 
     const [message, setMessage] = useState( "" );
     const [queryResults, setQueryResults] = useState( {data: [] } );
-
-    /*  const handleChange = (e) => {
-        setCredentials({
-            ...credentials,
-            [e.target.name]: e.target.value
-        });
-    }  */
-
+    const [queryPrameters, setQueryParameters] = useState( { data:[] } );
 
     const afterPostCallback = ( response ) => {
         console.log( "afterPostCallback received:", response );
@@ -73,29 +76,36 @@ const ItemQuery = (  ) => {
         return GridColDefBuilderService.buildColumnDefs( selectColumns )
     }
 
+    function ItemQueryRowChange( newValue, oldValue, rowNode, column, api ) {
+        console.log( "ItemQueryRowChange " + JSON.stringify( oldValue  ));
+        console.log( "ItemQueryRowChange " + rowNode, column, api );
+        setQueryParameters( newValue )
+        return newValue;
+    }
+    function ItemQueryRowChangeExecute() {
+        const queryParametersMinusDefaults = removeDefaultsFromRow( queryPrameters );
+
+        formService.postData( queryParametersMinusDefaults  );
+    }
+    function onProcessRowUpdateError( error ) {
+        console.log( "onProcessRowUpdateError " + error );
+    }
+
+
     const GridColumns = ItemQueryEntry();
     const defaultObject = createDefaultObjectFromGridColumns( GridColumns );
 
-    console.log( "defaultObject " + defaultObject );
-
     return (
         <div>
-            <form onSubmit={formService.handleSubmit}>
-                    <ErrorMessage message={message}/>
-                    <br/>
-                    <ImTextField type={"text"} name={"id"} placeholder={"Id"} setMessage={setMessage} />
-                    <br/>
-                    <ImTextField type={"text"} name={"description"} placeholder={"Description"} setMessage={setMessage} />
-                    <br/>
-                    <button type="submit">Search</button>
-                </form>
-
-            <DataGrid columns={GridColumns}  density="compact" hideFooter  rows={defaultObject} />;
+            <DataGrid columns={GridColumns}  density="compact" hideFooter  rows={defaultObject}
+                      processRowUpdate={ItemQueryRowChange}
+            onProcessRowUpdateError={onProcessRowUpdateError}/>;
+            <Button variant="outlined" onClick={ItemQueryRowChangeExecute}>Search</Button>
             <br/>
             <hr style={{ margin: "20px 0", borderTop: "1px solid #ccc" }} />
             <br/>
             <Box sx={{ height: 400, width: '100%', mb: 10 }}>
-            <ItemQueryResultsGrid data={queryResults.data}/>
+            <ItemQueryResultsGrid data={queryResults.data}  />
             </Box>
         </div>
     );
