@@ -1,5 +1,4 @@
 import React, {useEffect, useState} from 'react';
-import ImTextField from "../ImTextField.jsx";
 import ErrorMessage from "../ErrorMessage.jsx";
 import {FormService} from "../FormService.jsx";
 import {ItemQueryResultsGrid} from "../ItemQueryResultsGrid.jsx";
@@ -24,11 +23,13 @@ const removeDefaultsFromRow = ( rowWithDefaultValues ) => {
 
 const ItemQuery = (  ) => {
 
-    const emptyResponse = { responseType: "MULTILINE", data: [], errors : []  };
+    const GridColumns = ItemQueryEntry();
+    const defaultQueryParameters = createDefaultObjectFromGridColumns( GridColumns );
 
+    const emptyResponse = { responseType: "MULTILINE", data: [], errors : []  };
     const [message, setMessage] = useState( "" );
-    const [queryResults, setQueryResults] = useState( {data: [] } );
-    const [queryPrameters, setQueryParameters] = useState( { data:[] } );
+    const [queryResults, setQueryResults] = useState( { data:[] } );
+    const [queryParameters, setQueryParameters] = useState( defaultQueryParameters );
 
     const afterPostCallback = ( response ) => {
         console.log( "afterPostCallback received:", response );
@@ -83,29 +84,29 @@ const ItemQuery = (  ) => {
         return newValue;
     }
     function ItemQueryRowChangeExecute() {
-        const queryParametersMinusDefaults = removeDefaultsFromRow( queryPrameters );
-
-        formService.postData( queryParametersMinusDefaults  );
+        const queryParametersMinusDefaults = removeDefaultsFromRow( queryParameters );
+        const queryParametersAfterWrapping = formService.singleRowToRequest( queryParametersMinusDefaults );
+        console.log( "ItemQueryRowChangeExecute " + JSON.stringify( queryParametersAfterWrapping ))
+        formService.postData( queryParametersAfterWrapping  );
     }
     function onProcessRowUpdateError( error ) {
         console.log( "onProcessRowUpdateError " + error );
     }
-
-
-    const GridColumns = ItemQueryEntry();
-    const defaultObject = createDefaultObjectFromGridColumns( GridColumns );
-
     return (
         <div>
-            <DataGrid columns={GridColumns}  density="compact" hideFooter  rows={defaultObject}
-                      processRowUpdate={ItemQueryRowChange}
+            <br/>
+            <DataGrid columns={GridColumns}  density="compact" hideFooter  rows={queryParameters}                      processRowUpdate={ItemQueryRowChange}
             onProcessRowUpdateError={onProcessRowUpdateError}/>;
             <Button variant="outlined" onClick={ItemQueryRowChangeExecute}>Search</Button>
             <br/>
             <hr style={{ margin: "20px 0", borderTop: "1px solid #ccc" }} />
             <br/>
             <Box sx={{ height: 400, width: '100%', mb: 10 }}>
-            <ItemQueryResultsGrid data={queryResults.data}  />
+                {queryResults.data.length === 0 ? (
+                    "No results"
+                ) : (
+                    <ItemQueryResultsGrid data={queryResults.data} />
+                )}
             </Box>
         </div>
     );

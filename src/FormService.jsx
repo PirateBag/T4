@@ -63,10 +63,15 @@ export class FormService {
 
         const formData = new FormData(event.target);
         const requestParameters = Object.fromEntries(formData.entries());
-
-        const finalRequestAsObject = this.requestTemplate == null ? requestParameters :
-            JSON.parse(this.requestTemplate.replace("${rowWithQuery}", JSON.stringify(requestParameters)));
+        const finalRequestAsObject = this.singleRowToRequest(requestParameters);
         this.postData(finalRequestAsObject);
+    }
+
+    singleRowToRequest( SingleRowOfRequestParameters ) {
+        let finalRequestAsObject;
+        finalRequestAsObject = this.requestTemplate == null ? SingleRowOfRequestParameters :
+            JSON.parse(this.requestTemplate.replace("${rowWithQuery}", JSON.stringify(SingleRowOfRequestParameters)));
+        return finalRequestAsObject;
     }
 
     postData = (finalRequestAsObject) => {
