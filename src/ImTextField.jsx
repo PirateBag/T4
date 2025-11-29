@@ -32,14 +32,13 @@ function ImTextField(props) {
             return (
                 <TextField
                     type={"text"}
+                    size="small"
+                    margin="dense"
                     name={props.name}
                     className={normalizedClassname}
                     placeholder={props.placeholder}
                     maxLength={domain.maxLength}
                     defaultValue={domain.defaultValue != null ? domain.defaultValue : ''}
-                    style={{
-                        fontSize: '20px'
-                    }}
                     onBlur={(event) => handleFieldValidation(event, props.setMessage, props.whenRequired )}
                 />
             )
@@ -48,14 +47,13 @@ function ImTextField(props) {
             return (
                 <TextField
                     type={"text"}
+                    size="small"
+                    margin="dense"
                     className={normalizedClassname}
                     name={props.name}
                     maxLength={domain.maxLength}
                     placeholder={props.placeholder}
                     defaultValue={domain.defaultValue != null ? domain.defaultValue : ''}
-                    style={{
-                        fontSize: '20px',
-                    }}
                     onBlur={(event) => handleFieldValidation(event, props.setMessage, props.whenRequired )}
                 />
             )
