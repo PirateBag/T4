@@ -1,4 +1,3 @@
-import {validateAllFieldsOnForm} from "./Metadata/ValidateRule.js";
 import axios from "axios";
 
 export class FormService {
@@ -10,6 +9,7 @@ export class FormService {
         this.isValidateForm = options.isValidateForm ?? true;
         this.onErrorCallback = options.onErrorCallback ?? (() => {});
         this.requestTemplate = options.requestTemplate;
+        this.requestObject = options.requestObject;
     }
 
     formatErrorMessage(error) {
@@ -23,7 +23,7 @@ export class FormService {
             const status = error.response.status;
             const data = error.response.data;
 
-            // Check if server sent a message
+            // Check if the server sent a message
             if (data?.message) {
                 return data.message;
             }
@@ -56,14 +56,15 @@ export class FormService {
     handleSubmit = async (event) => {
         event.preventDefault();
 
-        let messagesFromFormValidation = this.isValidateForm ? validateAllFieldsOnForm(event) : "";
+        let messagesFromFormValidation = "";
         this.messageFromFormSetter(messagesFromFormValidation);
 
-        if (messagesFromFormValidation.length > 0) return;
 
+        if (messagesFromFormValidation.length > 0) return;
+        let formEntries = Object.fromEntries(new FormData(event.target).entries());
+        console.log( "formEntries " + formEntries);
         const formData = new FormData(event.target);
-        const requestParameters = Object.fromEntries(formData.entries());
-        const finalRequestAsObject = this.singleRowToRequest(requestParameters);
+        const finalRequestAsObject = this.singleRowToRequest( this.requestObject ?? Object.fromEntries(formData.entries()));
         this.postData(finalRequestAsObject);
     }
 
@@ -84,7 +85,7 @@ export class FormService {
                 const errorMessage = this.formatErrorMessage(error);
                 this.messageFromFormSetter(errorMessage);
 
-                // Call custom error callback if provided
+                // Call the custom error callback if provided
                 if (this.onErrorCallback) {
                     this.onErrorCallback(error);
                 }

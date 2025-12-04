@@ -1,22 +1,11 @@
-import {getValidationRuleByName, REQUIRED_NONE, VALIDATION_RULES} from "./Domain.jsx";
-
-export const CaseConversion = {
-    NONE: 'NONE',
-    UPPERCASE: 'UPPERCASE',
-    LOWERCASE: 'LOWERCASE',
-    UPPER: 'UPPERCASE', // Alias for compatibility
-    LOWER: 'LOWERCASE'  // Alias for compatibility
-};
-
-
-
+import {CaseConversion, REQUIRED_NONE} from "./ValidationRuleConstants.js";
 
 export class ValidationRule {
     constructor(options) {
-        // Set defaults
-        this.fieldName = options.fieldName;
-        this.minLength = options.minLength ?? 0;
-        this.maxLength = options.maxLength ?? 0;
+        this.domainName = options.domainName;
+        this.field = options.field ?? this.domainName;
+        this.minLengthInChars = options.minLength ?? 0;
+        this.maxLengthInChars = options.maxLength ?? 0;
         this.caseConversion = options.caseConversion ?? CaseConversion.NONE;
         this.minValue = options.minValue ?? -Number.MAX_VALUE;
         this.maxValue = options.maxValue ?? Number.MAX_VALUE;
@@ -25,14 +14,30 @@ export class ValidationRule {
         this.valueOptions = options.valueOptions ?? null;
         this.whenRequired = options.whenRequired ?? REQUIRED_NONE;
         this.defaultValue = options.defaultValue ?? null;
-        this.defaultHeader = options.defaultHeader ?? options.fieldName;
-        this.defaultWidthInCharacters = Math.max( this.maxLength, options.fieldName.length );
+        this.headerName = options.header ?? options.domainName;
+        this.placeholder = options.placeholder ?? this.headerName;
     }
+
+    /**
+     * Given a domainName which references a validation rule, return a GridColDef object with the specified options.
+     * @param girdfieldOption
+     * @returns Combined validation and GridFieldOptions with recalculation values.
+     */
+    appendGridFieldOptions( girdfieldOption ) {
+        //  Required for GridColumns...
+        const combinedRule = {...this, ...girdfieldOption };
+
+        /*  Width is in pixels.  */
+        combinedRule.width = girdfieldOption.width ?? Math.max(combinedRule.maxLengthInChars, combinedRule.headerName.length) * 10;
+        return combinedRule;
+    }
+
+
 
     /**
      * Validates a value against validation rules.
      * @param {string|number} value - The value to validate
-     * @returns {string|null} - Returns null if valid, otherwise returns error message
+     * @returns {string|null} - Returns null if valid, otherwise returns an error message
      */
     validate(value) {
         if (this.type === "number") {
@@ -54,16 +59,16 @@ export class ValidationRule {
         const errorMessages = [];
         const reformattedTextOfField = this.reformatStringUsingRules(xTextValueOfField);
 
-        if (reformattedTextOfField.length < this.minLength) {
-            errorMessages.push(`'${this.fieldName}' must be at least ${this.minLength} characters in length.`);
-        } else if (reformattedTextOfField.length > this.maxLength) {
-            errorMessages.push(`'${this.fieldName}' must not exceed ${this.maxLength} characters in length.`);
+        if (reformattedTextOfField.length < this.minLengthInChars) {
+            errorMessages.push(`'${this.domainName}' must be at least ${this.minLengthInChars} characters in length.`);
+        } else if (reformattedTextOfField.length > this.maxLengthInChars) {
+            errorMessages.push(`'${this.domainName}' must not exceed ${this.maxLengthInChars} characters in length.`);
         }
 
         if (this.preventThisValue !== null && reformattedTextOfField === this.preventThisValue) {
-            errorMessages.push(`Please enter a value for '${this.fieldName}', the default is not sufficient.`);
+            errorMessages.push(`Please enter a value for '${this.domainName}', the default is not sufficient.`);
         } else {
-            // Did the creator provide a list of allowed values, and is the input in that list
+            // Did the creator provide a list of allowed values and is the input in that list
             if (this.valueOptions !== null) {
                 let oneMatch = false;
                 for (const value of this.valueOptions) {
@@ -73,7 +78,7 @@ export class ValidationRule {
                     }
                 }
                 if (!oneMatch) {
-                    errorMessages.push(`'${this.fieldName}' should be one of the following: {${this.getListOfPermittedValues()}}`);
+                    errorMessages.push(`'${this.domainName}' should be one of the following: {${this.getListOfPermittedValues()}}`);
                 }
             }
         }
@@ -96,19 +101,19 @@ export class ValidationRule {
     /**
      * Validates a numeric value against rules.
      * @param {number} value - The numeric value to validate
-     * @returns {string|null} - Returns null if valid, otherwise returns error message
+     * @returns {string|null} - Returns null if valid, otherwise returns an error message
      */
     applyRulesToDoubleValue(value) {
         const numValue = Number(value);
 
         if (isNaN(numValue)) {
-            return `'${this.fieldName}' must be a valid number.`;
+            return `'${this.domainName}' must be a valid number.`;
         }
 
         if (numValue < this.minValue) {
-            return `'${this.fieldName}' must be greater than or equal to ${this.minValue}.`;
+            return `'${this.domainName}' must be greater than or equal to ${this.minValue}.`;
         } else if (numValue > this.maxValue) {
-            return `'${this.fieldName}' must not exceed ${this.maxValue}.`;
+            return `'${this.domainName}' must not exceed ${this.maxValue}.`;
         }
 
         return null;
@@ -141,7 +146,7 @@ export class ValidationRule {
     }
 
     /**
-     * Return a comma separated list of permitted values.
+     * Return a comma-separated list of permitted values.
      * @returns {string|null} - List of values, or null if no values or not String type
      */
     getListOfPermittedValues() {
@@ -153,20 +158,19 @@ export class ValidationRule {
     }
 
     /**
-     * Get values as string array.
-     * @returns {string[]} - The values array
+     * Get values as a string array.
+     * @returns {string[]} - The array of values
      */
     valuesAsString() {
         return this.valueOptions;
     }
-}
 
 /**
  *
  * @param event belonging to a form.  One of the "submit" buttons.
  * @returns {string} contains error messages if any.  Otherwise, zero length string.
- */
-export const validateAllFieldsOnForm = (event ) => {
+
+export const validateAllFieldsOnForm = ( event ) => {
 
     const formData = new FormData(event.target);
     const fieldsForValidation = Object.fromEntries(formData.entries());
@@ -180,49 +184,7 @@ export const validateAllFieldsOnForm = (event ) => {
         }
     }
     return combinedMessages;
+ }
+ */
 }
-
-/**
- * Converts validation rules to GridColDef array for Material-UI DataGrid
- * @returns {Array} Array of GridColDef objects
- */
-export const getGridColumns = () => {
-    return VALIDATION_RULES.map(rule => ({
-        field: rule.fieldName.toLowerCase(),
-        headerName: rule.fieldName,
-        width: calculateColumnWidth(rule),
-        editable: true,
-        type: rule.type === 'number' ? 'number' : 'string',
-        ...(rule.type === 'number' && {
-            valueParser: (value) => Number(value),
-        }),
-    }));
-};
-
-/**
- * Calculate column width based on validation rule constraints
- * @param {ValidationRule} rule - The validation rule
- * @returns {number} Suggested column width in pixels
- */
-const calculateColumnWidth = (rule) => {
-    if (rule.type === 'number') {
-        return 120;
-    }
-    
-    const maxLength = rule.maxLength || 150;
-    // Estimate: ~8 pixels per character, with min of 100 and max of 300
-    return Math.min(Math.max(maxLength * 8, 100), 300);
-};
-
-/**
- * Get GridColDef for specific fields by name
- * @param {string[]} fieldNames - Array of field names to include
- * @returns {Array} Array of GridColDef objects for specified fields
- */
-export const getGridColumnsForFields = (fieldNames) => {
-    const allColumns = getGridColumns();
-    return allColumns.filter(col => 
-        fieldNames.some(name => name.toLowerCase() === col.field)
-    );
-};
 

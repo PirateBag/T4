@@ -1,14 +1,11 @@
 import React, {useEffect, useState} from 'react';
 import ErrorMessage from "../ErrorMessage.jsx";
 import {FormService} from "../FormService.jsx";
-import {ItemQueryResultsGrid} from "../ItemQueryResultsGrid.jsx";
 import { Button, Box } from '@mui/material';
-import { DataGrid } from '@mui/x-data-grid';
 import Grid from '@mui/material/Grid';
-import { getGridColumns } from '../Metadata/ValidationRulesToGridColumn.jsx';
-import GridColDefBuilder, {createDefaultObjectFromGridColumns} from "../Metadata/GridColDefBuilder.js";
-import {queryParameterConfig} from "./ItemQueryConfig.js";
-import ImTextField from "../ImTextField.jsx";
+import {queryParameterConfig,queryResultsConfig} from "./ItemQueryConfig.js";
+import TextField from "@mui/material/TextField";
+import {DataGrid} from "@mui/x-data-grid";
 
 export const itemQueryUrl = 'http://localhost:8080/item/crudQuery'
 export const itemQueryUrlRequestTemplate = '{ "updatedRows" : [ ${rowWithQuery} ] }';
@@ -18,7 +15,7 @@ const itemQueryAll = { "updatedRows" : [  ] };
 /**
  * Removes any default values from a row.  Only properties with non-default values are returned.
  * @param rowWithQueryCriteria.  Scalar Object, not an array.
- * @param rowOfDefaultValues.  Scalar Object, not an array.  Keys are the same as those in rowWithQueryCriteria.
+ * @param rowOfDefaultValues.  Scalar Object, not an array.  Keys are the same as those in a rowWithQueryCriteria.
  * @returns A new object with only non-default values.  If all values are default, returns an empty object
  */
 const removeDefaultsFromRow = ( rowWithQueryCriteria, rowOfDefaultValues  ) => {
@@ -33,10 +30,10 @@ const removeDefaultsFromRow = ( rowWithQueryCriteria, rowOfDefaultValues  ) => {
 
 const ItemQuery = (  ) => {
 
-    const GridColumns = ItemQueryEntry();
-    const defaultQueryParameters = createDefaultObjectFromGridColumns( GridColumns );
+    //  const GridColumns = ItemQueryEntry();
+    const defaultQueryParameters =  {}; //createDefaultObjectFromGridColumns( GridColumns );
 
-    const emptyResponse = { responseType: "MULTILINE", data: [], errors : []  };
+    //  const emptyResponse = { responseType: "MULTILINE", data: [], errors : []  };
     const [message, setMessage] = useState( "" );
     const [queryResults, setQueryResults] = useState( { data:[] } );
     const [queryParameters, setQueryParameters] = useState( defaultQueryParameters );
@@ -45,10 +42,10 @@ const ItemQuery = (  ) => {
         console.log( "afterPostCallback received:", response );
         if ( response.status === 200 ) {
             setMessage( "Success" );
-            setQueryResults( response || emptyResponse );
+            setQueryResults( response  );
         } else {
             setMessage( "Error" );
-            setQueryResults( response || emptyResponse );
+            setQueryResults( response  );
         }
         console.log( "Response " + JSON.stringify( queryResults ));
     }
@@ -59,7 +56,8 @@ const ItemQuery = (  ) => {
         url: itemQueryUrl,
         isValidateForm: false,
         afterPostCallback: afterPostCallback,
-        requestTemplate : itemQueryUrlRequestTemplate } );
+        requestTemplate : itemQueryUrlRequestTemplate }
+    );
 
     // Fetch data on mount if empty
     useEffect(() => {
@@ -72,20 +70,6 @@ const ItemQuery = (  ) => {
         fetchData();
     }, []); // Dependency array ensures this runs only on mount
 
-    function ItemQueryEntry() {
-        const GridColDefBuilderService = new GridColDefBuilder( getGridColumns() );
-
-        const selectColumns  = [
-            { "rawGridfieldName" : "id", "girdfieldOptions" : { editable: false } },
-            { "rawGridfieldName" : "description", "girdfieldOptions" : { defaultValue: "*" } },
-            { "rawGridfieldName" : "unitCost", "girdfieldOptions" : { defaultValue: "*"  } },
-            { "rawGridfieldName" : "sourcing", "girdfieldOptions" : { valueOptions: ["MAN", "PUR", "*"],
-                defaultValue: "*" }   },
-            { "rawGridfieldName" : "maxDepth", "girdfieldOptions" :  { editable: false,defaultValue: "*"  } },
-            { "rawGridfieldName" : "leadTime", "girdfieldOptions" : {defaultValue: "*"  } },
-            { "rawGridfieldName" : "quantityOnHand", "girdfieldOptions" : { defaultValue: "*" } } ];
-        return GridColDefBuilderService.buildColumnDefs( selectColumns )
-    }
 
     function ItemQueryRowChange( newValue, oldValue, rowNode, column, api ) {
         console.log( "ItemQueryRowChange " + JSON.stringify( oldValue  ));
@@ -99,6 +83,20 @@ const ItemQuery = (  ) => {
         console.log( "ItemQueryRowChangeExecute " + JSON.stringify( queryParametersAfterWrapping ))
         formService.postData( queryParametersAfterWrapping  );
     }
+
+    function clearQueryParameters() {
+        setQueryParameters( defaultQueryParameters );
+        setQueryResults(  { data:[] } )
+    }
+/*
+    const handleFieldChange = (event) => {
+        const { name, value } = event.target;
+        setQueryParameters(prevParams => ({
+            ...prevParams,
+            [name]: value
+        }));
+    };
+
     /*  function onProcessRowUpdateError( error ) {
         console.log( "onProcessRowUpdateError " + error );
     }  */
@@ -108,37 +106,38 @@ const ItemQuery = (  ) => {
                 <ErrorMessage message={message}/>
                 <br/>
 
-                {/* REPLACES THE DATA GRID */}
                 <Grid container spacing={2} padding={2}>
                     {queryParameterConfig.map((col) => (
-                        <Grid item xs={12} sm={6} md={4} key={col.rawGridfieldName}>
-                            <ImTextField
-                                type="text"
-                                name={col.rawGridfieldName}
-                                placeholder={col.rawGridfieldName.toUpperCase()}
-                                setMessage={setMessage}
+                        <Grid size={{xs: 12, sm: 6}} key={col.field}>
+                            <TextField
+                                type={col.type}
+                                size="small"
+                                margin="dense"
+                                name={col.domainName}
+                                placeholder={col.placeholder}
+                                maxLength={col.maxLength}
+                                defaultValue={''}
+                                //  onChange={props.onChange}
+                                sx={{ width: '180px' }}
+                                //  onBlur={(event) => handleFieldValidation(event, props.setMessage, props.whenRequired )}
                             />
                         </Grid>
                     ))}
-                    <Grid item xs={12}>
+                    <Grid size={{xs:12}}>
                         <Button type="submit" variant="contained">Search</Button>
+                        <Button variant="outlined" onClick={clearQueryParameters}>Clear</Button>
                     </Grid>
                 </Grid>
             </form>
 
             <hr style={{ margin: "20px 0", borderTop: "1px solid #ccc" }} />
 
-            <br/>
-            <Button variant="outlined" onClick={ItemQueryRowChangeExecute}>Search</Button>
-            <br/>
-            <hr style={{ margin: "20px 0", borderTop: "1px solid #ccc" }} />
-            <br/>
             <Box sx={{ height: 400, width: '100%', mb: 10 }}>
                 {queryResults.data.length === 0 ? (
                     "No results"
                 ) : (
-                    <ItemQueryResultsGrid data={queryResults.data} />
-                )}
+                    <DataGrid columns={queryResultsConfig} rows={queryResults.data.data} density="compact" />
+                ) }
             </Box>
         </div>
     );

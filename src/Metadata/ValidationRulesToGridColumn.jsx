@@ -7,7 +7,7 @@ import { VALIDATION_RULES } from './Domain.jsx';
  */
 export const getGridColumns = () => {
     return VALIDATION_RULES.map(rule => ({
-        field: rule.fieldName,
+        domainName: rule.domainName,
         headerName: rule.defaultHeader,
         width: rule.defaultWidthInCharacters * 11+2,
         editable: true,

@@ -7,7 +7,7 @@ describe('ValidationRules', () => {
         it('should create a string validation rule with basic parameters', () => {
             const rule = new ValidationRule('username', 3, 20, CaseConversion.NONE, null);
             
-            expect(rule.fieldName).toBe('username');
+            expect(rule.domainName).toBe('username');
             expect(rule.minLength).toBe(3);
             expect(rule.maxLength).toBe(20);
             expect(rule.caseConversion).toBe(CaseConversion.NONE);
@@ -26,7 +26,7 @@ describe('ValidationRules', () => {
         it('should create a numeric validation rule', () => {
             const rule = new ValidationRule('age', 0, 120, null);
             
-            expect(rule.fieldName).toBe('age');
+            expect(rule.domainName).toBe('age');
             expect(rule.minValue).toBe(0);
             expect(rule.maxValue).toBe(120);
             expect(rule.type).toBe(Number);
@@ -45,7 +45,7 @@ describe('ValidationRules', () => {
             const allowedValues = ['active', 'inactive', 'pending'];
             const rule = new ValidationRule('status', allowedValues, 0, 10, CaseConversion.NONE, 'default');
             
-            expect(rule.fieldName).toBe('status');
+            expect(rule.domainName).toBe('status');
             expect(rule.values).toEqual(allowedValues);
             expect(rule.minLength).toBe(0);
             expect(rule.maxLength).toBe(10);

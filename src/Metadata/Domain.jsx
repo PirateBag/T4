@@ -1,4 +1,5 @@
-import {CaseConversion, ValidationRule} from './ValidateRule.js';
+import {ValidationRule} from './ValidateRule.js';
+import {CaseConversion, REQUIRED_ADD} from "./ValidationRuleConstants.js";
 
 /**
  * Validation rules for username field
@@ -8,18 +9,14 @@ import {CaseConversion, ValidationRule} from './ValidateRule.js';
  * - Prevents default value 'user'
  */
 
-export const REQUIRED_NONE = 'none';
-export const REQUIRED_ADD = 'add';
-
-const USERNAME_VALIDATION = new ValidationRule({
-    fieldName: 'Username',
+export const USERNAME_VALIDATION = new ValidationRule({
+    domainName: 'userName',
     type: 'text',
     minLength: 3,
     maxLength: 20,
     caseConversion: CaseConversion.NONE,
     defaultValue: 'fred',
     whenRequired: REQUIRED_ADD
-
 });
 
 /**
@@ -29,8 +26,8 @@ const USERNAME_VALIDATION = new ValidationRule({
  * - Case: none (case-sensitive)
  * - Prevents default value 'password'
  */
-const PASSWORD_VALIDATION = new ValidationRule({
-    fieldName: 'password',
+export const PASSWORD_VALIDATION = new ValidationRule({
+    domainName: 'password',
     type: 'password',
     minLength: 6,
     maxLength: 50,
@@ -46,8 +43,8 @@ const PASSWORD_VALIDATION = new ValidationRule({
  * - Case: none
  * - Prevents default value 'password'
  */
-const SUMMARYID_VALIDATION = new ValidationRule({
-    fieldName: 'summaryId',
+export const SUMMARYID_VALIDATION = new ValidationRule({
+    domainName: 'summaryId',
     type: 'text',
     minLength: 6,
     maxLength: 10,
@@ -64,8 +61,8 @@ const SUMMARYID_VALIDATION = new ValidationRule({
  * - Case: none
  * - Prevents default value 'password'
  */
-const ID_VALIDATION = new ValidationRule({
-    fieldName: 'id',
+export const ID_VALIDATION = new ValidationRule({
+    domainName: 'id',
     type: 'number',
     minLength: 1,
     maxLength: 4,
@@ -83,8 +80,8 @@ const ID_VALIDATION = new ValidationRule({
  * - Case: none
  * - Prevents default value 'password'
  */
-const COST_VALIDATION = new ValidationRule({
-    fieldName: 'unitCost',
+export const COST_VALIDATION = new ValidationRule({
+    domainName: 'unitCost',
     type: 'number',
     minLength: 1,
     maxLength: 10,
@@ -95,14 +92,14 @@ const COST_VALIDATION = new ValidationRule({
 });
 
 /**
- * Validation rules for Sourcing.  Presentation is a three character upper case string.
+ * Validation rules for Sourcing.  Presentation is a three-character upper case string.
  * - Min length: 3 characters
  * - Max length: 3 characters
  * - Case: none
  * - Prevents default value 'password'
  */
-const SOURCING_VALIDATION = new ValidationRule({
-    fieldName: 'sourcing',
+export const SOURCING_VALIDATION = new ValidationRule({
+    domainName: 'sourcing',
     type: 'singleSelect',
     minLength: 3,
     maxLength: 3,
@@ -122,9 +119,9 @@ const SOURCING_VALIDATION = new ValidationRule({
  * - Case: none
  * - Prevents default value 'password'
  */
-const DESCRIPTION_VALIDATION = new ValidationRule({
+export const DESCRIPTION_VALIDATION = new ValidationRule({
     type: 'text',
-    fieldName: 'description',
+    domainName: 'description',
     defaultHeader: 'Description',
     minLength: 6,
     maxLength: 30,
@@ -137,8 +134,8 @@ const DESCRIPTION_VALIDATION = new ValidationRule({
 * - Max length: 3 characters
 * - Case: none
 */
-const MAX_DEPTH_VALIDATION = new ValidationRule({
-    fieldName: 'maxDepth',
+export const MAX_DEPTH_VALIDATION = new ValidationRule({
+    domainName: 'maxDepth',
     type: 'number',
     minLength: 1,
     maxLength: 3,
@@ -153,8 +150,8 @@ const MAX_DEPTH_VALIDATION = new ValidationRule({
 * - Max length: 3 characters
 * - Case: none
 */
-const LEAD_TIME_VALIDATION = new ValidationRule({
-    fieldName: 'leadTime',
+export const LEAD_TIME_VALIDATION = new ValidationRule({
+    domainName: 'leadTime',
     type: 'number',
     minLength: 1,
     maxLength: 9,
@@ -170,8 +167,8 @@ const LEAD_TIME_VALIDATION = new ValidationRule({
 * - Max length: 3 characters
 * - Case: none
 */
-const QUANTITY_VALIDATION = new ValidationRule({
-    fieldName: 'quantityOnHand',
+export const QUANTITY_VALIDATION = new ValidationRule({
+    domainName: 'quantityOnHand',
     type: 'number',
     minLength: 1,
     maxLength: 8,
@@ -199,12 +196,17 @@ export const VALIDATION_RULES = [
 
 /**
  * Get validation rule by field name
- * @param {string} fieldName - The name of the field to find validation rules for
+ * @param {string} domainName - The name of the field to find validation rules for
  * @returns {ValidationRule|null} - The validation rule or null if not found
  */
-export const getValidationRuleByName = (fieldName) => {
+export const getValidationRuleByName = (domainName ) => {
+    if (domainName === undefined ) {
+        console.warn('Undefined field name');
+    }
+    const validationRule = domainName.toLowerCase();
+
     return VALIDATION_RULES.find(rule =>
-        rule.fieldName.toLowerCase() === fieldName.toLowerCase()
+        rule.domainName.toLowerCase() === validationRule
     ) || null;
 };
 
@@ -215,6 +217,7 @@ export const getValidationRuleByName = (fieldName) => {
  * @param whenRequired See one of the REQUIRED_* constants.
  * @returns {string|null} - Error message or null if valid
  */
+/*
 export const validateField = (fieldName, value, whenRequired ) => {
     const rule = getValidationRuleByName(fieldName );
     if ( rule.whenRequired.includes( whenRequired )) {
@@ -225,4 +228,4 @@ export const validateField = (fieldName, value, whenRequired ) => {
         return null;
     }
     return null;
-};
+};*/
