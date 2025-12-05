@@ -16,12 +16,12 @@ export const queryParameterConfig = [
 ];
 
 export const queryResultsConfig  = [
-    ID_VALIDATION.appendGridFieldOptions(  { 'editable': false, 'headerName': 'Id', width: 200 } ),
-    DESCRIPTION_VALIDATION.appendGridFieldOptions({ 'editable': false } ),
-    COST_VALIDATION.appendGridFieldOptions( { 'editable': false } ),
-    SOURCING_VALIDATION.appendGridFieldOptions( { 'editable': false } ),
-    MAX_DEPTH_VALIDATION.appendGridFieldOptions( { 'editable': false } ),
-    LEAD_TIME_VALIDATION.appendGridFieldOptions({ 'editable': false } ),
-    QUANTITY_VALIDATION.appendGridFieldOptions( { 'editable': false } )
+    ID_VALIDATION.appendGridFieldOptions(  { 'editable': false, 'headerName': 'Id'  } ),
+    DESCRIPTION_VALIDATION.appendGridFieldOptions({ 'editable': false, 'headerName': 'Description' } ),
+    COST_VALIDATION.appendGridFieldOptions( { 'editable': false, 'headerName': 'Unit Cost', width: 115 } ),
+    SOURCING_VALIDATION.appendGridFieldOptions( { 'editable': false, 'headerName': 'Source', width: 100 } ),
+    MAX_DEPTH_VALIDATION.appendGridFieldOptions( { 'editable': false, 'headerName': 'Depth', width: 100 } ),
+    LEAD_TIME_VALIDATION.appendGridFieldOptions({ 'editable': false, headerName: 'Lead Time', width: 125 }   ),
+    QUANTITY_VALIDATION.appendGridFieldOptions( { 'editable': false, headerName: 'On Hand', width: 100 } )
     ];
 

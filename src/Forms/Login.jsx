@@ -16,9 +16,9 @@ function Login(  )
 {
     const [message, setMessage] = useState( "" );
     const { setCurrentUser } = useContext(UserContext);
-//     const { queryParameters, setQueryParameters} = useState({ userName: "", password: ""} );
-/*
-    const handleFieldChange = (event) => {
+    //  const { queryParameters, setQueryParameters} = useState({ userName: "", password: ""} );
+
+    /* const handleFieldChange = (event) => {
         const { name, value } = event.target;
         setQueryParameters(prevParams => ({
             ...prevParams,
@@ -31,8 +31,6 @@ function Login(  )
         let nextScreen = new ScreenTransition(itemQuery, 'NONE', response.data);
         ScreenStack.pushToNextScreen(nextScreen);
     }
-
-
 
     const formService = new FormService(
         { messageFromFormSetter: setMessage, url: 'http://localhost:8080/verifyCredentials',
@@ -47,20 +45,15 @@ function Login(  )
                 <Grid container spacing={2} padding={2} direction="column">
                     {queryParameterConfig.map((col) => (
                         <Grid size={{xs: 12}} key={col.domainName}>
-
                             <TextField
                                 type={col.type}
                                 size="small"
                                 margin="dense"
                                 name={col.domainName}
-                                placeholder={col.placeholder}
-                                maxLength={col.maxLength}
                                 defaultValue={col.defaultValue != null ? col.defaultValue : ''}
-                                //  onChange={props.onChange}
                                 fontSize="12px"
                                 sx={{ width: '200px' }}
-
-                                //  onBlur={(event) => handleFieldValidation(event, props.setMessage, props.whenRequired )}
+                                onBlur={(event) => formService.handleBlurOnTextField(event, col )}
                             />
                         </Grid>
                     ))}

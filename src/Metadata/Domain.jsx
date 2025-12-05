@@ -12,8 +12,8 @@ import {CaseConversion, REQUIRED_ADD} from "./ValidationRuleConstants.js";
 export const USERNAME_VALIDATION = new ValidationRule({
     domainName: 'userName',
     type: 'text',
-    minLength: 3,
-    maxLength: 20,
+    minLengthInChars: 3,
+    maxLengthInChars: 20,
     caseConversion: CaseConversion.NONE,
     defaultValue: 'fred',
     whenRequired: REQUIRED_ADD
@@ -46,8 +46,8 @@ export const PASSWORD_VALIDATION = new ValidationRule({
 export const SUMMARYID_VALIDATION = new ValidationRule({
     domainName: 'summaryId',
     type: 'text',
-    minLength: 6,
-    maxLength: 10,
+    minLengthInChars: 6,
+    maxLengthInChars: 10,
     caseConversion: CaseConversion.NONE,
     whenRequired: REQUIRED_ADD,
     defaultHeader: 'Summary ID'
@@ -64,8 +64,8 @@ export const SUMMARYID_VALIDATION = new ValidationRule({
 export const ID_VALIDATION = new ValidationRule({
     domainName: 'id',
     type: 'number',
-    minLength: 1,
-    maxLength: 4,
+    minLengthInChars: 1,
+    maxLengthInChars: 4,
     caseConversion: CaseConversion.NONE,
     whenRequired: REQUIRED_ADD,
     defaultHeader: 'Id'
@@ -83,8 +83,8 @@ export const ID_VALIDATION = new ValidationRule({
 export const COST_VALIDATION = new ValidationRule({
     domainName: 'unitCost',
     type: 'number',
-    minLength: 1,
-    maxLength: 10,
+    minLengthInChars: 1,
+    maxLengthInChars: 10,
     caseConversion: CaseConversion.NONE,
     whenRequired: REQUIRED_ADD,
     defaultValue: 0.0,
@@ -101,8 +101,8 @@ export const COST_VALIDATION = new ValidationRule({
 export const SOURCING_VALIDATION = new ValidationRule({
     domainName: 'sourcing',
     type: 'singleSelect',
-    minLength: 3,
-    maxLength: 3,
+    minLengthInChars: 3,
+    maxLengthInChars: 3,
     caseConversion: CaseConversion.NONE,
     whenRequired: REQUIRED_ADD,
     valueOptions: ['MAN', 'PUR' ],
@@ -123,8 +123,8 @@ export const DESCRIPTION_VALIDATION = new ValidationRule({
     type: 'text',
     domainName: 'description',
     defaultHeader: 'Description',
-    minLength: 6,
-    maxLength: 30,
+    minLengthInChars: 6,
+    maxLengthInChars: 30,
     caseConversion: CaseConversion.NONE
 });
 
@@ -137,8 +137,8 @@ export const DESCRIPTION_VALIDATION = new ValidationRule({
 export const MAX_DEPTH_VALIDATION = new ValidationRule({
     domainName: 'maxDepth',
     type: 'number',
-    minLength: 1,
-    maxLength: 3,
+    minLengthInChars: 1,
+    maxLengthInChars: 3,
     caseConversion: CaseConversion.NONE,
     whenRequired: REQUIRED_ADD,
     defaultValue: 0,
@@ -153,8 +153,8 @@ export const MAX_DEPTH_VALIDATION = new ValidationRule({
 export const LEAD_TIME_VALIDATION = new ValidationRule({
     domainName: 'leadTime',
     type: 'number',
-    minLength: 1,
-    maxLength: 9,
+    minLengthInChars: 1,
+    maxLengthInChars: 9,
     caseConversion: CaseConversion.NONE,
     whenRequired: REQUIRED_ADD,
     defaultValue: 0,
@@ -170,8 +170,8 @@ export const LEAD_TIME_VALIDATION = new ValidationRule({
 export const QUANTITY_VALIDATION = new ValidationRule({
     domainName: 'quantityOnHand',
     type: 'number',
-    minLength: 1,
-    maxLength: 8,
+    minLengthInChars: 1,
+    maxLengthInChars: 8,
     caseConversion: CaseConversion.NONE,
     whenRequired: REQUIRED_ADD,
     defaultValue: 0.0,

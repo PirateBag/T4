@@ -24,11 +24,12 @@ export class ValidationRule {
      * @returns Combined validation and GridFieldOptions with recalculation values.
      */
     appendGridFieldOptions( girdfieldOption ) {
-        //  Required for GridColumns...
-        const combinedRule = {...this, ...girdfieldOption };
+
+        const combinedRule = Object.assign(Object.create(Object.getPrototypeOf(this)), this);
+        Object.assign(combinedRule, girdfieldOption);
 
         /*  Width is in pixels.  */
-        combinedRule.width = girdfieldOption.width ?? Math.max(combinedRule.maxLengthInChars, combinedRule.headerName.length) * 10;
+        combinedRule.width = girdfieldOption.width ?? Math.max(combinedRule.maxLengthInChars, combinedRule.headerName.length) * 14 + 20;
         return combinedRule;
     }
 

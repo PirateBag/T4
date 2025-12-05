@@ -12,6 +12,17 @@ export class FormService {
         this.requestObject = options.requestObject;
     }
 
+    handleBlurOnTextField( event, validationRule ) {
+        const valueToValidate = event.target.value.trim();
+        if (validationRule.required && valueToValidate === '') {
+            this.messageFromFormSetter("${validationRule.field} is a required field." );
+            return;
+        }
+
+        const message = validationRule.validate(valueToValidate);
+        this.messageFromFormSetter( message );
+    }
+
     formatErrorMessage(error) {
         // Network error
         if (error.code === 'ERR_NETWORK' || !error.response) {
