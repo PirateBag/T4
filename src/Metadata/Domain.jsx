@@ -16,7 +16,8 @@ export const USERNAME_VALIDATION = new ValidationRule({
     maxLengthInChars: 20,
     caseConversion: CaseConversion.NONE,
     defaultValue: 'fred',
-    whenRequired: REQUIRED_ADD
+    whenRequired: REQUIRED_ADD,
+    defaultHeader: 'User Name'
 });
 
 /**
@@ -33,7 +34,8 @@ export const PASSWORD_VALIDATION = new ValidationRule({
     maxLength: 50,
     caseConversion: CaseConversion.NONE,
     defaultValue: 'dilban',
-    whenRequired: REQUIRED_ADD
+    whenRequired: REQUIRED_ADD,
+    defaultHeader: 'Password'
 });
 
 /**
@@ -162,11 +164,6 @@ export const LEAD_TIME_VALIDATION = new ValidationRule({
 });
 
 
-/* Validation rules for any depth reference.
-* - Min length: 1 character
-* - Max length: 3 characters
-* - Case: none
-*/
 export const QUANTITY_VALIDATION = new ValidationRule({
     domainName: 'quantityOnHand',
     type: 'number',
@@ -193,39 +190,3 @@ export const VALIDATION_RULES = [
     LEAD_TIME_VALIDATION,
     QUANTITY_VALIDATION
 ];
-
-/**
- * Get validation rule by field name
- * @param {string} domainName - The name of the field to find validation rules for
- * @returns {ValidationRule|null} - The validation rule or null if not found
- */
-export const getValidationRuleByName = (domainName ) => {
-    if (domainName === undefined ) {
-        console.warn('Undefined field name');
-    }
-    const validationRule = domainName.toLowerCase();
-
-    return VALIDATION_RULES.find(rule =>
-        rule.domainName.toLowerCase() === validationRule
-    ) || null;
-};
-
-/**
- * Validate a field by name
- * @param {string} fieldName - The name of the field
- * @param {string|number} value - The value to validate
- * @param whenRequired See one of the REQUIRED_* constants.
- * @returns {string|null} - Error message or null if valid
- */
-/*
-export const validateField = (fieldName, value, whenRequired ) => {
-    const rule = getValidationRuleByName(fieldName );
-    if ( rule.whenRequired.includes( whenRequired )) {
-        return rule.validate(value);
-    }
-    if (!rule) {
-        console.warn(`No validation rule found for field: ${fieldName}`);
-        return null;
-    }
-    return null;
-};*/

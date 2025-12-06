@@ -18,7 +18,6 @@ export class FormService {
             this.messageFromFormSetter("${validationRule.field} is a required field." );
             return;
         }
-
         const message = validationRule.validate(valueToValidate);
         this.messageFromFormSetter( message );
     }
@@ -64,18 +63,25 @@ export class FormService {
         return error.message || "An unexpected error occurred. Please try again.";
     }
 
+    copyObjectRemovingEmptyStrings(objectToCopy) {
+        return Object.fromEntries(
+            Object.entries(objectToCopy).filter(([, value]) =>
+                value !== null &&
+                value !== undefined &&
+                value !== ""
+            )
+        )
+    }
+
     handleSubmit = async (event) => {
         event.preventDefault();
-
         let messagesFromFormValidation = "";
         this.messageFromFormSetter(messagesFromFormValidation);
 
-
         if (messagesFromFormValidation.length > 0) return;
-        let formEntries = Object.fromEntries(new FormData(event.target).entries());
-        console.log( "formEntries " + formEntries);
-        const formData = new FormData(event.target);
-        const finalRequestAsObject = this.singleRowToRequest( this.requestObject ?? Object.fromEntries(formData.entries()));
+        const formEntries = Object.fromEntries(new FormData(event.target).entries());
+        const formEntriesPurgedOfEmptyStrings = this.copyObjectRemovingEmptyStrings(formEntries);
+        const finalRequestAsObject = this.singleRowToRequest( this.requestObject ?? formEntriesPurgedOfEmptyStrings);
         this.postData(finalRequestAsObject);
     }
 

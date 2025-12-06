@@ -4,8 +4,8 @@ export class ValidationRule {
     constructor(options) {
         this.domainName = options.domainName;
         this.field = options.field ?? this.domainName;
-        this.minLengthInChars = options.minLength ?? 0;
-        this.maxLengthInChars = options.maxLength ?? 0;
+        this.minLengthInChars = options.minLengthInChars ?? 0;
+        this.maxLengthInChars = options.maxLengthInChars ?? 0;
         this.caseConversion = options.caseConversion ?? CaseConversion.NONE;
         this.minValue = options.minValue ?? -Number.MAX_VALUE;
         this.maxValue = options.maxValue ?? Number.MAX_VALUE;
@@ -21,7 +21,7 @@ export class ValidationRule {
     /**
      * Given a domainName which references a validation rule, return a GridColDef object with the specified options.
      * @param girdfieldOption
-     * @returns Combined validation and GridFieldOptions with recalculation values.
+     * @return111s Combined validation and GridFieldOptions with recalculation values.
      */
     appendGridFieldOptions( girdfieldOption ) {
 
@@ -61,13 +61,13 @@ export class ValidationRule {
         const reformattedTextOfField = this.reformatStringUsingRules(xTextValueOfField);
 
         if (reformattedTextOfField.length < this.minLengthInChars) {
-            errorMessages.push(`'${this.domainName}' must be at least ${this.minLengthInChars} characters in length.`);
+            errorMessages.push(`'${this.headerName}' must be at least ${this.minLengthInChars} characters in length.`);
         } else if (reformattedTextOfField.length > this.maxLengthInChars) {
-            errorMessages.push(`'${this.domainName}' must not exceed ${this.maxLengthInChars} characters in length.`);
+            errorMessages.push(`'${this.headerName}' must not exceed ${this.maxLengthInChars} characters in length.`);
         }
 
         if (this.preventThisValue !== null && reformattedTextOfField === this.preventThisValue) {
-            errorMessages.push(`Please enter a value for '${this.domainName}', the default is not sufficient.`);
+            errorMessages.push(`Please enter a value for '${this.headerName}', the default is not sufficient.`);
         } else {
             // Did the creator provide a list of allowed values and is the input in that list
             if (this.valueOptions !== null) {
@@ -79,7 +79,7 @@ export class ValidationRule {
                     }
                 }
                 if (!oneMatch) {
-                    errorMessages.push(`'${this.domainName}' should be one of the following: {${this.getListOfPermittedValues()}}`);
+                    errorMessages.push(`'${this.headerName}' should be one of the following: {${this.getListOfPermittedValues()}}`);
                 }
             }
         }
@@ -108,13 +108,13 @@ export class ValidationRule {
         const numValue = Number(value);
 
         if (isNaN(numValue)) {
-            return `'${this.domainName}' must be a valid number.`;
+            return `'${this.headerName}' must be a valid number.`;
         }
 
         if (numValue < this.minValue) {
-            return `'${this.domainName}' must be greater than or equal to ${this.minValue}.`;
+            return `'${this.headerName}' must be greater than or equal to ${this.minValue}.`;
         } else if (numValue > this.maxValue) {
-            return `'${this.domainName}' must not exceed ${this.maxValue}.`;
+            return `'${this.headerName}' must not exceed ${this.maxValue}.`;
         }
 
         return null;
