@@ -1,0 +1,7 @@
+
+export const CRUD_ACTION_NONE = "NONE";
+export const CRUD_ACTION_CHANGE = "CHANGE";
+export const CRUD_ACTION_DELETE = "DELETE";
+export const CRUD_ACTION_INSERT = "INSERT";
+export const CRUD_ACTION_DELETE_SILENT = "DELETE_SILENT";
+

@@ -1,32 +1,17 @@
 import React, {useEffect, useState} from 'react';
 import ErrorMessage from "../ErrorMessage.jsx";
-import {FormService} from "../FormService.jsx";
+import {FormService, isShallowEqual} from "../FormService.jsx";
 import { Button, Box } from '@mui/material';
 import Grid from '@mui/material/Grid';
 import {queryParameterConfig,queryResultsConfig} from "./ItemQueryConfig.js";
 import TextField from "@mui/material/TextField";
 import {DataGrid} from "@mui/x-data-grid";
+import {CRUD_ACTION_CHANGE, CRUD_ACTION_NONE} from "../crudAction.js";
 
 export const itemQueryUrl = 'http://localhost:8080/item/crudQuery'
+export const itemUpdateUrl = 'http://localhost:8080/item/crud'
 export const itemQueryUrlRequestTemplate = '{ "updatedRows" : [ ${rowWithQuery} ] }';
 const itemQueryAll = { "updatedRows" : [  ] };
-
-
-/**
- * Removes any default values from a row.  Only properties with non-default values are returned.
- * @param rowWithQueryCriteria.  Scalar Object, not an array.
- * @param rowOfDefaultValues.  Scalar Object, not an array.  Keys are the same as those in a rowWithQueryCriteria.
- * @returns A new object with only non-default values.  If all values are default, returns an empty object
- */
-const removeDefaultsFromRow = ( rowWithQueryCriteria, rowOfDefaultValues  ) => {
-    const newRow = { };
-    Object.keys(rowWithQueryCriteria).forEach(key => {
-        if ( rowOfDefaultValues[key] !== rowWithQueryCriteria[ key ] ) {
-            newRow[key] = (rowWithQueryCriteria ?? "")
-        }
-    });
-    return newRow;
-}
 
 const ItemQuery = (  ) => {
 
@@ -35,58 +20,110 @@ const ItemQuery = (  ) => {
 
     //  const emptyResponse = { responseType: "MULTILINE", data: [], errors : []  };
     const [message, setMessage] = useState( "" );
-    const [queryResults, setQueryResults] = useState( { data:[] } );
+    const [rowsOfQueryResults, setRowsOfQueryResults] = useState( [] );
     const [queryParameters, setQueryParameters] = useState( defaultQueryParameters );
 
-    const afterPostCallback = ( response ) => {
-        console.log( "afterPostCallback received:", response );
+    const afterQueryPostedCallback = ( response ) => {
+        console.log( "afterQueryCallback received:", response.status );
         if ( response.status === 200 ) {
             setMessage( "Success" );
-            setQueryResults( response  );
+            setRowsOfQueryResults( response.data.data  );
         } else {
             setMessage( "Error" );
-            setQueryResults( response  );
+            setRowsOfQueryResults( []  );
         }
-        console.log( "Response " + JSON.stringify( queryResults ));
     }
 
-    const formService = new FormService( { messageFromFormSetter: setMessage,
-        buttonLabel: "Search",
+    const afterChangeCallback = ( responseFromUpdate ) => {
+        if ( responseFromUpdate.status !== 200 ) {
+            setMessage( "Error" );
+            return;
+        }
+
+        /*
+        * updatedResponse:  updatedResponse.data[]
+        * queryResults.data.data[]
+        *
+        *  */
+        const updatedRow = responseFromUpdate.data.data[0];
+        updatedRow.crudAction = CRUD_ACTION_NONE;
+        const newRowsOfData = rowsOfQueryResults.map((row) =>
+                row.id === updatedRow.id ? updatedRow : row
+            );
+/*
+// if you keep `response` in state, set it immutably:
+            setResponse((prev) => ({
+                ...prev,
+                data: prev.data.map((row) => (row.id === updatedRow.id ? updatedRow : row)),
+            }));
+*/
+
+        setRowsOfQueryResults( newRowsOfData  );
+        console.log( "Response " + JSON.stringify( rowsOfQueryResults ));
+    }
+
+
+    const queryFormService = new FormService( { messageFromFormSetter: setMessage,
         messagesFromForm: message,
         url: itemQueryUrl,
-        isValidateForm: false,
-        afterPostCallback: afterPostCallback,
+        afterPostCallback: afterQueryPostedCallback,
+        requestTemplate : itemQueryUrlRequestTemplate }
+    );
+
+    const updateFormService = new FormService( { messageFromFormSetter: setMessage,
+        messagesFromForm: message,
+        url: itemUpdateUrl,
+        afterPostCallback: afterChangeCallback,
         requestTemplate : itemQueryUrlRequestTemplate }
     );
 
     // Fetch data on mount if empty
     useEffect(() => {
         const fetchData = async () => {
-            if (queryResults.data.length === 0) {
+            if (rowsOfQueryResults.length === 0) {
                 // Trigger search with empty values
-                await formService.postData( itemQueryAll );
+                await queryFormService.postData( itemQueryAll );
             }
         };
         fetchData();
     }, []); // Dependency array ensures this runs only on mount
 
 
-    function ItemQueryRowChange( newValue, oldValue, rowNode, column, api ) {
-        console.log( "ItemQueryRowChange " + JSON.stringify( oldValue  ));
-        console.log( "ItemQueryRowChange " + rowNode, column, api );
-        setQueryParameters( newValue )
-        return newValue;
-    }
-    function ItemQueryRowChangeExecute() {
-        const queryParametersMinusDefaults = removeDefaultsFromRow( queryParameters, defaultQueryParameters[  0 ] );
-        const queryParametersAfterWrapping = formService.singleRowToRequest( queryParametersMinusDefaults );
-        console.log( "ItemQueryRowChangeExecute " + JSON.stringify( queryParametersAfterWrapping ))
-        formService.postData( queryParametersAfterWrapping  );
+    async function ItemQueryRowChange(newValue , oldValue ) {
+        if (isShallowEqual(newValue, oldValue)) {
+            console.log( "Row " + oldValue.id + " unchanged, skipping update" );
+            return;
+        }
+
+        newValue.crudAction = CRUD_ACTION_CHANGE;
+        const updatedRow = {...newValue};
+
+        /*
+        // 2. Update state immutably, preserving the axios response structure
+        setQueryResults(prevResults => {
+            // Guard against empty state
+            if (!prevResults?.data?.data) return prevResults;
+
+            // Create shallow copies of the nested structure
+            const newResults = { ...prevResults };
+            newResults.data = { ...prevResults.data };
+
+            // Map the array to find and replace the changed row by ID
+            newResults.data.data = prevResults.data.data.map(row =>
+                row.id === updatedRow.id ? updatedRow : row
+            );
+            return newResults;
+        });
+
+         */
+        const objectToBeTransmitted = queryFormService.singleRowToRequest(updatedRow);
+        await updateFormService.postData(objectToBeTransmitted);
+        return updatedRow
     }
 
     function clearQueryParameters() {
         setQueryParameters( defaultQueryParameters );
-        setQueryResults(  { data:[] } )
+        setRowsOfQueryResults(  [] )
     }
 /*
     const handleFieldChange = (event) => {
@@ -102,7 +139,7 @@ const ItemQuery = (  ) => {
     }  */
     return (
         <div>
-            <form onSubmit={formService.handleSubmit}>
+            <form onSubmit={queryFormService.handleSubmit}>
                 <ErrorMessage message={message}/>
                 <br/>
 
@@ -133,10 +170,14 @@ const ItemQuery = (  ) => {
             <hr style={{ margin: "20px 0", borderTop: "1px solid #ccc" }} />
 
             <Box sx={{ height: 400, width: '100%', mb: 10 }}>
-                {queryResults.data.length === 0 ? (
+                { rowsOfQueryResults.length === 0 ? (
                     "No results"
                 ) : (
-                    <DataGrid columns={queryResultsConfig} rows={queryResults.data.data} density="compact" />
+                    <DataGrid columns={queryResultsConfig}
+                              rows={ rowsOfQueryResults }
+                              density="compact"
+                              processRowUpdate={ItemQueryRowChange}
+                              onProcessRowUpdateError={(error) => console.error("Row update failed:", error)}/>
                 ) }
             </Box>
         </div>

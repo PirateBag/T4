@@ -1,15 +1,22 @@
 import axios from "axios";
 
+export const isShallowEqual = (obj1, obj2) => {
+    const keys1 = Object.keys(obj1);
+    const keys2 = Object.keys(obj2);
+    if (keys1.length !== keys2.length) return false;
+    return keys1.every(key => obj1[key] === obj2[key]);
+};
+
+
 export class FormService {
     constructor(options) {
         this.messagesFromForm = options.messagesFromForm;
         this.messageFromFormSetter = options.messageFromFormSetter;
         this.url = options.url;
         this.afterPostCallback = options.afterPostCallback ?? (() => {});
-        this.isValidateForm = options.isValidateForm ?? true;
         this.onErrorCallback = options.onErrorCallback ?? (() => {});
         this.requestTemplate = options.requestTemplate;
-        this.requestObject = options.requestObject;
+        //  this.requestObject = options.requestObject;
     }
 
     handleBlurOnTextField( event, validationRule ) {
