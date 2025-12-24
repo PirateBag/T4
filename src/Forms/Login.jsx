@@ -16,16 +16,6 @@ function Login(  )
 {
     const [message, setMessage] = useState( "" );
     const { setCurrentUser } = useContext(UserContext);
-    //  const { queryParameters, setQueryParameters} = useState({ userName: "", password: ""} );
-
-    /* const handleFieldChange = (event) => {
-        const { name, value } = event.target;
-        setQueryParameters(prevParams => ({
-            ...prevParams,
-            [name]: value
-        }));
-    };
-*/
     const afterPostCallback = (response) => {
         setCurrentUser( new LoginSummary( "fred", response.token, "2025-10-31 2359" ))
         let nextScreen = new ScreenTransition(itemQuery, 'NONE', response.data);

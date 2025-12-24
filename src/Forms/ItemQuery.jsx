@@ -6,22 +6,20 @@ import Grid from '@mui/material/Grid';
 import {queryParameterConfig,queryResultsConfig} from "./ItemQueryConfig.js";
 import TextField from "@mui/material/TextField";
 import {DataGrid} from "@mui/x-data-grid";
-import {CRUD_ACTION_CHANGE, CRUD_ACTION_NONE} from "../crudAction.js";
+import {CRUD_ACTION_CHANGE, CRUD_ACTION_INSERT, CRUD_ACTION_NONE} from "../crudAction.js";
 
 export const itemQueryUrl = 'http://localhost:8080/item/crudQuery'
-export const itemUpdateUrl = 'http://localhost:8080/item/crud'
 export const itemQueryUrlRequestTemplate = '{ "updatedRows" : [ ${rowWithQuery} ] }';
+export const itemUpdateUrl = 'http://localhost:8080/item/crud'
+
+export const itemMasterReportUrl = 'http://localhost:8080/itemReport/showAllItems'
 const itemQueryAll = { "updatedRows" : [  ] };
 
 const ItemQuery = (  ) => {
 
-    //  const GridColumns = ItemQueryEntry();
-    const defaultQueryParameters =  {}; //createDefaultObjectFromGridColumns( GridColumns );
-
     //  const emptyResponse = { responseType: "MULTILINE", data: [], errors : []  };
     const [message, setMessage] = useState( "" );
     const [rowsOfQueryResults, setRowsOfQueryResults] = useState( [] );
-    const [queryParameters, setQueryParameters] = useState( defaultQueryParameters );
 
     const afterQueryPostedCallback = ( response ) => {
         console.log( "afterQueryCallback received:", response.status );
@@ -39,24 +37,10 @@ const ItemQuery = (  ) => {
             setMessage( "Error" );
             return;
         }
-
-        /*
-        * updatedResponse:  updatedResponse.data[]
-        * queryResults.data.data[]
-        *
-        *  */
         const updatedRow = responseFromUpdate.data.data[0];
         updatedRow.crudAction = CRUD_ACTION_NONE;
         const newRowsOfData = rowsOfQueryResults.map((row) =>
-                row.id === updatedRow.id ? updatedRow : row
-            );
-/*
-// if you keep `response` in state, set it immutably:
-            setResponse((prev) => ({
-                ...prev,
-                data: prev.data.map((row) => (row.id === updatedRow.id ? updatedRow : row)),
-            }));
-*/
+                row.id === updatedRow.id ? updatedRow : row  );
 
         setRowsOfQueryResults( newRowsOfData  );
         console.log( "Response " + JSON.stringify( rowsOfQueryResults ));
@@ -77,6 +61,7 @@ const ItemQuery = (  ) => {
         requestTemplate : itemQueryUrlRequestTemplate }
     );
 
+
     // Fetch data on mount if empty
     useEffect(() => {
         const fetchData = async () => {
@@ -94,49 +79,26 @@ const ItemQuery = (  ) => {
             console.log( "Row " + oldValue.id + " unchanged, skipping update" );
             return;
         }
-
-        newValue.crudAction = CRUD_ACTION_CHANGE;
+        newValue.crudAction = newValue.crudAction === "CRUD_ACTION_INSERT" ? CRUD_ACTION_INSERT : CRUD_ACTION_CHANGE;
         const updatedRow = {...newValue};
 
-        /*
-        // 2. Update state immutably, preserving the axios response structure
-        setQueryResults(prevResults => {
-            // Guard against empty state
-            if (!prevResults?.data?.data) return prevResults;
-
-            // Create shallow copies of the nested structure
-            const newResults = { ...prevResults };
-            newResults.data = { ...prevResults.data };
-
-            // Map the array to find and replace the changed row by ID
-            newResults.data.data = prevResults.data.data.map(row =>
-                row.id === updatedRow.id ? updatedRow : row
-            );
-            return newResults;
-        });
-
-         */
         const objectToBeTransmitted = queryFormService.singleRowToRequest(updatedRow);
         await updateFormService.postData(objectToBeTransmitted);
         return updatedRow
     }
 
-    function clearQueryParameters() {
-        setQueryParameters( defaultQueryParameters );
+    function clearQueryParameters( event ) {
         setRowsOfQueryResults(  [] )
+        queryFormService.clearFormValues(event );
     }
-/*
-    const handleFieldChange = (event) => {
-        const { name, value } = event.target;
-        setQueryParameters(prevParams => ({
-            ...prevParams,
-            [name]: value
-        }));
-    };
 
-    /*  function onProcessRowUpdateError( error ) {
-        console.log( "onProcessRowUpdateError " + error );
-    }  */
+    function addRowToGrid( event ) {
+        const newRow = { id: parseInt( event.timeStamp *100 ).toString(), crudAction: 'CRUD_ACTION_INSERT', description: "description",
+            sourcing: "PUR", quantityOnHand: "0", minimumOrderQuantity: 0.0, unitCost: "0.00", leadTime: 1 };
+
+        setRowsOfQueryResults( rowsOfQueryResults.concat( newRow ));
+    }
+
     return (
         <div>
             <form onSubmit={queryFormService.handleSubmit}>
@@ -154,15 +116,14 @@ const ItemQuery = (  ) => {
                                 placeholder={col.placeholder}
                                 maxLength={col.maxLength}
                                 defaultValue={''}
-                                //  onChange={props.onChange}
                                 sx={{ width: '180px' }}
-                                //  onBlur={(event) => handleFieldValidation(event, props.setMessage, props.whenRequired )}
                             />
                         </Grid>
                     ))}
                     <Grid size={{xs:12}}>
                         <Button type="submit" variant="contained">Search</Button>
-                        <Button variant="outlined" onClick={clearQueryParameters}>Clear</Button>
+                        <Button onClick={clearQueryParameters}>Clear</Button>
+                        <Button type="submit" name={itemMasterReportUrl}>Item Master Report</Button>
                     </Grid>
                 </Grid>
             </form>
@@ -179,6 +140,10 @@ const ItemQuery = (  ) => {
                               processRowUpdate={ItemQueryRowChange}
                               onProcessRowUpdateError={(error) => console.error("Row update failed:", error)}/>
                 ) }
+                <Grid size={{xs:12}}>
+                    <Button variant="outlined" onClick={addRowToGrid}>Add</Button>
+                </Grid>
+
             </Box>
         </div>
     );
