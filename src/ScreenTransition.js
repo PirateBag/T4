@@ -1,9 +1,9 @@
 
 export class ScreenTransition {
     // default values can be set here
-    nextScreen = '';
+    nextScreen = null;
     activityState = '';
-    data = '';
+    data = [];
 
 
     // constructor to initialize properties

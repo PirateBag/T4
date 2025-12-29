@@ -5,12 +5,14 @@ import {FormService} from "../FormService.jsx";
 import LoginSummary from "../Objects/LoginSummary.jsx";
 import {UserContext} from "../UserContext.jsx";
 import {ScreenTransition} from "../ScreenTransition.js";
-import {ScreenStack} from "../Stack.js";
-import itemQuery from "./ItemQuery.jsx";
+import ItemQuery from "./ItemQuery.jsx";
 import Grid from "@mui/material/Grid";
 import {queryParameterConfig} from "./LoginConfig.js";
 import {Button} from "@mui/material";
 import TextField from "@mui/material/TextField";
+import {ScreenStack} from "../Stack.js";
+
+const VerifyCredentialsUrl = 'http://localhost:8080/verifyCredentials';
 
 function Login(  )
 {
@@ -18,12 +20,11 @@ function Login(  )
     const { setCurrentUser } = useContext(UserContext);
     const afterPostCallback = (response) => {
         setCurrentUser( new LoginSummary( "fred", response.token, "2025-10-31 2359" ))
-        let nextScreen = new ScreenTransition(itemQuery, 'NONE', response.data);
-        ScreenStack.pushToNextScreen(nextScreen);
+        ScreenStack.push(new ScreenTransition(ItemQuery, 'ItemQuery', response.data) );
     }
 
     const formService = new FormService(
-        { messageFromFormSetter: setMessage, url: 'http://localhost:8080/verifyCredentials',
+        { messageFromFormSetter: setMessage,
         messagesFromForm: message,
             afterPostCallback: afterPostCallback,
         }, );
@@ -47,7 +48,7 @@ function Login(  )
                             />
                         </Grid>
                     ))}
-                    <Button type='submit' variant="outlined" >Log In</Button>
+                    <Button type='submit' variant="outlined" name={VerifyCredentialsUrl}>Log In</Button>
                 </Grid>
             </form>
         </div>

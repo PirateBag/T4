@@ -12,7 +12,6 @@ export class FormService {
     constructor(options) {
         this.messagesFromForm = options.messagesFromForm;
         this.messageFromFormSetter = options.messageFromFormSetter;
-        this.url = options.url;
         this.afterPostCallback = options.afterPostCallback ?? (() => {});
         this.onErrorCallback = options.onErrorCallback ?? (() => {});
         this.requestTemplate = options.requestTemplate;
@@ -84,15 +83,16 @@ export class FormService {
         let messagesFromFormValidation = "";
         this.messageFromFormSetter(messagesFromFormValidation);
 
-        const submitter = event.nativeEvent.submitter;
-        const finalUrl = submitter.name.length === 0 ? this.url : submitter.name;
-        console.log( "Final URL: " + finalUrl);
-
         if (messagesFromFormValidation.length > 0) return;
-        const formEntries = Object.fromEntries(new FormData(event.target).entries());
+        const finalRequestAsObject = this.extractRequestAsObject( event );
+        this.postData(finalRequestAsObject, event.nativeEvent.submitter.name );
+    }
+
+    extractRequestAsObject = (event) => {
+        event.preventDefault();
+        const formEntries = Object.fromEntries(new FormData(event.target.closest('form')).entries());
         const formEntriesPurgedOfEmptyStrings = this.copyObjectRemovingEmptyStrings(formEntries);
-        const finalRequestAsObject = this.singleRowToRequest( this.requestObject ?? formEntriesPurgedOfEmptyStrings);
-        this.postData(finalRequestAsObject);
+        return  this.singleRowToRequest( this.requestObject ?? formEntriesPurgedOfEmptyStrings);
     }
 
     /** Clears all form values.
@@ -109,8 +109,8 @@ export class FormService {
         return finalRequestAsObject;
     }
 
-    postData = (finalRequestAsObject) => {
-        axios.post( this.url, finalRequestAsObject )
+    postData = (finalRequestAsObject, finalUrl ) => {
+        axios.post( finalUrl, finalRequestAsObject )
             .then(response => {
                 this.afterPostCallback( response );
             })

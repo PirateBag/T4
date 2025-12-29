@@ -1,5 +1,5 @@
 import {ValidationRule} from './ValidateRule.js';
-import {CaseConversion, REQUIRED_ADD} from "./ValidationRuleConstants.js";
+import {CaseConversion, REQUIRED_ADD, REQUIRED_NONE} from "./ValidationRuleConstants.js";
 
 /**
  * Validation rules for username field
@@ -175,6 +175,16 @@ export const QUANTITY_VALIDATION = new ValidationRule({
     defaultHeader: 'On Hand'
 });
 
+export const TEXT_VALIDATION = new ValidationRule({
+    domainName: 'text',
+    type: 'string',
+    minLengthInChars: 0,
+    maxLengthInChars: 100,
+    caseConversion: CaseConversion.NONE,
+    whenRequired: REQUIRED_NONE,
+    defaultValue: " ",
+    defaultHeader: ' '
+});
 /**
  * Array of all validation rules
  */
@@ -188,5 +198,6 @@ export const VALIDATION_RULES = [
     SOURCING_VALIDATION,
     MAX_DEPTH_VALIDATION,
     LEAD_TIME_VALIDATION,
-    QUANTITY_VALIDATION
+    QUANTITY_VALIDATION,
+    TEXT_VALIDATION
 ];

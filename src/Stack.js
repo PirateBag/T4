@@ -1,12 +1,13 @@
-import LoginSummary from "./Objects/LoginSummary.jsx";
+import {ScreenTransition} from "./ScreenTransition.js";
+import Login from "./Forms/Login.jsx";
 
 export class Stack {
     constructor() {
-        this.items = [];
+        this.items = [ new ScreenTransition( Login, "INIT", [] ) ];
         this.onStackChangeCallback = null;
     }
 
-    // Set callback to be invoked when stack changes
+    // Set callback to be invoked when the stack changes
     setOnStackChange(callback) {
         this.onStackChangeCallback = callback;
     }
@@ -14,23 +15,13 @@ export class Stack {
     // Method to add an item to the stack
     push(item) {
         this.items.push(item);
+        this.onStackChangeCallback(this.items.length );
     }
 
     stackTop() {
-        if ( this.items.length > 0 )
-            return this.items[0].nextScreen;
-        return null;
+        return this.items[this.items.length - 1];
     }
 
-    pushToNextScreen( screenTransition, loginSummary = null ) {
-        this.push( screenTransition );
-        
-        // Invoke callback if it's set
-        if (this.onStackChangeCallback) {
-            const summary = loginSummary || new LoginSummary( "fred", "token", "2025-0-01 12:00:00" );
-            this.onStackChangeCallback(this.items.length, summary);
-        }
-    }
+    length() { return this?.items?.length ?? 0;}
 }
-
 export let ScreenStack = new Stack();
