@@ -3,20 +3,22 @@ import ErrorMessage from "../ErrorMessage.jsx";
 import {FormService, isShallowEqual} from "../FormService.jsx";
 import { Button, Box } from '@mui/material';
 import Grid from '@mui/material/Grid';
-import {queryParameterConfig,queryResultsConfig} from "./ItemQueryConfig.js";
+import {ItemQueryParametersDTO,queryResultsConfig} from "./ItemQueryConfig.js";
 import TextField from "@mui/material/TextField";
 import {DataGrid} from "@mui/x-data-grid";
 import {CRUD_ACTION_CHANGE, CRUD_ACTION_INSERT, CRUD_ACTION_NONE} from "../crudAction.js";
 import {ScreenTransition} from "../ScreenTransition.js";
 import ItemMaster from "./ItemMaster.jsx";
 import {ScreenStack} from "../Stack.js";
+import {
+    itemMasterReportUrl,
+    itemQueryAll,
+    itemQueryUrl,
+    itemQueryUrlRequestTemplate,
+    itemUpdateUrl
+} from "../Globals.js";
+import ItemProperties from "./ItemProperties.jsx";
 
-export const itemQueryUrl = 'http://localhost:8080/item/crudQuery'
-export const itemQueryUrlRequestTemplate = '{ "updatedRows" : [ ${rowWithQuery} ] }';
-export const itemUpdateUrl = 'http://localhost:8080/item/crud'
-
-export const itemMasterReportUrl = 'http://localhost:8080/itemReport/showAllItems'
-const itemQueryAll = { "updatedRows" : [  ] };
 
 const ItemQuery = (  ) => {
 
@@ -86,7 +88,7 @@ const ItemQuery = (  ) => {
         const fetchData = async () => {
             if (rowsOfQueryResults.length === 0) {
                 // Trigger search with empty values
-                await queryFormService.postData( itemQueryAll, itemQueryUrl );
+                queryFormService.postData(itemQueryAll, itemQueryUrl);
             }
         };
         fetchData();
@@ -102,7 +104,7 @@ const ItemQuery = (  ) => {
         const updatedRow = {...newValue};
 
         const objectToBeTransmitted = queryFormService.singleRowToRequest(updatedRow);
-        await updateFormService.postData(objectToBeTransmitted, itemUpdateUrl );
+        updateFormService.postData(objectToBeTransmitted, itemUpdateUrl);
         return updatedRow
     }
 
@@ -127,6 +129,15 @@ const ItemQuery = (  ) => {
         ScreenStack.push(nextScreen);
     }
 
+    const handleCellClick = (params ) => {
+        // Check if the clicked cell belongs to the first column (field: 'id')
+        if (params.field === ItemQueryParametersDTO[0].field) {
+            ScreenStack.push(new ScreenTransition(ItemProperties, 'ItemProperties',
+                [ rowsOfQueryResults[ params.value -1  ] ] ) );
+        }
+    };
+
+
     return (
         <div>
             <form onSubmit={queryFormService.handleSubmit}>
@@ -134,7 +145,7 @@ const ItemQuery = (  ) => {
                 <br/>
 
                 <Grid container spacing={2} padding={2}>
-                    {queryParameterConfig.map((col) => (
+                    {ItemQueryParametersDTO.map((col) => (
                         <Grid size={{xs: 12, sm: 6}} key={col.field}>
                             <TextField
                                 type={col.type}
@@ -144,11 +155,11 @@ const ItemQuery = (  ) => {
                                 placeholder={col.placeholder}
                                 maxLength={col.maxLength}
                                 defaultValue={''}
-                                sx={{ width: '180px' }}
+                                sx={{ width: '240px' }}
                             />
                         </Grid>
                     ))}
-                    <Grid size={{xs:12}}>
+                    <Grid container spacing={2} padding={2}>
                         <Button type="submit" variant="contained" name={itemQueryUrl}>Search</Button>
                         <Button onClick={clearQueryParameters}>Clear</Button>
                         <Button varient="outlined" onClick={transitionToItemMaster} >Item Master Report</Button>
@@ -166,6 +177,7 @@ const ItemQuery = (  ) => {
                               rows={ rowsOfQueryResults }
                               density="compact"
                               processRowUpdate={ItemQueryRowChange}
+                              onCellClick={handleCellClick}
                               onProcessRowUpdateError={(error) => console.error("Row update failed:", error)}/>
                 ) }
                 <Grid size={{xs:12}}>

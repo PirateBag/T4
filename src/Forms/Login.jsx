@@ -11,8 +11,7 @@ import {queryParameterConfig} from "./LoginConfig.js";
 import {Button} from "@mui/material";
 import TextField from "@mui/material/TextField";
 import {ScreenStack} from "../Stack.js";
-
-const VerifyCredentialsUrl = 'http://localhost:8080/verifyCredentials';
+import {VerifyCredentialsUrl} from "../Globals.js";
 
 function Login(  )
 {

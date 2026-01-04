@@ -20,8 +20,8 @@ function App() {
 
 
     const CurrentScreen = ScreenStack.stackTop().nextScreen;
-    console.log( "CurrentScreen is " + ScreenStack.stackTop().activityState );
-    console.log( "The stack size is " + stackLength );
+
+    if (stackLength === 0) { return; }
 
     return (
         <UserContext1 value={{ currentUser, setCurrentUser }}>

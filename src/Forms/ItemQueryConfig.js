@@ -5,7 +5,7 @@ import {
     SOURCING_VALIDATION
 } from "../Metadata/Domain.jsx";
 
-export const queryParameterConfig = [
+export const ItemQueryParametersDTO = [
     ID_VALIDATION.appendGridFieldOptions( { 'editable': false } ),
     DESCRIPTION_VALIDATION.appendGridFieldOptions(DESCRIPTION_VALIDATION, { 'editable': false } ),
     COST_VALIDATION.appendGridFieldOptions(COST_VALIDATION, { 'editable': false } ),

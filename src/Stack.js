@@ -18,6 +18,11 @@ export class Stack {
         this.onStackChangeCallback(this.items.length );
     }
 
+    pop() {
+        this.items.pop();
+        this.onStackChangeCallback(this.items.length );
+    }
+
     stackTop() {
         return this.items[this.items.length - 1];
     }
