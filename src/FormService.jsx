@@ -7,6 +7,13 @@ export const isShallowEqual = (obj1, obj2) => {
     return keys1.every(key => obj1[key] === obj2[key]);
 };
 
+export function extractMessageFromResponse(response) {
+
+    let rValue = "";
+    const errors = response?.data?.errors ?? [];
+    errors.map((error) => rValue += error.message + "\n");
+    return rValue;
+}
 
 export class FormService {
     constructor(options) {
@@ -109,21 +116,22 @@ export class FormService {
         return finalRequestAsObject;
     }
 
-    postData = (finalRequestAsObject, finalUrl ) => {
-        axios.post( finalUrl, finalRequestAsObject )
-            .then(response => {
-                this.afterPostCallback( response );
-            })
-            .catch(error => {
-                // Enhanced error handling
-                const errorMessage = this.formatErrorMessage(error);
-                this.messageFromFormSetter(errorMessage);
+    async postData(finalRequestAsObject, finalUrl) {
+        this.messageFromFormSetter("");
+        try {
+            const response = await axios.post(finalUrl, finalRequestAsObject);
+            this.afterPostCallback(response);
+            return response;
+        } catch (error) {
+            const errorMessage = this.formatErrorMessage(error);
+            this.messageFromFormSetter(errorMessage);
 
-                // Call the custom error callback if provided
-                if (this.onErrorCallback) {
-                    this.onErrorCallback(error);
-                }
-                console.error('Error creating post:', error);
-            });
+            if (this.onErrorCallback) {
+                this.onErrorCallback(error);
+            }
+            console.error('Error creating post:', error);
+            throw error; // Re-throw so the caller knows it failed
+        }
     }
 }
+

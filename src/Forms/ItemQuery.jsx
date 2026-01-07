@@ -1,6 +1,6 @@
 import React, {useEffect, useState} from 'react';
 import ErrorMessage from "../ErrorMessage.jsx";
-import {FormService, isShallowEqual} from "../FormService.jsx";
+import {extractMessageFromResponse, FormService, isShallowEqual} from "../FormService.jsx";
 import { Button, Box } from '@mui/material';
 import Grid from '@mui/material/Grid';
 import {ItemQueryParametersDTO,queryResultsConfig} from "./ItemQueryConfig.js";
@@ -27,10 +27,11 @@ const ItemQuery = (  ) => {
     const [rowsOfQueryResults, setRowsOfQueryResults] = useState( [] );
     const [itemMasterQueryResults, setItemMasterQueryResults] = useState( [] );
 
+
     const afterItemMasterQueryResults = ( response ) => {
         console.log( "afterItemMasterQueryResults received:", response.status );
         if ( response.status === 200 ) {
-            setMessage( "Success" );
+            setMessage( "Success, retrieved " + response.data.data.length + " rows" );
             setItemMasterQueryResults( response.data.data  );
         } else {
             setMessage( "Error" );
@@ -41,7 +42,7 @@ const ItemQuery = (  ) => {
     const afterQueryPostedCallback = ( response ) => {
         console.log( "afterQueryCallback received:", response.status );
         if ( response.status === 200 ) {
-            setMessage( "Success" );
+            setMessage( "Success, retrieved " + response.data.data.length + " rows" );
             setRowsOfQueryResults( response.data.data  );
         } else {
             setMessage( "Error" );
@@ -51,7 +52,13 @@ const ItemQuery = (  ) => {
 
     const afterChangeCallback = ( responseFromUpdate ) => {
         if ( responseFromUpdate.status !== 200 ) {
-            setMessage( "Error" );
+            setMessage( "Error" + responseFromUpdate.message );
+            return;
+        }
+        const messageFromResponse = extractMessageFromResponse( responseFromUpdate );
+        setMessage( messageFromResponse );
+
+        if ( messageFromResponse.length > 0 ) {
             return;
         }
         const updatedRow = responseFromUpdate.data.data[0];
