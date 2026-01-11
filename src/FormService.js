@@ -92,7 +92,8 @@ export class FormService {
 
         if (messagesFromFormValidation.length > 0) return;
         const finalRequestAsObject = this.extractRequestAsObject( event );
-        this.postData(finalRequestAsObject, event.nativeEvent.submitter.name );
+        console.log( "Final request:", finalRequestAsObject );
+        await this.postData(finalRequestAsObject, event.nativeEvent.submitter.name );
     }
 
     extractRequestAsObject = (event) => {

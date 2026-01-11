@@ -177,13 +177,27 @@ export const QUANTITY_VALIDATION = new ValidationRule({
 
 export const TEXT_VALIDATION = new ValidationRule({
     domainName: 'text',
-    type: 'string',
+    type: 'text',
     minLengthInChars: 0,
     maxLengthInChars: 100,
     caseConversion: CaseConversion.NONE,
     whenRequired: REQUIRED_NONE,
     defaultValue: " ",
     defaultHeader: ' '
+});
+
+export const CRUD_VALIDATION = new ValidationRule({
+    domainName: 'crudAction',
+    type: 'string',
+    minLengthInChars: 6,
+    maxLengthInChars: 100,
+    caseConversion: CaseConversion.NONE,
+    whenRequired: REQUIRED_NONE,
+    defaultValue: " ",
+    defaultHeader: ' ',
+    editable: false
+
+
 });
 /**
  * Array of all validation rules
@@ -199,5 +213,7 @@ export const VALIDATION_RULES = [
     MAX_DEPTH_VALIDATION,
     LEAD_TIME_VALIDATION,
     QUANTITY_VALIDATION,
-    TEXT_VALIDATION
+    TEXT_VALIDATION,
+    CRUD_VALIDATION
 ];
+

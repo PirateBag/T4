@@ -1,9 +1,10 @@
 import {ScreenTransition} from "./ScreenTransition.js";
 import Login from "./Forms/Login.jsx";
+import {CRUD_ACTION_NONE} from "./crudAction.js";
 
 export class Stack {
     constructor() {
-        this.items = [ new ScreenTransition( Login, "INIT", [] ) ];
+        this.items = [ new ScreenTransition( "Login", Login, CRUD_ACTION_NONE, [] ) ];
         this.onStackChangeCallback = null;
     }
 

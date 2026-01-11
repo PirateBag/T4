@@ -1,5 +1,5 @@
 import {
-    COST_VALIDATION,
+    COST_VALIDATION, CRUD_VALIDATION,
     DESCRIPTION_VALIDATION,
     ID_VALIDATION, LEAD_TIME_VALIDATION, MAX_DEPTH_VALIDATION, QUANTITY_VALIDATION,
     SOURCING_VALIDATION
@@ -13,6 +13,9 @@ export const ItemRoDTO  = [
     SOURCING_VALIDATION.appendGridFieldOptions( { 'editable': true, 'headerName': 'Source', } ),
     MAX_DEPTH_VALIDATION.appendGridFieldOptions( { 'editable': false, 'headerName': 'Depth' } ),
     LEAD_TIME_VALIDATION.appendGridFieldOptions({ 'editable': true, headerName: 'Lead Time' }   ),
-    QUANTITY_VALIDATION.appendGridFieldOptions( { 'editable': false, headerName: 'On Hand' } )
+    QUANTITY_VALIDATION.appendGridFieldOptions( { 'editable': false, headerName: 'On Hand' } ),
+    CRUD_VALIDATION.appendGridFieldOptions( { 'editable': false, headerName: 'Crud Action', hidden: true } )
     ];
 
+export const ItemDtoToString = ( item ) => item.id + "," + item.description;
+export const ItemDtoToStringWithOperation = (item ) => "Updated: " + ItemDtoToString( item );

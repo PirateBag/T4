@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react';
-import {FormService} from "../FormService.jsx";
+import {FormService} from "../FormService.js";
 import {Box, Button} from '@mui/material';
 import {DataGrid} from "@mui/x-data-grid";
 import {textReportConfig} from "./ItemMasterConfig.js";
@@ -8,7 +8,7 @@ import {ScreenStack} from "../Stack.js";
 import ErrorMessage from "../ErrorMessage.jsx";
 import {ItemQueryParametersDTO} from "./ItemQueryConfig.js";
 import TextField from "@mui/material/TextField";
-import {itemMasterReportUrl, itemQueryAll, itemQueryUrl, itemQueryUrlRequestTemplate} from "../Globals.js";
+import {itemMasterReportUrl, itemQueryAll, itemQueryUrl, itemCrudRequestTemplate} from "../Globals.js";
 
 const ItemMaster = () => {
 
@@ -31,7 +31,7 @@ const ItemMaster = () => {
             messageFromFormSetter: setMessage,
             messagesFromForm: message,
             afterPostCallback: afterQueryPostedCallback,
-            requestTemplate: itemQueryUrlRequestTemplate
+            requestTemplate: itemCrudRequestTemplate
         }
     );
 

@@ -1,49 +1,65 @@
 import React, {useEffect, useState} from 'react';
 import ErrorMessage from "../ErrorMessage.jsx";
-import {FormService, isShallowEqual} from "../FormService.jsx";
+import {extractMessageFromResponse, FormService} from "../FormService.js";
 import { Button } from '@mui/material';
 import Grid from '@mui/material/Grid';
 import TextField from "@mui/material/TextField";
-import {CRUD_ACTION_CHANGE, CRUD_ACTION_INSERT, CRUD_ACTION_NONE} from "../crudAction.js";
+import {CRUD_ACTION_CHANGE, CRUD_ACTION_INSERT} from "../crudAction.js";
 import {ScreenStack} from "../Stack.js";
-import {itemQueryAll, itemQueryUrl, itemQueryUrlRequestTemplate, itemUpdateUrl} from "../Globals.js";
-import {ItemRoDTO} from "./ItemPropertiesConfig.js";
+import {itemCrudRequestTemplate, itemUpdateUrl, queryParameterConfig} from "../Globals.js";
+import {ItemDtoToStringWithOperation, ItemDtoToString, ItemRoDTO} from "./ItemPropertiesConfig.js";
+import {generateDefaultFromRules} from "../Metadata/ValidateRule.js";
 
 const ItemProperties = (  ) => {
 
     const [message, setMessage] = useState( "" );
     const [rowsOfQueryResults, setRowsOfQueryResults] = useState( [] );
-    const [queryParameters, setQueryParameters ]  = useState( () => {
-        const stackData = ScreenStack.stackTop().data;
-        return (stackData && stackData.length > 0) ? stackData[0] : [];
-    });
+    const [queryParameters, setQueryParameters ]  = useState(  );
 
-    const afterQueryPostedCallback = ( response ) => {
+    const[ saveButtonMessage, setSaveButtonMessage ] = useState( "Save Changes" );
+
+
+    const afterUpdateCallback = ( response ) => {
         console.log( "afterQueryCallback received:", response.status );
         if ( response.status === 200 ) {
-            setMessage( "Success" );
+            const possibleErrorMessages = extractMessageFromResponse( response );
+            if ( possibleErrorMessages.length > 0 ) {
+                setMessage( possibleErrorMessages );
+                return;
+            }
             setRowsOfQueryResults( response.data.data  );
+            setMessage( ItemDtoToStringWithOperation( response.data.data[ 0 ] ) );
+
         } else {
             setMessage( "Error" );
             setRowsOfQueryResults( []  );
         }
     }
 
-
-    const queryFormService = new FormService( { messageFromFormSetter: setMessage,
+    const ItemPropertiesUpdateFormService = new FormService( { messageFromFormSetter: setMessage,
         messagesFromForm: message,
-        afterPostCallback: afterQueryPostedCallback,
-        requestTemplate : itemQueryUrlRequestTemplate }
+        afterPostCallback: afterUpdateCallback,
+        requestTemplate : itemCrudRequestTemplate }
     );
 
     // Fetch data on mount if empty
     useEffect(() => {
         const fetchData = async () => {
-            if (rowsOfQueryResults.length === 0) {
-                // Trigger search with empty values
-                await queryFormService.postData( itemQueryAll, itemQueryUrl );
-            }
-        };
+            if (ScreenStack.stackTop().activityState === CRUD_ACTION_INSERT) {
+                setMessage( "Insert New Item"  );
+                setSaveButtonMessage(  "Insert New Item"  );
+                var defaultParams = generateDefaultFromRules( queryParameterConfig );
+                defaultParams.crudAction = CRUD_ACTION_INSERT;
+                const finalDefaultQueryParameters = {   ...defaultParams,
+                    crudAction: ScreenStack.stackTop().activityState };
+                setQueryParameters( finalDefaultQueryParameters );
+            } else if (ScreenStack.stackTop().activityState === CRUD_ACTION_CHANGE) {
+                setSaveButtonMessage( "Save Changes" );
+                let proposedProperties = ScreenStack.stackTop().data[0];
+                proposedProperties.crudAction = CRUD_ACTION_CHANGE;
+                setQueryParameters( proposedProperties );
+                }
+        }
         fetchData();
     }, []); // Dependency array ensures this runs only on mount
 
@@ -53,11 +69,13 @@ const ItemProperties = (  ) => {
         }
     }
 
+    if ( queryParameters === undefined ) return ( <div>Loading...</div>)
+
     let workingTabIndex = 0;
     return (
        <div>
            <br/>
-            <form onSubmit={queryFormService.handleSubmit}>
+            <form onSubmit={ItemPropertiesUpdateFormService.handleSubmit}>
                 <ErrorMessage message={message}/>
                 <br/>
 
@@ -78,16 +96,21 @@ const ItemProperties = (  ) => {
                                 }}
                                 sx={{
                                     width: '240px',
-                                    ...(col.editable === false && {
-                                        pointerEvents: 'none',
-                                        backgroundColor: '#f5f5f5'
-                                    })
-                            }}
+                                    ...(col.editable ? {
+                                            backgroundColor: '#f5f5f5'
+                                        } : {
+                                            pointerEvents: 'none'
+                                        }
+                                    ),
+                                    ...(col.hidden === true && {
+                                            display: 'none' }
+                                    )
+                                }}
                             />
                     ))}
                     <Grid container spacing={2} padding={2} size={{xs:12}}>
-                        <Button type="submit" variant="contained" name={itemQueryUrl} tabIndex={workingTabIndex++}>Save</Button>
-                        <Button variant="outlined" tabIndex={workingTabIndex++} onClick={() => ScreenStack.pop()}>Return</Button>
+                        <Button type="submit" variant="contained" name={itemUpdateUrl} tabIndex={workingTabIndex++}>{saveButtonMessage}</Button>
+                        <Button variant="outlined" tabIndex={workingTabIndex++} onClick={() => ScreenStack.pop()}>Return without Saving</Button>
                     </Grid>
                 </Grid>
             </form>

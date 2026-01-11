@@ -1,7 +1,7 @@
 import React, {useContext, useState} from 'react';
 import "../styles.css";
 import ErrorMessage from "../ErrorMessage.jsx";
-import {FormService} from "../FormService.jsx";
+import {FormService} from "../FormService.js";
 import LoginSummary from "../Objects/LoginSummary.jsx";
 import {UserContext} from "../UserContext.jsx";
 import {ScreenTransition} from "../ScreenTransition.js";
@@ -12,6 +12,7 @@ import {Button} from "@mui/material";
 import TextField from "@mui/material/TextField";
 import {ScreenStack} from "../Stack.js";
 import {VerifyCredentialsUrl} from "../Globals.js";
+import {CRUD_ACTION_NONE} from "../crudAction.js";
 
 function Login(  )
 {
@@ -19,7 +20,7 @@ function Login(  )
     const { setCurrentUser } = useContext(UserContext);
     const afterPostCallback = (response) => {
         setCurrentUser( new LoginSummary( "fred", response.token, "2025-10-31 2359" ))
-        ScreenStack.push(new ScreenTransition(ItemQuery, 'ItemQuery', response.data) );
+        ScreenStack.push(new ScreenTransition( "Item Query", ItemQuery, CRUD_ACTION_NONE, response.data) );
     }
 
     const formService = new FormService(

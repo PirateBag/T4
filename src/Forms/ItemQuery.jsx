@@ -1,6 +1,6 @@
 import React, {useEffect, useState} from 'react';
 import ErrorMessage from "../ErrorMessage.jsx";
-import {extractMessageFromResponse, FormService, isShallowEqual} from "../FormService.jsx";
+import {extractMessageFromResponse, FormService, isShallowEqual} from "../FormService.js";
 import { Button, Box } from '@mui/material';
 import Grid from '@mui/material/Grid';
 import {ItemQueryParametersDTO,queryResultsConfig} from "./ItemQueryConfig.js";
@@ -14,10 +14,11 @@ import {
     itemMasterReportUrl,
     itemQueryAll,
     itemQueryUrl,
-    itemQueryUrlRequestTemplate,
+    itemCrudRequestTemplate,
     itemUpdateUrl
 } from "../Globals.js";
 import ItemProperties from "./ItemProperties.jsx";
+import {ItemDtoToStringWithOperation} from "./ItemPropertiesConfig.js";
 
 
 const ItemQuery = (  ) => {
@@ -74,13 +75,13 @@ const ItemQuery = (  ) => {
     const queryFormService = new FormService( { messageFromFormSetter: setMessage,
         messagesFromForm: message,
         afterPostCallback: afterQueryPostedCallback,
-        requestTemplate : itemQueryUrlRequestTemplate }
+        requestTemplate : itemCrudRequestTemplate }
     );
 
     const updateFormService = new FormService( { messageFromFormSetter: setMessage,
         messagesFromForm: message,
         afterPostCallback: afterChangeCallback,
-        requestTemplate : itemQueryUrlRequestTemplate }
+        requestTemplate : itemCrudRequestTemplate }
     );
 
     const itemMasterFormService = new FormService( { messageFromFormSetter: setMessage,
@@ -107,7 +108,7 @@ const ItemQuery = (  ) => {
             console.log( "Row " + oldValue.id + " unchanged, skipping update" );
             return;
         }
-        newValue.crudAction = newValue.crudAction === "CRUD_ACTION_INSERT" ? CRUD_ACTION_INSERT : CRUD_ACTION_CHANGE;
+        newValue.crudAction = newValue.crudAction === CRUD_ACTION_INSERT ? CRUD_ACTION_INSERT : CRUD_ACTION_CHANGE;
         const updatedRow = {...newValue};
 
         const objectToBeTransmitted = queryFormService.singleRowToRequest(updatedRow);
@@ -120,26 +121,35 @@ const ItemQuery = (  ) => {
         queryFormService.clearFormValues(event );
     }
 
+    /*
     function addRowToGrid( event ) {
-        const newRow = { id: parseInt( event.timeStamp *100 ).toString(), crudAction: 'CRUD_ACTION_INSERT', description: "description",
-            sourcing: "PUR", quantityOnHand: "0", minimumOrderQuantity: 0.0, unitCost: "0.00", leadTime: 1 };
+        const newRow = { id: parseInt( event.timeStamp *100 ).toString(), crudAction: CRUD_ACTION_INSERT,
+            description: "description", sourcing: "PUR", quantityOnHand: "0", minimumOrderQuantity: 0.0, unitCost: "0.00", leadTime: 1 };
 
         setRowsOfQueryResults( rowsOfQueryResults.concat( newRow ));
     }
+
+     */
 
     function transitionToItemMaster( event ) {
         //  The queryFormService owns the form we want to extract from.
         const objectToBeTransmitted = queryFormService.extractRequestAsObject( event )
         itemMasterFormService.postData(objectToBeTransmitted, itemMasterReportUrl );
 
-        let nextScreen = new ScreenTransition(ItemMaster, 'ItemMaster', itemMasterQueryResults );
+        let nextScreen = new ScreenTransition( "Item Master Report", ItemMaster, CRUD_ACTION_NONE, itemMasterQueryResults );
         ScreenStack.push(nextScreen);
     }
 
-    const handleCellClick = (params ) => {
+    function transitionToItemPropertiesAdd(  ) {
+        const nextScreen = new ScreenTransition("Add new item", ItemProperties, CRUD_ACTION_INSERT, []);
+        ScreenStack.push(nextScreen);
+    }
+
+
+        const handleCellClick = (params ) => {
         // Check if the clicked cell belongs to the first column (field: 'id')
         if (params.field === ItemQueryParametersDTO[0].field) {
-            ScreenStack.push(new ScreenTransition(ItemProperties, 'ItemProperties',
+            ScreenStack.push(new ScreenTransition( "Change Item Properties" + ItemDtoToStringWithOperation( rowsOfQueryResults[ params.value -1  ]), ItemProperties, CRUD_ACTION_CHANGE,
                 [ rowsOfQueryResults[ params.value -1  ] ] ) );
         }
     };
@@ -188,7 +198,7 @@ const ItemQuery = (  ) => {
                               onProcessRowUpdateError={(error) => console.error("Row update failed:", error)}/>
                 ) }
                 <Grid size={{xs:12}}>
-                    <Button variant="outlined" onClick={addRowToGrid}>Add</Button>
+                    <Button variant="outlined" onClick={transitionToItemPropertiesAdd}>Add</Button>
                 </Grid>
 
             </Box>

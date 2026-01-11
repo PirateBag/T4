@@ -188,4 +188,12 @@ export const validateAllFieldsOnForm = ( event ) => {
  }
  */
 }
-
+export const generateDefaultFromRules = (rules) => {
+    var returnValue = {};
+    rules.forEach(rule => {
+        if (rule.defaultValue !== null) {
+            returnValue[ rule.field ] = rule.defaultValue;
+        }
+    });
+    return returnValue;
+}

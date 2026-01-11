@@ -16,7 +16,7 @@ export const VerifyCredentialsUrl = 'http://localhost:8080/verifyCredentials';
 
 /*  Item related.  */
 export const itemQueryUrl = 'http://localhost:8080/item/crudQuery'
-export const itemQueryUrlRequestTemplate = '{ "updatedRows" : [ ${rowWithQuery} ] }';
+export const itemCrudRequestTemplate = '{ "updatedRows" : [ ${rowWithQuery} ] }';
 export const itemUpdateUrl = 'http://localhost:8080/item/crud'
 export const itemMasterReportUrl = 'http://localhost:8080/itemReport/showAllItems'
 export const itemQueryAll = { "updatedRows" : [  ] };
@@ -31,3 +31,4 @@ export const queryParameterConfig = [
     LEAD_TIME_VALIDATION.appendGridFieldOptions(LEAD_TIME_VALIDATION, { 'editable': false } ),
     QUANTITY_VALIDATION.appendGridFieldOptions(QUANTITY_VALIDATION, { 'editable': false } )
 ];
+
