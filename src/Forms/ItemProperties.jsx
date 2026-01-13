@@ -4,7 +4,7 @@ import {extractMessageFromResponse, FormService} from "../FormService.js";
 import { Button } from '@mui/material';
 import Grid from '@mui/material/Grid';
 import TextField from "@mui/material/TextField";
-import {CRUD_ACTION_CHANGE, CRUD_ACTION_INSERT} from "../crudAction.js";
+import {CRUD_ACTION_CHANGE, CRUD_ACTION_DELETE, CRUD_ACTION_INSERT} from "../crudAction.js";
 import {ScreenStack} from "../Stack.js";
 import {itemCrudRequestTemplate, itemUpdateUrl, queryParameterConfig} from "../Globals.js";
 import {ItemDtoToStringWithOperation, ItemDtoToString, ItemRoDTO} from "./ItemPropertiesConfig.js";
@@ -13,9 +13,7 @@ import {generateDefaultFromRules} from "../Metadata/ValidateRule.js";
 const ItemProperties = (  ) => {
 
     const [message, setMessage] = useState( "" );
-    const [rowsOfQueryResults, setRowsOfQueryResults] = useState( [] );
     const [queryParameters, setQueryParameters ]  = useState(  );
-
     const[ saveButtonMessage, setSaveButtonMessage ] = useState( "Save Changes" );
 
 
@@ -27,12 +25,10 @@ const ItemProperties = (  ) => {
                 setMessage( possibleErrorMessages );
                 return;
             }
-            setRowsOfQueryResults( response.data.data  );
             setMessage( ItemDtoToStringWithOperation( response.data.data[ 0 ] ) );
 
         } else {
             setMessage( "Error" );
-            setRowsOfQueryResults( []  );
         }
     }
 
@@ -75,6 +71,7 @@ const ItemProperties = (  ) => {
     return (
        <div>
            <br/>
+           <div>{`Top O Stack: ${ScreenStack.stackTop().activityState}`}</div>
             <form onSubmit={ItemPropertiesUpdateFormService.handleSubmit}>
                 <ErrorMessage message={message}/>
                 <br/>
@@ -108,9 +105,13 @@ const ItemProperties = (  ) => {
                                 }}
                             />
                     ))}
+
                     <Grid container spacing={2} padding={2} size={{xs:12}}>
                         <Button type="submit" variant="contained" name={itemUpdateUrl} tabIndex={workingTabIndex++}>{saveButtonMessage}</Button>
                         <Button variant="outlined" tabIndex={workingTabIndex++} onClick={() => ScreenStack.pop()}>Return without Saving</Button>
+                        {ScreenStack.stackTop().activityState === CRUD_ACTION_CHANGE && (
+                            <Button type="submit" variant="outlined" name={itemUpdateUrl} value={CRUD_ACTION_DELETE}  tabIndex={workingTabIndex++}>Delete</Button>
+                        )}
                     </Grid>
                 </Grid>
             </form>

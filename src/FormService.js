@@ -93,6 +93,13 @@ export class FormService {
         if (messagesFromFormValidation.length > 0) return;
         const finalRequestAsObject = this.extractRequestAsObject( event );
         console.log( "Final request:", finalRequestAsObject );
+        console.log( "submitter value:", event.nativeEvent.submitter.value );
+        const overrideForCrudAction = event.nativeEvent.submitter.value ?? "";
+        if ( overrideForCrudAction !== "" && finalRequestAsObject?.updatedRows[ 0 ]?.crudAction !== undefined ) {
+            finalRequestAsObject.updatedRows[ 0 ].crudAction = overrideForCrudAction;
+            console.log( "CrudAction updated top  '" + finalRequestAsObject.updatedRows[ 0 ].crudAction + "'" );
+        }
+        console.log( "effective reqiest Pbkect : '" + finalRequestAsObject + "'" );
         await this.postData(finalRequestAsObject, event.nativeEvent.submitter.name );
     }
 

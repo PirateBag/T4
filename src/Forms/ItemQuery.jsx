@@ -176,11 +176,12 @@ const ItemQuery = (  ) => {
                             />
                         </Grid>
                     ))}
+                </Grid>
                     <Grid container spacing={2} padding={2}>
                         <Button type="submit" variant="contained" name={itemQueryUrl}>Search</Button>
                         <Button onClick={clearQueryParameters}>Clear</Button>
                         <Button varient="outlined" onClick={transitionToItemMaster} >Item Master Report</Button>
-                    </Grid>
+
                 </Grid>
             </form>
 
