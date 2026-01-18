@@ -121,16 +121,6 @@ const ItemQuery = (  ) => {
         queryFormService.clearFormValues(event );
     }
 
-    /*
-    function addRowToGrid( event ) {
-        const newRow = { id: parseInt( event.timeStamp *100 ).toString(), crudAction: CRUD_ACTION_INSERT,
-            description: "description", sourcing: "PUR", quantityOnHand: "0", minimumOrderQuantity: 0.0, unitCost: "0.00", leadTime: 1 };
-
-        setRowsOfQueryResults( rowsOfQueryResults.concat( newRow ));
-    }
-
-     */
-
     function transitionToItemMaster( event ) {
         //  The queryFormService owns the form we want to extract from.
         const objectToBeTransmitted = queryFormService.extractRequestAsObject( event )

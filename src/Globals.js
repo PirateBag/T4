@@ -20,7 +20,8 @@ export const itemCrudRequestTemplate = '{ "updatedRows" : [ ${rowWithQuery} ] }'
 export const itemUpdateUrl = 'http://localhost:8080/item/crud'
 export const itemMasterReportUrl = 'http://localhost:8080/itemReport/showAllItems'
 export const itemQueryAll = { "updatedRows" : [  ] };
-
+export const bomFindItemParameters = "http://localhost:8080/bom/findItemParameters";
+export const bomCrudUrl  = "http://localhost:8080/bom/crud";
 
 export const queryParameterConfig = [
     ID_VALIDATION.appendGridFieldOptions( { 'editable': false } ),

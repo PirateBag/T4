@@ -190,7 +190,7 @@ export const CRUD_VALIDATION = new ValidationRule({
     domainName: 'crudAction',
     type: 'string',
     minLengthInChars: 6,
-    maxLengthInChars: 100,
+    maxLengthInChars: 6,
     caseConversion: CaseConversion.NONE,
     whenRequired: REQUIRED_NONE,
     defaultValue: " ",
