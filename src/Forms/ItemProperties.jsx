@@ -32,12 +32,18 @@ const ItemProperties = (  ) => {
                 setMessage(possibleErrorMessages);
                 return;
             }
-            setMessage(BomDtoToString(response.data.data[0]));
-
+            setMessage(ItemDtoToStringWithOperation(response.data.data[0]));
         } else {
             setMessage("Error");
         }
     }
+
+    // Calculate the total extended cost
+    const totalExtendedCost = components?.reduce((sum, component) => {
+        const quantity = component.quantityPer || 0;
+        const cost = component.unitCost || 0;
+        return sum + (quantity * cost);
+    }, 0) || 0;
 
     const ItemPropertiesUpdateFormService = new FormService({
             messageFromFormSetter: setMessage,
@@ -84,6 +90,20 @@ const ItemProperties = (  ) => {
         initializeData();
     }, []); // Runs once on mount
 
+    useEffect(() => {
+        if (components && components.length >= 0) {
+            const total = components.reduce((sum, c) => sum + (c.quantityPer * c.unitCost || 0), 0);
+
+            setQueryParameters(prev => {
+                // Only update if the value actually changed to avoid unnecessary re-renders
+                if (prev && prev.unitCost !== total) {
+                    return {...prev, unitCost: total};
+                }
+                return prev;
+            });
+        }
+    }, [components]);
+
 
     const handleInputChange = (field) => {
         return (event) => {
@@ -91,107 +111,108 @@ const ItemProperties = (  ) => {
         }
     }
 
-    async function ItemQueryRowChange(newValue , oldValue ) {
+    async function ComponentsUpdateRowHandler(newValue, oldValue) {
         if (isShallowEqual(newValue, oldValue)) {
-            console.log( "Row " + oldValue.id + " unchanged, skipping update" );
+            console.log("Row " + oldValue.id + " unchanged, skipping update");
             return;
         }
         newValue.crudAction = newValue.crudAction === CRUD_ACTION_INSERT ? CRUD_ACTION_INSERT : CRUD_ACTION_CHANGE;
         const updatedRow = {...newValue};
 
-
         const objectToBeTransmitted = ItemPropertiesUpdateFormService.singleRowToRequest(updatedRow);
-        await ItemPropertiesUpdateFormService.postData(objectToBeTransmitted, bomCrudUrl );
-        console.log( "Response " + BomDtoToString( updatedRow ));
+        await ItemPropertiesUpdateFormService.postData(objectToBeTransmitted, bomCrudUrl);
+        console.log("Response " + BomDtoToString(updatedRow));
 
-        return updatedRow
+        if (updatedRow.extendedCost !== oldValue.extendedCost) {
+            console.log("Extended component cost changed from " + oldValue.extendedCost + " to " + updatedRow.extendedCost);
+            const proposedNewExtendedCost = totalExtendedCost;
+            console.log("Proposed new unit cost for parent {} ", proposedNewExtendedCost);
+            return updatedRow
+        }
     }
 
+        if (queryParameters === undefined) return (<div>Loading...</div>)
+        if (components === undefined) return (<div>Loading...</div>)
 
-    if (queryParameters === undefined) return (<div>Loading...</div>)
-    if ( components === undefined) return (<div>Loading...</div>)
-
-    let workingTabIndex = 0;
-    return (
-        <div>
-            <br/>
-            <div>{`Top O Stack: ${ScreenStack.stackTop().activityState}`}</div>
-            <form onSubmit={ItemPropertiesUpdateFormService.handleSubmit}>
-                <ErrorMessage message={message}/>
+        let workingTabIndex = 0;
+        return (
+            <div>
                 <br/>
+                <form onSubmit={ItemPropertiesUpdateFormService.handleSubmit}>
+                    <ErrorMessage message={message}/>
+                    <br/>
 
-                <Grid container spacing={2} padding={2}>
-                    {ItemRoDTO.map((col) => (
-                        <TextField
-                            type={col.type}
-                            key={col.headerName}
-                            size="small"
-                            margin="dense"
-                            name={col.domainName}
-                            placeholder={col.placeholder}
-                            value={queryParameters[col.field]}
-                            label={col.headerName}
-                            onChange={handleInputChange(col.field)}
-                            slotProps={{
-                                input: {
-                                    maxLength: 50
-                                }
-                            }}
-                            sx={{
-                                width: '240px',
-                                ...(col.editable ? {
-                                        backgroundColor: '#f5f5f5'
-                                    } : {
-                                        pointerEvents: 'none'
+                    <Grid container spacing={2} padding={2}>
+                        {ItemRoDTO.map((col) => (
+                            <TextField
+                                type={col.type}
+                                key={col.headerName}
+                                size="small"
+                                margin="dense"
+                                name={col.domainName}
+                                placeholder={col.placeholder}
+                                value={queryParameters[col.field]}
+                                label={col.headerName}
+                                onChange={handleInputChange(col.field)}
+                                slotProps={{
+                                    input: {
+                                        maxLength: 50
                                     }
-                                ),
-                                ...(col.hidden === true && {
-                                        display: 'none'
-                                    }
-                                )
-                            }}
-                        />
-                    ))}
+                                }}
+                                sx={{
+                                    width: '240px',
+                                    ...(col.editable ? {
+                                            backgroundColor: '#f5f5f5'
+                                        } : {
+                                            pointerEvents: 'none'
+                                        }
+                                    ),
+                                    ...(col.hidden === true && {
+                                            display: 'none'
+                                        }
+                                    )
+                                }}
+                            />
+                        ))}
 
-                    <Grid container spacing={2} padding={2} size={{xs: 12}}>
-                        <Button type="submit" variant="contained" name={itemUpdateUrl}
-                                tabIndex={workingTabIndex++}>{saveButtonMessage}</Button>
-                        <Button variant="outlined" tabIndex={workingTabIndex++} onClick={() => ScreenStack.pop()}>Return
-                            without Saving</Button>
-                        {ScreenStack.stackTop().activityState === CRUD_ACTION_CHANGE && (
-                            <Button type="submit" variant="outlined" name={itemUpdateUrl} value={CRUD_ACTION_DELETE}
-                                    tabIndex={workingTabIndex++}>Delete</Button>
-                        )}
+                        <Grid container spacing={2} padding={2} size={{xs: 12}}>
+                            <Button type="submit" variant="contained" name={itemUpdateUrl}
+                                    tabIndex={workingTabIndex++}>{saveButtonMessage}</Button>
+                            <Button variant="outlined" tabIndex={workingTabIndex++} onClick={() => ScreenStack.pop()}>Return
+                                without Saving</Button>
+                            {ScreenStack.stackTop().activityState === CRUD_ACTION_CHANGE && (
+                                <Button type="submit" variant="outlined" name={itemUpdateUrl} value={CRUD_ACTION_DELETE}
+                                        tabIndex={workingTabIndex++}>Delete</Button>
+                            )}
+                        </Grid>
                     </Grid>
-                </Grid>
-            </form>
+                </form>
 
 
-            <Box sx={{ height: 400, width: '100%', mb: 10 }}>
+                <Box sx={{height: 400, width: '100%', mb: 10}}>
+                    {components.length === 0 ? (
+                        "No Components"
+                    ) : (
+                        <DataGrid columns={BomComponentsDto}
+                                  rows={components}
+                                  density="compact"
+                                  processRowUpdate={ComponentsUpdateRowHandler}
+                                  columnHeaderHeight={60} // Increase height to accommodate multiple lines
+                                  sx={{
+                                      '& .MuiDataGrid-columnHeaderTitle': {
+                                          whiteSpace: 'normal',
+                                          lineHeight: 'normal',
+                                      },
+                                  }                                  }
+                                  onProcessRowUpdateError={(error) => console.error("Row update failed:", error)}
+                        />
+                    )}
+                    <Grid size={{xs: 12}}>
+                        <Button variant="outlined">Add</Button>
+                    </Grid>
 
-                { components.length === 0 ? (
-                    "No Components"
-                ) : (
-                    <DataGrid columns={BomComponentsDto}
-                              rows={ components }
-                              density="compact"
-                              processRowUpdate={ItemQueryRowChange}
-                              columnHeaderHeight={60} // Increase height to accommodate multiple lines
-                              sx={{
-                                  '& .MuiDataGrid-columnHeaderTitle': {
-                                      whiteSpace: 'normal',
-                                      lineHeight: 'normal',
-                                  },
-                              }}
-                    />
-                ) }
-                <Grid size={{xs:12}}>
-                    <Button variant="outlined">Add</Button>
-                </Grid>
-
-            </Box>
-        </div>
-    );
-};
-
-export default ItemProperties;
+                </Box>
+            </div>
+        );
+    }
+ export default ItemProperties;

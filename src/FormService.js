@@ -35,9 +35,8 @@ export class FormService {
     }
 
     formatErrorMessage(error) {
-        // Network error
         if (error.code === 'ERR_NETWORK' || !error.response) {
-            return "Network error. Please check your connection and try again.";
+            return "Network error code " + error.code;
         }
 
         // HTTP error with response
