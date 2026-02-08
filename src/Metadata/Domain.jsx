@@ -165,14 +165,14 @@ export const LEAD_TIME_VALIDATION = new ValidationRule({
 
 
 export const QUANTITY_VALIDATION = new ValidationRule({
-    domainName: 'quantityOnHand',
+    domainName: 'quantityPer',
     type: 'number',
     minLengthInChars: 1,
     maxLengthInChars: 8,
     caseConversion: CaseConversion.NONE,
     whenRequired: REQUIRED_ADD,
     defaultValue: 0.0,
-    defaultHeader: 'On Hand'
+    defaultHeader: 'Quantity Per Volume'
 });
 
 export const TEXT_VALIDATION = new ValidationRule({

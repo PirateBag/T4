@@ -1,7 +1,7 @@
 import React, {useContext, useState} from 'react';
 import "../styles.css";
 import ErrorMessage from "../ErrorMessage.jsx";
-import {FormService} from "../FormService.js";
+import FormService from "../FormService.js";
 import LoginSummary from "../Objects/LoginSummary.jsx";
 import {UserContext} from "../UserContext.jsx";
 import {ScreenTransition} from "../ScreenTransition.js";
@@ -48,7 +48,9 @@ function Login(  )
                             />
                         </Grid>
                     ))}
-                    <Button type='submit' variant="outlined" name={VerifyCredentialsUrl}>Log In</Button>
+                    <Grid container sx={{ mt: 1 }} size={{xs: 12}}>
+                         <Button type='submit' variant="outlined" name={VerifyCredentialsUrl}>Log In</Button>
+                    </Grid>
                 </Grid>
             </form>
         </div>

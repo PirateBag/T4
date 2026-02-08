@@ -15,7 +15,7 @@ export function extractMessageFromResponse(response) {
     return rValue;
 }
 
-export class FormService {
+class FormService {
     constructor(options) {
         this.messagesFromForm = options.messagesFromForm;
         this.messageFromFormSetter = options.messageFromFormSetter;
@@ -36,7 +36,7 @@ export class FormService {
 
     formatErrorMessage(error) {
         if (error.code === 'ERR_NETWORK' || !error.response) {
-            return "Network error code " + error.code;
+            return "Network error code " + error;
         }
 
         // HTTP error with response
@@ -124,7 +124,7 @@ export class FormService {
     }
 
     async postData(finalRequestAsObject, finalUrl) {
-        this.messageFromFormSetter("");
+        //  this.messageFromFormSetter("");
         try {
             const response = await axios.post(finalUrl, finalRequestAsObject);
             this.afterPostCallback(response);
@@ -141,4 +141,6 @@ export class FormService {
         }
     }
 }
+
+export default FormService
 

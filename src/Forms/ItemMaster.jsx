@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react';
-import {FormService} from "../FormService.js";
+import FormService from "../FormService.js";
 import {Box, Button} from '@mui/material';
 import {DataGrid} from "@mui/x-data-grid";
 import {textReportConfig} from "./ItemMasterConfig.js";
@@ -75,7 +75,7 @@ const ItemMaster = () => {
                             />
                         </Grid>
                     ))}
-                    <Grid size={{xs:12}}>
+                    <Grid size={{xs: 12}}>
                         <Button type="submit" variant="contained" name={itemQueryUrl}>Search</Button>
                     </Grid>
                 </Grid>
@@ -83,7 +83,7 @@ const ItemMaster = () => {
 
 
             Item Master Report.<br/>
-            <Grid size={{xs:12}}>
+            <Grid container sx={{ mt: 1 }} size={{xs: 12}}>
                 <Button variant="outlined" onClick={() => ScreenStack.pop()}>Return</Button>
             </Grid>
             <Box sx={{height: 600, width: '100%', mb: 10}}>
@@ -93,6 +93,16 @@ const ItemMaster = () => {
                     <DataGrid columns={textReportConfig}
                               rows={rowsOfQueryResults}
                               density="compact"
+                              disableMultipleRowSelection={true}
+                              rowSelection={true}
+                              onRowSelectionModelChange={(newSelectionModel) => {
+                                  // Enforce single selection by taking only the first item
+                                  if (newSelectionModel.length > 1) {
+                                      // Note: Since this grid is not controlled, we'd need state to force it.
+                                      // But disableMultipleRowSelection should handle it for uncontrolled grids.
+                                  }
+                              }}
+                              getRowId={(row) => row.id}
                               sx={{
                                   '& .MuiDataGrid-columnHeaderTitle': {
                                       fontFamily: 'monospace',
@@ -113,7 +123,7 @@ const ItemMaster = () => {
                     />
                 )}
             </Box>
-            <Grid size={{xs:12}}>
+            <Grid container sx={{ mt: 1 }} size={{xs: 12}}>
                 <Button variant="outlined" onClick={() => ScreenStack.pop()}>Return</Button>
             </Grid>
         </div>

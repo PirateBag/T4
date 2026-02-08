@@ -1,11 +1,11 @@
 import React, {useEffect, useState} from 'react';
 import ErrorMessage from "../ErrorMessage.jsx";
-import {extractMessageFromResponse, FormService, isShallowEqual} from "../FormService.js";
+import FormService, {extractMessageFromResponse, isShallowEqual} from "../FormService.js";
 import { Button, Box } from '@mui/material';
 import Grid from '@mui/material/Grid';
 import {ItemQueryParametersDTO,queryResultsConfig} from "./ItemQueryConfig.js";
 import TextField from "@mui/material/TextField";
-import {DataGrid} from "@mui/x-data-grid";
+import {DataGrid, useGridApiRef} from "@mui/x-data-grid";
 import {CRUD_ACTION_CHANGE, CRUD_ACTION_INSERT, CRUD_ACTION_NONE} from "../crudAction.js";
 import {ScreenTransition} from "../ScreenTransition.js";
 import ItemMaster from "./ItemMaster.jsx";
@@ -23,6 +23,7 @@ import {ItemDtoToStringWithOperation} from "./ItemPropertiesConfig.js";
 
 const ItemQuery = (  ) => {
 
+    const apiRef = useGridApiRef();
     //  const emptyResponse = { responseType: "MULTILINE", data: [], errors : []  };
     const [message, setMessage] = useState( "" );
     const [rowsOfQueryResults, setRowsOfQueryResults] = useState( [] );
@@ -78,6 +79,7 @@ const ItemQuery = (  ) => {
         requestTemplate : itemCrudRequestTemplate }
     );
 
+
     const updateFormService = new FormService( { messageFromFormSetter: setMessage,
         messagesFromForm: message,
         afterPostCallback: afterChangeCallback,
@@ -113,6 +115,10 @@ const ItemQuery = (  ) => {
 
         const objectToBeTransmitted = queryFormService.singleRowToRequest(updatedRow);
         updateFormService.postData(objectToBeTransmitted, itemUpdateUrl);
+        // Clear focus from the cell after successful update
+        setTimeout(() => {
+            apiRef.current.setCellFocus(0, '');
+        }, 0);
         return updatedRow
     }
 
@@ -167,7 +173,7 @@ const ItemQuery = (  ) => {
                         </Grid>
                     ))}
                 </Grid>
-                    <Grid container spacing={2} padding={2}>
+                    <Grid container spacing={2} padding={2} size={{xs: 12}}>
                         <Button type="submit" variant="contained" name={itemQueryUrl}>Search</Button>
                         <Button onClick={clearQueryParameters}>Clear</Button>
                         <Button varient="outlined" onClick={transitionToItemMaster} >Item Master Report</Button>
@@ -182,13 +188,24 @@ const ItemQuery = (  ) => {
                     "No results"
                 ) : (
                     <DataGrid columns={queryResultsConfig}
+                              apiRef={apiRef}
                               rows={ rowsOfQueryResults }
                               density="compact"
+                              disableMultipleRowSelection={true}
+                              rowSelection={true}
+                              onRowSelectionModelChange={(newSelectionModel) => {
+                                  // Truncate to single selection if needed
+                                  if (newSelectionModel.length > 1) {
+                                      apiRef.current.setRowSelectionModel([newSelectionModel[0]]);
+                                  }
+                              }}
+                              getRowId={(row) => row.id}
                               processRowUpdate={ItemQueryRowChange}
                               onCellClick={handleCellClick}
-                              onProcessRowUpdateError={(error) => console.error("Row update failed:", error)}/>
+                              onProcessRowUpdateError={(error) => console.error("Row update failed:", error)}
+                    />
                 ) }
-                <Grid size={{xs:12}}>
+                <Grid container sx={{ mt: 1 }} size={{xs: 12}}>
                     <Button variant="outlined" onClick={transitionToItemPropertiesAdd}>Add</Button>
                 </Grid>
 
