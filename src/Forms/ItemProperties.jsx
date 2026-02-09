@@ -4,7 +4,7 @@ import FormService, {extractMessageFromResponse, isShallowEqual} from "../FormSe
 import {Box, Button, Typography} from '@mui/material';
 import Grid from '@mui/material/Grid';
 import TextField from "@mui/material/TextField";
-import {CRUD_ACTION_CHANGE, CRUD_ACTION_DELETE, CRUD_ACTION_INSERT, CRUD_ACTION_NONE} from "../crudAction.js";
+import {CRUD_ACTION_CHANGE, CRUD_ACTION_DELETE, CRUD_ACTION_INSERT} from "../crudAction.js";
 import {ScreenStack} from "../Stack.js";
 import {
     bomCrudUrl,
@@ -21,8 +21,6 @@ import {
 } from "./ItemPropertiesConfig.js";
 import {generateDefaultFromRules} from "../Metadata/ValidateRule.js";
 import {DataGrid, useGridApiRef} from "@mui/x-data-grid";
-import {ScreenTransition} from "../ScreenTransition.js";
-import ItemMaster from "./ItemMaster.jsx";
 
 const ItemProperties = (  ) => {
 
@@ -146,7 +144,7 @@ const ItemProperties = (  ) => {
         console.log("Response " + BomDtoToString(updatedRow));
 
         if (updatedRow.extendedCost !== oldValue.extendedCost) {
-            var line1 = "Extended component cost changed from " + oldValue.extendedCost + " to " + updatedRow.extendedCost;
+            const line1 = "Extended component cost changed from " + oldValue.extendedCost + " to " + updatedRow.extendedCost;
 
             const proposedNewExtendedCostPriorToAdjustments = totalExtendedCost;
             const proposedNewCostAfterAdjustments = adjustTotalExtendedCost(
@@ -159,7 +157,7 @@ const ItemProperties = (  ) => {
             const updatedQueryParameters = {...queryParameters, unitCost: proposedNewCostAfterAdjustments };
             setQueryParameters(updatedQueryParameters);
 
-            var line2 = "Updated unit cost for parent: "
+            const line2 = "Updated unit cost for parent: "
                 + ItemDtoToString( updatedQueryParameters );
             console.log( line2 );
             const finalMessage = (message ? message + "\n" : "") + line1 + "\n" + line2;
@@ -200,8 +198,7 @@ const ItemProperties = (  ) => {
 
         try {
             await ItemPropertiesUpdateFormService.postData(objectToBeTransmitted, bomCrudUrl);
-            const possibleErrorMessages = extractMessageFromResponse(response);
-            setMessage( possibleErrorMessages );
+            setComponents(prev => prev.filter(row => row.id !== selectedRow.id));
         } catch (error) {
             console.error("Error deleting component:", error);
             setMessage("Error deleting component: " + error.message);
