@@ -62,7 +62,7 @@ const ItemMaster = () => {
 
                 <Grid container spacing={2} padding={2}>
                     {ItemQueryParametersDTO.map((col) => (
-                        <Grid size={{xs: 12, sm: 6}} key={col.field}>
+                        <Grid size={{xs: 12, sm: 6, md: 4}} key={col.field}>
                             <TextField
                                 type={col.type}
                                 size="small"
@@ -75,7 +75,7 @@ const ItemMaster = () => {
                             />
                         </Grid>
                     ))}
-                    <Grid size={{xs: 12}}>
+                    <Grid size={12}>
                         <Button type="submit" variant="contained" name={itemQueryUrl}>Search</Button>
                     </Grid>
                 </Grid>
@@ -83,8 +83,10 @@ const ItemMaster = () => {
 
 
             Item Master Report.<br/>
-            <Grid container sx={{ mt: 1 }} size={{xs: 12}}>
-                <Button variant="outlined" onClick={() => ScreenStack.pop()}>Return</Button>
+            <Grid container sx={{ mt: 1 }}>
+                <Grid size="auto">
+                    <Button variant="outlined" onClick={() => ScreenStack.pop()}>Return</Button>
+                </Grid>
             </Grid>
             <Box sx={{height: 600, width: '100%', mb: 10}}>
                 {rowsOfQueryResults.length === 0 ? (
@@ -123,8 +125,10 @@ const ItemMaster = () => {
                     />
                 )}
             </Box>
-            <Grid container sx={{ mt: 1 }} size={{xs: 12}}>
-                <Button variant="outlined" onClick={() => ScreenStack.pop()}>Return</Button>
+            <Grid container sx={{ mt: 1 }}>
+                <Grid size="auto">
+                    <Button variant="outlined" onClick={() => ScreenStack.pop()}>Return</Button>
+                </Grid>
             </Grid>
         </div>
     );

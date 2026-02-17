@@ -69,7 +69,7 @@ export class ValidationRule {
         if (this.preventThisValue !== null && reformattedTextOfField === this.preventThisValue) {
             errorMessages.push(`Please enter a value for '${this.headerName}', the default is not sufficient.`);
         } else {
-            // Did the creator provide a list of allowed values and is the input in that list
+            // Did the creator provide a list of allowed values and is the input in that list?
             if (this.valueOptions !== null) {
                 let oneMatch = false;
                 for (const value of this.valueOptions) {
@@ -189,7 +189,7 @@ export const validateAllFieldsOnForm = ( event ) => {
  */
 }
 export const generateDefaultFromRules = (rules) => {
-    var returnValue = {};
+    let returnValue = {};
     rules.forEach(rule => {
         if (rule.defaultValue !== null) {
             returnValue[ rule.field ] = rule.defaultValue;

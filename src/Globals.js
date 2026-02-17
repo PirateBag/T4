@@ -23,7 +23,7 @@ export const itemQueryAll = { "updatedRows" : [  ] };
 export const bomFindItemParameters = "http://localhost:8080/bom/findItemParameters";
 export const bomCrudUrl  = "http://localhost:8080/bom/crud";
 
-export const queryParameterConfig = [
+export const ItemQueryParameterConfig = [
     ID_VALIDATION.appendGridFieldOptions( { 'editable': false } ),
     DESCRIPTION_VALIDATION.appendGridFieldOptions(DESCRIPTION_VALIDATION, { 'editable': false } ),
     COST_VALIDATION.appendGridFieldOptions(COST_VALIDATION, { 'editable': false } ),
