@@ -48,16 +48,19 @@ const BomProperties = () => {
                 let defaultParams = {
                     "id": 0,
                     "childId": 0,
-                    "parentId": 0,
+                    "parentId": ScreenStack.stackTop().data.id,
                     "childDescription": "default",
                     "quantityPer": 1.0,
                     "unitCost": 0.0,
                     "extendedCost": 0.0,
-                    "parentDescription": "default",
+                    "parentDescription": ScreenStack.stackTop().data.description,
                     "activityState": CRUD_ACTION_INSERT
                 };
                 setQueryParameters(defaultParams);
+                return;
             }
+
+            throw new Error("Unexpected activity state: " + ScreenStack.stackTop().activityState);
         };
 
         initializeData();
@@ -123,8 +126,8 @@ const BomProperties = () => {
                         without Saving</Button>
 
                     {ScreenStack.stackTop().activityState === CRUD_ACTION_INSERT && (
-                        <Button type="submit" variant="outlined" name={bomCrudUrl} value={CRUD_ACTION_INSERT}
-                                tabIndex={workingTabIndex++}>Delete</Button>
+                        <Button type="submit" variant="outlined" name={bomCrudUrl}   value={CRUD_ACTION_INSERT}
+                                tabIndex={workingTabIndex++}>Insert Component and Return</Button>
                     )}
                 </Grid>
             </form>
