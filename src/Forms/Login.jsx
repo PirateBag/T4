@@ -24,7 +24,7 @@ function Login(  )
     }
 
     const formService = new FormService(
-        { messageFromFormSetter: setMessage,
+        { messageFormSetter: setMessage,
         messagesFromForm: message,
             afterPostCallback: afterPostCallback,
         }, );

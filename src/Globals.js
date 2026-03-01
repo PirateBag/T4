@@ -23,6 +23,12 @@ export const itemQueryAll = { "updatedRows" : [  ] };
 export const bomFindItemParameters = "http://localhost:8080/bom/findItemParameters";
 export const bomCrudUrl  = "http://localhost:8080/bom/crud";
 
+//  Uses GenericSingleIdDto
+export const itemPickAll = 'itemPick/all';
+export const itemPickForBom = 'itemPick/itemsForBom';
+export const pickListRequestTemplate = '{ ${rowWithQuery} }';
+export const pickListUpdateUrl = 'http://localhost:8080/itemPick/crud';
+
 export const ItemQueryParameterConfig = [
     ID_VALIDATION.appendGridFieldOptions( { 'editable': false } ),
     DESCRIPTION_VALIDATION.appendGridFieldOptions(DESCRIPTION_VALIDATION, { 'editable': false } ),
@@ -31,5 +37,11 @@ export const ItemQueryParameterConfig = [
     MAX_DEPTH_VALIDATION.appendGridFieldOptions(MAX_DEPTH_VALIDATION, { 'editable': false } ),
     LEAD_TIME_VALIDATION.appendGridFieldOptions(LEAD_TIME_VALIDATION, { 'editable': false } ),
     QUANTITY_VALIDATION.appendGridFieldOptions(QUANTITY_VALIDATION, { 'editable': false } )
+];
+
+
+export const GenericSingleIdDto = [
+    ID_VALIDATION.appendGridFieldOptions( { 'editable': false } ),
+    DESCRIPTION_VALIDATION.appendGridFieldOptions(DESCRIPTION_VALIDATION, { field: 'options', 'editable': false } ),
 ];
 

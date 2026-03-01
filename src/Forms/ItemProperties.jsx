@@ -59,7 +59,7 @@ const ItemProperties = () => {
     }
 
     const ItemPropertiesUpdateFormService = new FormService({
-            messageFromFormSetter: setMessage,
+            messageFormSetter: setMessage,
             messagesFromForm: message,
             afterPostCallback: afterUpdateCallback,
             requestTemplate: itemCrudRequestTemplate
@@ -167,18 +167,9 @@ const ItemProperties = () => {
             const objectToBeTransmitted = ItemPropertiesUpdateFormService.singleRowToRequest(updatedQueryParameters);
             await ItemPropertiesUpdateFormService.postData(objectToBeTransmitted, itemUpdateUrl);
 
-            // // Clear focus from the cell after successful update
-            // setTimeout(() => {
-            //     apiRef.current.setCellFocus(0, '');
-            // }, 0);
-
             //  Return the updated Component Row...
             return updatedRow
         }
-        // // Clear focus even if extendedCost didn't change (still a successful update)
-        // setTimeout(() => {
-        //     apiRef.current.setCellFocus(0, '');
-        // }, 0);
         return updatedRow
     }
 

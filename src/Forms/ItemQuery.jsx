@@ -68,7 +68,7 @@ const ItemQuery = () => {
 
 
     const queryFormService = new FormService({
-            messageFromFormSetter: setMessage,
+            messageFormSetter: setMessage,
             messagesFromForm: message,
             afterPostCallback: afterQueryPostedCallback,
             requestTemplate: itemCrudRequestTemplate
@@ -77,7 +77,7 @@ const ItemQuery = () => {
 
 
     const updateFormService = new FormService({
-            messageFromFormSetter: setMessage,
+            messageFormSetter: setMessage,
             messagesFromForm: message,
             afterPostCallback: afterChangeCallback,
             requestTemplate: itemCrudRequestTemplate
@@ -85,7 +85,7 @@ const ItemQuery = () => {
     );
 
     const itemMasterFormService = new FormService({
-            messageFromFormSetter: setMessage,
+            messageFormSetter: setMessage,
             messagesFromForm: message,
             afterPostCallback: afterItemMasterQueryResults,
             requestTemplate: itemMasterReportUrl

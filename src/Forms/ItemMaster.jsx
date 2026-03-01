@@ -28,7 +28,7 @@ const ItemMaster = () => {
 
 
     const queryFormService = new FormService({
-            messageFromFormSetter: setMessage,
+            messageFormSetter: setMessage,
             messagesFromForm: message,
             afterPostCallback: afterQueryPostedCallback,
             requestTemplate: itemCrudRequestTemplate

@@ -66,6 +66,7 @@ export const SUMMARYID_VALIDATION = new ValidationRule({
 export const ID_VALIDATION = new ValidationRule({
     domainName: 'id',
     type: 'number',
+    minValue: 1,
     minLengthInChars: 1,
     maxLengthInChars: 4,
     caseConversion: CaseConversion.NONE,
@@ -188,10 +189,10 @@ export const TEXT_VALIDATION = new ValidationRule({
 
 export const CRUD_VALIDATION = new ValidationRule({
     domainName: 'crudAction',
-    type: 'string',
+    type: 'text',
     minLengthInChars: 6,
     maxLengthInChars: 6,
-    caseConversion: CaseConversion.NONE,
+    caseConversion: CaseConversion.UPPERCASE,
     whenRequired: REQUIRED_NONE,
     defaultValue: " ",
     defaultHeader: ' ',
@@ -216,4 +217,10 @@ export const VALIDATION_RULES = [
     TEXT_VALIDATION,
     CRUD_VALIDATION
 ];
+
+
+export const getValidationRuleByName = (fieldName) => {
+    return VALIDATION_RULES.find(rule => rule.field === fieldName);
+}
+
 

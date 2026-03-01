@@ -1,4 +1,5 @@
 import axios from "axios";
+import {validateFieldsOfObject} from "./Metadata/ValidateRule.js";
 
 export const isShallowEqual = (obj1, obj2) => {
     const keys1 = Object.keys(obj1);
@@ -18,20 +19,21 @@ export function extractMessageFromResponse(response) {
 class FormService {
     constructor(options) {
         this.messagesFromForm = options.messagesFromForm;
-        this.messageFromFormSetter = options.messageFromFormSetter;
+        this.messageFormSetter = options.messageFormSetter;
         this.afterPostCallback = options.afterPostCallback ?? (() => {});
         this.onErrorCallback = options.onErrorCallback ?? (() => {});
         this.requestTemplate = options.requestTemplate;
+        this.validationRules = options.validationRules ?? [];
     }
 
     handleBlurOnTextField( event, validationRule ) {
         const valueToValidate = event.target.value.trim();
         if (validationRule.required && valueToValidate === '') {
-            this.messageFromFormSetter("${validationRule.field} is a required field." );
+            this.messageFormSetter("${validationRule.field} is a required field." );
             return;
         }
         const message = validationRule.validate(valueToValidate);
-        this.messageFromFormSetter( message );
+        this.messageFormSetter( message );
     }
 
     formatErrorMessage(error) {
@@ -87,10 +89,21 @@ class FormService {
     handleSubmit = async (event) => {
         event.preventDefault();
         let messagesFromFormValidation = "";
-        this.messageFromFormSetter(messagesFromFormValidation);
+        this.messageFormSetter(messagesFromFormValidation);
 
         if (messagesFromFormValidation.length > 0) return;
-        const finalRequestAsObject = this.extractRequestAsObject( event );
+
+        const queryParametersFromForm = this.extractRequestAsObject(event);
+
+        messagesFromFormValidation = validateFieldsOfObject(this.validationRules, queryParametersFromForm)
+        if (messagesFromFormValidation.length > 0) {
+            this.messageFormSetter(messagesFromFormValidation);
+            return
+        }
+
+
+        const finalRequestAsObject = this.singleRowToRequest( this.requestObject ?? queryParametersFromForm);
+            this.extractRequestAsObject( event );
         console.log( "Final request prior to CrudAction:", finalRequestAsObject );
         console.log( "submitter value:", event.nativeEvent.submitter.value );
         const overrideForCrudAction = event.nativeEvent.submitter.value ?? "";
@@ -102,11 +115,16 @@ class FormService {
         await this.postData(finalRequestAsObject, event.nativeEvent.submitter.name );
     }
 
+
+    /**
+     * Pull all object entries from a form and return as an object.
+     * @param event
+     * @returns {{[p: string]: unknown}}
+     */
     extractRequestAsObject = (event) => {
         event.preventDefault();
         const formEntries = Object.fromEntries(new FormData(event.target.closest('form')).entries());
-        const formEntriesPurgedOfEmptyStrings = this.copyObjectRemovingEmptyStrings(formEntries);
-        return  this.singleRowToRequest( this.requestObject ?? formEntriesPurgedOfEmptyStrings);
+        return  this.copyObjectRemovingEmptyStrings(formEntries);
     }
 
     /** Clears all form values.
@@ -116,6 +134,11 @@ class FormService {
         event.target.closest('form').reset();
     }
 
+    /**
+     * Given a request template and a row of request parameters, return a single row of request parameters.
+     * @param SingleRowOfRequestParameters - A single row of request parameters.
+     * @returns {Object} - A single row of request parameters.
+     */
     singleRowToRequest( SingleRowOfRequestParameters ) {
         let finalRequestAsObject;
         finalRequestAsObject = this.requestTemplate == null ? SingleRowOfRequestParameters :
@@ -124,14 +147,14 @@ class FormService {
     }
 
     async postData(finalRequestAsObject, finalUrl) {
-        //  this.messageFromFormSetter("");
+        console.log( "Final Url: '" + finalUrl + "'" );
         try {
             const response = await axios.post(finalUrl, finalRequestAsObject);
             this.afterPostCallback(response);
             return response;
         } catch (error) {
             const errorMessage = this.formatErrorMessage(error);
-            this.messageFromFormSetter(errorMessage);
+            this.messageFormSetter(errorMessage);
 
             if (this.onErrorCallback) {
                 this.onErrorCallback(error);

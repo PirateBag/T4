@@ -1,4 +1,4 @@
-import {CaseConversion, REQUIRED_NONE} from "./ValidationRuleConstants.js";
+import {CaseConversion, REQUIRED_NONE, ValidationRuleTypes} from "./ValidationRuleConstants.js";
 
 export class ValidationRule {
     constructor(options) {
@@ -10,12 +10,17 @@ export class ValidationRule {
         this.minValue = options.minValue ?? -Number.MAX_VALUE;
         this.maxValue = options.maxValue ?? Number.MAX_VALUE;
         this.type = options.type;
+        if (!ValidationRuleTypes.includes(this.type)) {
+            throw new Error(`Invalid validation rule type: ${this.type} for field ${this.domainName}. Must be one of: ${ValidationRuleTypes.join(', ')}`);
+        }
         this.preventThisValue = options.preventThisValue ?? null;
         this.valueOptions = options.valueOptions ?? null;
         this.whenRequired = options.whenRequired ?? REQUIRED_NONE;
         this.defaultValue = options.defaultValue ?? null;
         this.headerName = options.header ?? options.domainName;
         this.placeholder = options.placeholder ?? this.headerName;
+
+
     }
 
     /**
@@ -188,6 +193,31 @@ export const validateAllFieldsOnForm = ( event ) => {
  }
  */
 }
+
+/**
+ * For each field in an objectToBeValidated, find the corresponding validation rule and validate the value.
+ * Not every rule needs a field, but each field actually present must be validated.
+ * Return a string with the corresponding validation messages, separated by newlines.
+ * Empty string if no errors.
+ */
+export const validateFieldsOfObject = (validationRules, objectToBeValidated) => {
+    let combinedMessages = "";
+
+    validationRules.forEach(rule => {
+        const valueToValidate = objectToBeValidated[rule.field];
+        const resultOfValidation = rule.validate(valueToValidate);
+
+        if (resultOfValidation !== null) {
+            if (combinedMessages !== "") {
+                combinedMessages += "\n";
+            }
+            combinedMessages += resultOfValidation;
+        }
+    });
+
+    return combinedMessages;
+}
+
 export const generateDefaultFromRules = (rules) => {
     let returnValue = {};
     rules.forEach(rule => {
@@ -197,3 +227,6 @@ export const generateDefaultFromRules = (rules) => {
     });
     return returnValue;
 }
+
+
+ 
