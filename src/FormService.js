@@ -153,13 +153,13 @@ class FormService {
             this.afterPostCallback(response);
             return response;
         } catch (error) {
+            const messageFromResponse = extractMessageFromResponse(error.response );
             const errorMessage = this.formatErrorMessage(error);
-            this.messageFormSetter(errorMessage);
-
+            this.messageFormSetter( messageFromResponse.length > 0 ? messageFromResponse : errorMessage );
             if (this.onErrorCallback) {
                 this.onErrorCallback(error);
             }
-            console.error('Error creating post:', error);
+            console.error('Error thrown during post:', error);
             throw error; // Re-throw so the caller knows it failed
         }
     }

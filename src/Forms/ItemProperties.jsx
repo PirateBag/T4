@@ -8,10 +8,10 @@ import {CRUD_ACTION_CHANGE, CRUD_ACTION_DELETE, CRUD_ACTION_INSERT} from "../cru
 import {ScreenStack} from "../Stack.js";
 import {
     bomCrudUrl,
-    bomFindItemParameters,
+    bomWhereUsed,
     itemCrudRequestTemplate,
     itemUpdateUrl,
-    ItemQueryParameterConfig
+    ItemQueryParameterConfig, bomComponents
 } from "../Globals.js";
 import {
     BomComponentsDto,
@@ -31,6 +31,7 @@ const ItemProperties = () => {
     const [queryParameters, setQueryParameters] = useState();
     const [components, setComponents] = useState();
     const [saveButtonMessage, setSaveButtonMessage] = useState("Save Changes");
+    const [whereUsed, setWhereUsed] = useState([]);
 
     const afterUpdateCallback = (response) => {
         console.log("afterQueryCallback received:", response.status);
@@ -87,7 +88,8 @@ const ItemProperties = () => {
                     crudAction: ScreenStack.stackTop().activityState
                 };
                 setQueryParameters(currentParams);
-                setComponents([]); // No components for a brand new item
+                setComponents([]);
+                setWhereUsed(  [] );
             } else if (ScreenStack.stackTop().activityState === CRUD_ACTION_CHANGE) {
                 setSaveButtonMessage("Save Changes");
                 currentParams = ScreenStack.stackTop().data[0];
@@ -96,12 +98,17 @@ const ItemProperties = () => {
 
                 // Now that we have currentParams, fetch components immediately
                 try {
-                    const objectToBeTransmitted = ItemPropertiesUpdateFormService.singleRowToRequest(currentParams);
-                    const componentResponse = await ItemPropertiesUpdateFormService.postData(objectToBeTransmitted, bomFindItemParameters);
+                    const objectToBeTransmitted = { "idToSearchFor" : currentParams.id };
+                    const componentResponse = await ItemPropertiesUpdateFormService.postData(objectToBeTransmitted, bomComponents);
                     setComponents(componentResponse.data.data);
+
+                    const whereUsedResponse = await ItemPropertiesUpdateFormService.postData(objectToBeTransmitted, bomWhereUsed);
+                    setWhereUsed(whereUsedResponse.data.data);
+
                 } catch (error) {
                     console.error("Error fetching components:", error);
                     setComponents([]);
+                    setWhereUsed([]);
                 }
             }
         };
@@ -321,6 +328,54 @@ const ItemProperties = () => {
                               }}
                     />
                 )}
+
+
+                <Typography variant="h6" gutterBottom sx={{ml: 2, mt: 2}} align={"center"}>
+                    Where {itemNameForPresent()} is Used.
+                </Typography>
+
+
+                {components.length === 0 ? (
+                    "No Components"
+                ) : (
+
+                    <DataGrid columns={BomComponentsDto}
+                              apiRef={apiRef}
+                              rows={whereUsed}
+                              density="compact"
+                              editMode="cell"
+                              rowSelection={true}
+                              getRowId={(row) => row.id}
+                              //  processRowUpdate={ComponentsUpdateRowHandler}
+                              columnHeaderHeight={60} // Increase height to accommodate multiple lines
+                              sx={{
+                                  '& .MuiDataGrid-columnHeaderTitle': {
+                                      whiteSpace: 'normal',
+                                      lineHeight: 'normal',
+                                  },
+                                  '& .MuiDataGrid-cell': {
+                                      cursor: 'pointer',
+                                  },
+                                  '& .MuiDataGrid-cell:focus': {
+                                      outline: 'solid 2px blue',
+                                  },
+                                  '& .MuiDataGrid-cell:focus-within': {
+                                      outline: 'solid 2px blue',
+                                  },
+                                  '& .MuiDataGrid-columnHeader:focus': {
+                                      outline: 'solid 2px blue',
+                                  },
+                                  '& .MuiDataGrid-columnHeader:focus-within': {
+                                      outline: 'solid 2px blue',
+                                  },
+                              }}
+                              onProcessRowUpdateError={(error) => console.error("Row update failed:", error)}
+                              slots={{
+                                  footer: () => null,
+                              }}
+                    />
+                )}
+
                 <Grid container sx={{mt: 2}} size={{xs: 12}}>
                     <Grid size={{xs: 'auto'}}>
                         <Button variant="outlined" onClick={transitionToComponentDelete}>Delete</Button>
