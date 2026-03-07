@@ -103,7 +103,7 @@ const ItemProperties = () => {
                     setComponents(componentResponse.data.data);
 
                     const whereUsedResponse = await ItemPropertiesUpdateFormService.postData(objectToBeTransmitted, bomWhereUsed);
-                    setWhereUsed(whereUsedResponse.data.data);
+                    setWhereUsed(whereUsedResponse.data.data === undefined ? [] : whereUsedResponse.data.data);
 
                 } catch (error) {
                     console.error("Error fetching components:", error);
@@ -283,14 +283,18 @@ const ItemProperties = () => {
 
             <Box sx={{height: 400, width: '100%', mb: 10}}>
 
-                <Typography variant="h6" gutterBottom sx={{ml: 2, mt: 2}} align={"center"}>
-                    Components of {itemNameForPresent()}
-                </Typography>
-
 
                 {components.length === 0 ? (
-                    "No Components"
+                    <div>
+                    <Typography variant="h6" gutterBottom sx={{ml: 2, mt: 2}} align={"center"}>
+                        There are no components of {itemNameForPresent()}
+                    </Typography>
+                    </div>
                 ) : (
+                    <div>
+                    <Typography variant="h6" gutterBottom sx={{ml: 2, mt: 2}} align={"center"}>
+                        Components of {itemNameForPresent()}
+                    </Typography>
 
                     <DataGrid columns={BomComponentsDto}
                               apiRef={apiRef}
@@ -327,17 +331,24 @@ const ItemProperties = () => {
                                   footer: () => null,
                               }}
                     />
+                    </div>
                 )}
 
 
-                <Typography variant="h6" gutterBottom sx={{ml: 2, mt: 2}} align={"center"}>
-                    Where {itemNameForPresent()} is Used.
-                </Typography>
 
+                {whereUsed.length === 0 ? (
+                    <div>
+                    <Typography variant="h6" gutterBottom sx={{ml: 2, mt: 2}} align={"center"}>
+                        {itemNameForPresent()} is not a component of any item.
+                    </Typography>
+                    </div>
 
-                {components.length === 0 ? (
-                    "No Components"
                 ) : (
+                    <div>
+                    <Typography variant="h6" gutterBottom sx={{ml: 2, mt: 2}} align={"center"}>
+                        Items where {itemNameForPresent()} is Used.
+                    </Typography>
+
 
                     <DataGrid columns={BomComponentsDto}
                               apiRef={apiRef}
@@ -374,6 +385,7 @@ const ItemProperties = () => {
                                   footer: () => null,
                               }}
                     />
+                    </div>
                 )}
 
                 <Grid container sx={{mt: 2}} size={{xs: 12}}>
