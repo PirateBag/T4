@@ -1,12 +1,13 @@
 class LoginSummary {
-    constructor(username, token, lastLoginTime) {
-        this.username = username;
+    constructor(username, password, token, lastLoginTime) {
+        this.userName = username;
         this.token = token;
+        this.password = password;
         this.lastLoginTime = (lastLoginTime == null) ? "yyyy-mm-dd hh:mm:ss" : lastLoginTime ;
     }
 
     toString() {
-        return `${this.username}  ${this.lastLoginTime}`;
+        return `${this.userName}  ${this.lastLoginTime}`;
     }
 }
 

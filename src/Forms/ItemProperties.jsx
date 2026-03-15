@@ -3,29 +3,27 @@ import ErrorMessage from "../ErrorMessage.jsx";
 import FormService, {extractMessageFromResponse, isShallowEqual} from "../FormService.js";
 import {Box, Button, Typography} from '@mui/material';
 import Grid from '@mui/material/Grid';
-import TextField from "@mui/material/TextField";
 import {CRUD_ACTION_CHANGE, CRUD_ACTION_DELETE, CRUD_ACTION_INSERT} from "../crudAction.js";
 import {ScreenStack} from "../Stack.js";
 import {
+    bomComponents,
     bomCrudUrl,
     bomWhereUsed,
     itemCrudRequestTemplate,
-    itemUpdateUrl,
-    ItemQueryParameterConfig, bomComponents
+    ItemQueryParameterConfig,
+    itemUpdateUrl
 } from "../Globals.js";
-import {
-    BomComponentsDto,
-    BomDtoToString,
-    ItemDtoToString,
-    ItemRoDTO
-} from "./ItemPropertiesConfig.js";
+import {BomComponentsDto, BomDtoToString, BomParentsDto, ItemDtoToString, ItemRoDTO} from "./ItemPropertiesConfig.js";
 import {generateDefaultFromRules} from "../Metadata/ValidateRule.js";
-import {DataGrid, useGridApiRef} from "@mui/x-data-grid";
+import {useGridApiRef} from "@mui/x-data-grid";
+import {DataGridHelper} from "../Objects/DataGridHelper.jsx";
 import {ScreenTransition} from "../ScreenTransition.js";
 import BomProperties from "./BomProperties.jsx";
+import {PropertyGrid} from "../Objects/PropertyGrid.jsx";
 
 const ItemProperties = () => {
 
+    const [selectedRows, setSelectedRows] = useState([]);
     const apiRef = useGridApiRef();
     const [message, setMessage] = useState("");
     const [queryParameters, setQueryParameters] = useState();
@@ -89,7 +87,7 @@ const ItemProperties = () => {
                 };
                 setQueryParameters(currentParams);
                 setComponents([]);
-                setWhereUsed(  [] );
+                setWhereUsed([]);
             } else if (ScreenStack.stackTop().activityState === CRUD_ACTION_CHANGE) {
                 setSaveButtonMessage("Save Changes");
                 currentParams = ScreenStack.stackTop().data[0];
@@ -98,7 +96,7 @@ const ItemProperties = () => {
 
                 // Now that we have currentParams, fetch components immediately
                 try {
-                    const objectToBeTransmitted = { "idToSearchFor" : currentParams.id };
+                    const objectToBeTransmitted = {"idToSearchFor": currentParams.id};
                     const componentResponse = await ItemPropertiesUpdateFormService.postData(objectToBeTransmitted, bomComponents);
                     setComponents(componentResponse.data.data);
 
@@ -180,15 +178,37 @@ const ItemProperties = () => {
         return updatedRow
     }
 
-    async function transitionToComponentDelete() {
-
-        const selectedRows = apiRef.current.getSelectedRows();
-        if (selectedRows.size === 0) {
+    async function SpecialTransitionToComponentDelete() {
+        if (selectedRows.length === 0) {
             setMessage("Please select a row to delete.");
             return;
         }
 
-        const selectedRow = selectedRows.values().next().value;
+        const selectedRow = components.find(r => r.id === selectedRows[0]);
+        console.log("Selected item for deletion:", selectedRow);
+
+        const objectToBeTransmitted = {
+            updatedRows: [{...selectedRow, crudAction: CRUD_ACTION_DELETE}]
+        };
+
+        try {
+            await ItemPropertiesUpdateFormService.postData(objectToBeTransmitted, bomCrudUrl);
+            setComponents(prev => prev.filter(row => row.id !== selectedRow.id));
+        } catch (error) {
+            console.error("Error deleting component:", error);
+            setMessage("Error deleting component: " + error.message);
+        }
+    }
+
+
+
+    async function transitionToComponentDelete() {
+        if (selectedRows.length === 0) {
+            setMessage("Please select a row to delete.");
+            return;
+        }
+
+        const selectedRow = components.find(r => r.id === selectedRows[0]);
         console.log("Selected item for deletion:", selectedRow);
 
         const objectToBeTransmitted = {
@@ -206,7 +226,7 @@ const ItemProperties = () => {
 
     function transitionToComponentAdd() {
         ScreenStack.push(new ScreenTransition("Add Component for" + queryParameters, BomProperties, CRUD_ACTION_INSERT,
-                queryParameters ) );
+            queryParameters));
     }
 
     if (queryParameters === undefined) return (<div>Loading...</div>)
@@ -221,176 +241,53 @@ const ItemProperties = () => {
                 <ErrorMessage message={message}/>
                 <br/>
 
-                {/* 1. Prominent title for the main Grid/Form */}
-                <Typography variant="h5" gutterBottom sx={{ml: 2, mt: 2}} align={"center"}>
-                    Details of <i> {itemNameForPresent()} </i>
-                </Typography>
+                <PropertyGrid label={queryParameters.description}
+                              objectToPresent={queryParameters}
+                              validationRules={ItemRoDTO}
+                              handleInputChangeCallback={handleInputChange}></PropertyGrid>
 
-                <Grid container spacing={2} padding={2}>
-                    {ItemRoDTO.map((col) => (
-                        <Grid size="auto" key={col.headerName}>
-                            <TextField
-                                type={col.type}
-                                size="small"
-                                margin="dense"
-                                name={col.field}
-                                placeholder={col.placeholder}
-                                value={queryParameters[col.field]}
-                                label={col.headerName}
-                                onChange={handleInputChange(col.field)}
-                                slotProps={{
-                                    input: {
-                                        maxLength: 50
-                                    }
-                                }}
-                                sx={{
-                                    width: '240px',
-                                    ...(col.editable ? {
-                                            backgroundColor: '#f5f5f5'
-                                        } : {
-                                            pointerEvents: 'none'
-                                        }
-                                    ),
-                                    ...(col.hidden === true && {
-                                            display: 'none'
-                                        }
-                                    )
-                                }}
-                            />
-                        </Grid>
-                    ))}
-
-
-                    <Grid size={12} container spacing={2}>
-                        <Grid size="auto">
-                            <Button type="submit" variant="contained" name={itemUpdateUrl}
-                                    tabIndex={workingTabIndex++}>{saveButtonMessage}</Button>
-                        </Grid>
-                        <Grid size="auto">
-                            <Button variant="outlined" tabIndex={workingTabIndex++} onClick={() => ScreenStack.pop()}>Return
-                                without Saving</Button>
-                        </Grid>
-                        {ScreenStack.stackTop().activityState === CRUD_ACTION_CHANGE && (
-                            <Grid size="auto">
-                                <Button type="submit" variant="outlined" name={itemUpdateUrl} value={CRUD_ACTION_DELETE}
-                                        tabIndex={workingTabIndex++}>Delete</Button>
-                            </Grid>
-                        )}
+                <Grid size={12} container spacing={2}>
+                    <Grid size="auto">
+                        <Button type="submit" variant="contained" name={itemUpdateUrl}
+                                tabIndex={workingTabIndex++}>{saveButtonMessage}</Button>
                     </Grid>
+                    <Grid size="auto">
+                        <Button variant="outlined" tabIndex={workingTabIndex++} onClick={() => ScreenStack.pop()}>Return
+                            without Saving</Button>
+                    </Grid>
+                    {ScreenStack.stackTop().activityState === CRUD_ACTION_CHANGE && (
+                        <Grid size="auto">
+                            <Button type="submit" variant="outlined" name={itemUpdateUrl} value={CRUD_ACTION_DELETE}
+                                    tabIndex={workingTabIndex++}>Delete</Button>
+                        </Grid>
+                    )}
                 </Grid>
             </form>
-
 
             <Box sx={{height: 400, width: '100%', mb: 10}}>
 
 
-                {components.length === 0 ? (
-                    <div>
-                    <Typography variant="h6" gutterBottom sx={{ml: 2, mt: 2}} align={"center"}>
-                        There are no components of {itemNameForPresent()}
-                    </Typography>
-                    </div>
-                ) : (
-                    <div>
-                    <Typography variant="h6" gutterBottom sx={{ml: 2, mt: 2}} align={"center"}>
-                        Components of {itemNameForPresent()}
-                    </Typography>
-
-                    <DataGrid columns={BomComponentsDto}
-                              apiRef={apiRef}
-                              rows={components}
-                              density="compact"
-                              editMode="cell"
-                              rowSelection={true}
-                              getRowId={(row) => row.id}
-                              processRowUpdate={ComponentsUpdateRowHandler}
-                              columnHeaderHeight={60} // Increase height to accommodate multiple lines
-                              sx={{
-                                  '& .MuiDataGrid-columnHeaderTitle': {
-                                      whiteSpace: 'normal',
-                                      lineHeight: 'normal',
-                                  },
-                                  '& .MuiDataGrid-cell': {
-                                      cursor: 'pointer',
-                                  },
-                                  '& .MuiDataGrid-cell:focus': {
-                                      outline: 'solid 2px blue',
-                                  },
-                                  '& .MuiDataGrid-cell:focus-within': {
-                                      outline: 'solid 2px blue',
-                                  },
-                                  '& .MuiDataGrid-columnHeader:focus': {
-                                      outline: 'solid 2px blue',
-                                  },
-                                  '& .MuiDataGrid-columnHeader:focus-within': {
-                                      outline: 'solid 2px blue',
-                                  },
-                              }}
-                              onProcessRowUpdateError={(error) => console.error("Row update failed:", error)}
-                              slots={{
-                                  footer: () => null,
-                              }}
-                    />
-                    </div>
-                )}
+                        <DataGridHelper apiRef={apiRef}
+                                        label={components.length === 0 ? "There are no components of " + itemNameForPresent() : "Components of " + itemNameForPresent()}
+                                        rows={components}
+                                        columns={BomComponentsDto}
+                                        handleRowChangeCallback={ComponentsUpdateRowHandler}
+                                        selectionMode="single"
+                                        rowSelectionModel={selectedRows}
+                                        onSelectionChange={(rows) => setSelectedRows(rows.map(r => r.id))}
+                        />
 
 
-
-                {whereUsed.length === 0 ? (
-                    <div>
-                    <Typography variant="h6" gutterBottom sx={{ml: 2, mt: 2}} align={"center"}>
-                        {itemNameForPresent()} is not a component of any item.
-                    </Typography>
-                    </div>
-
-                ) : (
-                    <div>
-                    <Typography variant="h6" gutterBottom sx={{ml: 2, mt: 2}} align={"center"}>
-                        Items where {itemNameForPresent()} is Used.
-                    </Typography>
-
-
-                    <DataGrid columns={BomComponentsDto}
-                              apiRef={apiRef}
-                              rows={whereUsed}
-                              density="compact"
-                              editMode="cell"
-                              rowSelection={true}
-                              getRowId={(row) => row.id}
-                              //  processRowUpdate={ComponentsUpdateRowHandler}
-                              columnHeaderHeight={60} // Increase height to accommodate multiple lines
-                              sx={{
-                                  '& .MuiDataGrid-columnHeaderTitle': {
-                                      whiteSpace: 'normal',
-                                      lineHeight: 'normal',
-                                  },
-                                  '& .MuiDataGrid-cell': {
-                                      cursor: 'pointer',
-                                  },
-                                  '& .MuiDataGrid-cell:focus': {
-                                      outline: 'solid 2px blue',
-                                  },
-                                  '& .MuiDataGrid-cell:focus-within': {
-                                      outline: 'solid 2px blue',
-                                  },
-                                  '& .MuiDataGrid-columnHeader:focus': {
-                                      outline: 'solid 2px blue',
-                                  },
-                                  '& .MuiDataGrid-columnHeader:focus-within': {
-                                      outline: 'solid 2px blue',
-                                  },
-                              }}
-                              onProcessRowUpdateError={(error) => console.error("Row update failed:", error)}
-                              slots={{
-                                  footer: () => null,
-                              }}
-                    />
-                    </div>
-                )}
+                        <DataGridHelper label={whereUsed.length === 0 ? itemNameForPresent() + " is not a component of any item." : "Items where " + itemNameForPresent() + " is Used."}
+                                        rows={whereUsed}
+                                        columns={BomParentsDto}
+                                        selectionMode="none"
+                        />
 
                 <Grid container sx={{mt: 2}} size={{xs: 12}}>
                     <Grid size={{xs: 'auto'}}>
                         <Button variant="outlined" onClick={transitionToComponentDelete}>Delete</Button>
+                        <Button variant="outlined" onClick={SpecialTransitionToComponentDelete}>Special Delete</Button>
                         <Button variant="outlined" onClick={transitionToComponentAdd}>Add</Button>
                     </Grid>
                 </Grid>

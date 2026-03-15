@@ -14,21 +14,9 @@ export const getGridColumns = () => {
         type: rule.type,
         valueOptions: rule.valueOptions,
         defaultValue: rule.defaultValue,
+        label : 'abc',
         ...(rule.type === 'number' && {
             valueParser: (value) => Number(value),
         }),
     }));
-};
-
-
-/**
- * Get GridColDef for specific fields by name
- * @param {string[]} fieldNames - Array of field names to include
- * @returns {Array} Array of GridColDef objects for specified fields
- */
-export const getGridColumnsForFields = (fieldNames) => {
-    const allColumns = getGridColumns();
-    return allColumns.filter(col =>
-        fieldNames.some(name => name.toLowerCase() === col.field)
-    );
 };

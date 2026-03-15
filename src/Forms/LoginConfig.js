@@ -3,8 +3,8 @@ import {
     PASSWORD_VALIDATION } from "../Metadata/Domain.jsx";
 
 
-export const queryParameterConfig = [
-    USERNAME_VALIDATION.appendGridFieldOptions( { 'restName' : "userName" } ),
-    PASSWORD_VALIDATION.appendGridFieldOptions( { 'restName' : "password" } )
+export const LoginRequestEditableMetadata = [
+    USERNAME_VALIDATION.appendGridFieldOptions( { 'restName' : "userName", editable: true } ),
+    PASSWORD_VALIDATION.appendGridFieldOptions( { 'restName' : "password", editable: true } )
 ];
 

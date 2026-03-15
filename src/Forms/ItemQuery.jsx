@@ -3,9 +3,8 @@ import ErrorMessage from "../ErrorMessage.jsx";
 import FormService, {extractMessageFromResponse, isShallowEqual} from "../FormService.js";
 import {Box, Button} from '@mui/material';
 import Grid from '@mui/material/Grid';
-import {ItemQueryParametersDTO, queryResultsConfig} from "./ItemQueryConfig.js";
-import TextField from "@mui/material/TextField";
-import {DataGrid, useGridApiRef} from "@mui/x-data-grid";
+import {ItemQueryRequestEditableMetadata, ItemQueryResultsMetadata} from "./ItemQueryConfig.js";
+import {useGridApiRef} from "@mui/x-data-grid";
 import {CRUD_ACTION_CHANGE, CRUD_ACTION_INSERT, CRUD_ACTION_NONE} from "../crudAction.js";
 import {ScreenTransition} from "../ScreenTransition.js";
 import ItemMaster from "./ItemMaster.jsx";
@@ -13,6 +12,8 @@ import {ScreenStack} from "../Stack.js";
 import {itemCrudRequestTemplate, itemMasterReportUrl, itemQueryAll, itemQueryUrl, itemUpdateUrl} from "../Globals.js";
 import ItemProperties from "./ItemProperties.jsx";
 import {ItemDtoToStringWithOperation} from "./ItemPropertiesConfig.js";
+import {PropertyGrid} from "../Objects/PropertyGrid.jsx";
+import {DataGridHelper} from "../Objects/DataGridHelper.jsx";
 
 
 const ItemQuery = () => {
@@ -22,6 +23,13 @@ const ItemQuery = () => {
     const [message, setMessage] = useState("");
     const [rowsOfQueryResults, setRowsOfQueryResults] = useState([]);
     const [itemMasterQueryResults, setItemMasterQueryResults] = useState([]);
+    const [queryParameters, setQueryParameters] = useState({});
+
+    // const handleInputChange = (field) => {
+    //     return (event) => {
+    //         setQueryParameters({...queryParameters, [field]: event.target.value});
+    //     }
+    // }
 
 
     const afterItemMasterQueryResults = (response) => {
@@ -45,7 +53,6 @@ const ItemQuery = () => {
             setRowsOfQueryResults([]);
         }
     }
-
     const afterChangeCallback = (responseFromUpdate) => {
         if (responseFromUpdate.status !== 200) {
             setMessage("Error" + responseFromUpdate.message);
@@ -124,6 +131,7 @@ const ItemQuery = () => {
 
     function clearQueryParameters(event) {
         setRowsOfQueryResults([])
+        setQueryParameters({})
         queryFormService.clearFormValues(event);
     }
 
@@ -143,10 +151,15 @@ const ItemQuery = () => {
 
 
     const handleCellClick = (params) => {
-        // Check if the clicked cell belongs to the first column (field: 'id')
-        if (params.field === ItemQueryParametersDTO[0].field) {
-            ScreenStack.push(new ScreenTransition("Change Item Properties" + ItemDtoToStringWithOperation(rowsOfQueryResults[params.value - 1]), ItemProperties, CRUD_ACTION_CHANGE,
-                [rowsOfQueryResults[params.value - 1]]));
+        const isIdColumn = params.field === 'id';
+        if (isIdColumn) {
+            const selectedRow = params.row;
+            const transitionLabel = "Change Item Properties" + ItemDtoToStringWithOperation(selectedRow);
+
+            const nextScreen = new ScreenTransition( transitionLabel,
+                ItemProperties, CRUD_ACTION_CHANGE, [selectedRow]);
+
+            ScreenStack.push(nextScreen);
         }
     };
 
@@ -157,21 +170,11 @@ const ItemQuery = () => {
                 <ErrorMessage message={message}/>
                 <br/>
 
-                <Grid container spacing={2} padding={2}>
-                    {ItemQueryParametersDTO.map((col) => (
-                        <Grid size={{xs: 12, sm: 6, md: 4}} key={col.field}>
-                            <TextField
-                                type={col.type}
-                                size="small"
-                                margin="dense"
-                                name={col.domainName}
-                                placeholder={col.placeholder}
-                                maxLength={col.maxLength}
-                                defaultValue={''}
-                                sx={{width: '240px'}}
-                            />
-                        </Grid>
-                    ))}
+                {/*//    <PropertyGrid label={"Item Query Parameters"}*/}
+                {/* //                 objectToPresent={queryParameters}*/}
+                {/*//                  validationRules={ItemQueryRequestEditableMetadata}*/}
+                {/*//                  handleInputChangeCallback={handleInputChange}/>*/}
+                {/*//*/}
                     <Grid size={{xs: 12}} container spacing={2}>
                         <Grid size="auto">
                             <Button type="submit" variant="contained" name={itemQueryUrl}>Search</Button>
@@ -183,33 +186,19 @@ const ItemQuery = () => {
                             <Button variant="outlined" onClick={transitionToItemMaster}>Item Master Report</Button>
                         </Grid>
                     </Grid>
-                </Grid>
             </form>
 
             <hr style={{margin: "20px 0", borderTop: "1px solid #ccc"}}/>
 
             <Box sx={{height: 400, width: '100%', mb: 10}}>
-                {rowsOfQueryResults.length === 0 ? (
-                    "No results"
-                ) : (
-                    <DataGrid columns={queryResultsConfig}
-                              apiRef={apiRef}
-                              rows={rowsOfQueryResults}
-                              density="compact"
-                              disableMultipleRowSelection={true}
-                              rowSelection={true}
-                              onRowSelectionModelChange={(newSelectionModel) => {
-                                  // Truncate to single selection if needed
-                                  if (newSelectionModel.length > 1) {
-                                      apiRef.current.setRowSelectionModel([newSelectionModel[0]]);
-                                  }
-                              }}
-                              getRowId={(row) => row.id}
-                              processRowUpdate={ItemQueryRowChange}
-                              onCellClick={handleCellClick}
-                              onProcessRowUpdateError={(error) => console.error("Row update failed:", error)}
-                    />
-                )}
+
+                <DataGridHelper apiRef={apiRef}
+                                label="Item Query Results"
+                                rows={rowsOfQueryResults}
+                                columns={ItemQueryResultsMetadata}
+                                handleRowChangeCallback={ItemQueryRowChange}
+                                handleCellClickCallback={handleCellClick} />
+
                 <Grid container sx={{mt: 1}}>
                     <Grid size="auto">
                         <Button variant="outlined" onClick={transitionToItemPropertiesAdd}>Add</Button>

@@ -25,16 +25,20 @@ export class ValidationRule {
 
     /**
      * Given a domainName which references a validation rule, return a GridColDef object with the specified options.
-     * @param girdfieldOption
-     * @return111s Combined validation and GridFieldOptions with recalculation values.
+     * @param gridFieldOption
+     * @returns Combined validation and GridFieldOptions with recalculation values.
      */
-    appendGridFieldOptions( girdfieldOption ) {
+    appendGridFieldOptions(gridFieldOption) {
 
-        const combinedRule = Object.assign(Object.create(Object.getPrototypeOf(this)), this);
-        Object.assign(combinedRule, girdfieldOption);
+        if (gridFieldOption instanceof ValidationRule) {
+            console.warn("ValidationRule passed to appendGridFieldOptions.  Did you mean to pass an object with options?");
+            gridFieldOption = arguments[1];
+        }
+
+        const combinedRule = Object.assign(Object.create(Object.getPrototypeOf(this)), this, gridFieldOption);
 
         /*  Width is in pixels.  */
-        combinedRule.width = girdfieldOption.width ?? Math.max(combinedRule.maxLengthInChars, combinedRule.headerName.length) * 14 + 20;
+        combinedRule.width = gridFieldOption.width ?? Math.max(combinedRule.maxLengthInChars, combinedRule.headerName.length) * 14 + 20;
         return combinedRule;
     }
 

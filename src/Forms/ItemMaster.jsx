@@ -1,12 +1,12 @@
 import React, {useEffect, useState} from 'react';
 import FormService from "../FormService.js";
 import {Box, Button} from '@mui/material';
-import {DataGrid} from "@mui/x-data-grid";
+import {DataGridHelper} from "../Objects/DataGridHelper.jsx";
 import {textReportConfig} from "./ItemMasterConfig.js";
 import Grid from "@mui/material/Grid";
 import {ScreenStack} from "../Stack.js";
 import ErrorMessage from "../ErrorMessage.jsx";
-import {ItemQueryParametersDTO} from "./ItemQueryConfig.js";
+import {ItemQueryRequestEditableMetadata} from "./ItemQueryConfig.js";
 import TextField from "@mui/material/TextField";
 import {itemMasterReportUrl, itemQueryAll, itemQueryUrl, itemCrudRequestTemplate} from "../Globals.js";
 
@@ -52,6 +52,8 @@ const ItemMaster = () => {
         rowsOfQueryResults.map((row) => row.id = counter++);
     }
 
+    const safeRows = rowsOfQueryResults || [];
+
     return (
 
         <div>
@@ -61,7 +63,7 @@ const ItemMaster = () => {
                 <br/>
 
                 <Grid container spacing={2} padding={2}>
-                    {ItemQueryParametersDTO.map((col) => (
+                    {ItemQueryRequestEditableMetadata.map((col) => (
                         <Grid size={{xs: 12, sm: 6, md: 4}} key={col.field}>
                             <TextField
                                 type={col.type}
@@ -89,41 +91,27 @@ const ItemMaster = () => {
                 </Grid>
             </Grid>
             <Box sx={{height: 600, width: '100%', mb: 10}}>
-                {rowsOfQueryResults.length === 0 ? (
-                    "No results"
-                ) : (
-                    <DataGrid columns={textReportConfig}
-                              rows={rowsOfQueryResults}
-                              density="compact"
-                              disableMultipleRowSelection={true}
-                              rowSelection={true}
-                              onRowSelectionModelChange={(newSelectionModel) => {
-                                  // Enforce single selection by taking only the first item
-                                  if (newSelectionModel.length > 1) {
-                                      // Note: Since this grid is not controlled, we'd need state to force it.
-                                      // But disableMultipleRowSelection should handle it for uncontrolled grids.
-                                  }
-                              }}
-                              getRowId={(row) => row.id}
-                              sx={{
-                                  '& .MuiDataGrid-columnHeaderTitle': {
-                                      fontFamily: 'monospace',
-                                  },
-                                  '& .MuiDataGrid-cell': {
-                                      fontFamily: 'monospace',
-                                      whiteSpace: 'pre'
-                                  },
-                              }}
-                              initialState={{
-                                  columns: {
-                                      columnVisibilityModel: {
-                                          crudAction: false,
-                                          id: false
-                                      },
-                                  },
-                              }}
-                    />
-                )}
+                <DataGridHelper columns={textReportConfig}
+                                rows={safeRows}
+                                selectionMode="single"
+                                sx={{
+                                    '& .MuiDataGrid-columnHeaderTitle': {
+                                        fontFamily: 'monospace',
+                                    },
+                                    '& .MuiDataGrid-cell': {
+                                        fontFamily: 'monospace',
+                                        whiteSpace: 'pre'
+                                    },
+                                }}
+                                initialState={{
+                                    columns: {
+                                        columnVisibilityModel: {
+                                            crudAction: false,
+                                            id: false
+                                        },
+                                    },
+                                }}
+                />
             </Box>
             <Grid container sx={{ mt: 1 }}>
                 <Grid size="auto">
