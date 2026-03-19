@@ -25,11 +25,11 @@ const ItemQuery = () => {
     const [itemMasterQueryResults, setItemMasterQueryResults] = useState([]);
     const [queryParameters, setQueryParameters] = useState({});
 
-    // const handleInputChange = (field) => {
-    //     return (event) => {
-    //         setQueryParameters({...queryParameters, [field]: event.target.value});
-    //     }
-    // }
+    const handleInputChange = (field) => {
+        return (event) => {
+        setQueryParameters({...queryParameters, [field]: event.target.value});
+        }
+    }
 
 
     const afterItemMasterQueryResults = (response) => {
@@ -150,10 +150,8 @@ const ItemQuery = () => {
     }
 
 
-    const handleCellClick = (params) => {
-        const isIdColumn = params.field === 'id';
-        if (isIdColumn) {
-            const selectedRow = params.row;
+    const handleRowSelectionChange = ( row ) => {
+            const selectedRow = row[0];
             const transitionLabel = "Change Item Properties" + ItemDtoToStringWithOperation(selectedRow);
 
             const nextScreen = new ScreenTransition( transitionLabel,
@@ -161,8 +159,6 @@ const ItemQuery = () => {
 
             ScreenStack.push(nextScreen);
         }
-    };
-
 
     return (
         <div>
@@ -170,12 +166,13 @@ const ItemQuery = () => {
                 <ErrorMessage message={message}/>
                 <br/>
 
-                {/*//    <PropertyGrid label={"Item Query Parameters"}*/}
-                {/* //                 objectToPresent={queryParameters}*/}
-                {/*//                  validationRules={ItemQueryRequestEditableMetadata}*/}
-                {/*//                  handleInputChangeCallback={handleInputChange}/>*/}
-                {/*//*/}
-                    <Grid size={{xs: 12}} container spacing={2}>
+                <PropertyGrid label={"Item Query Parameters"}
+                              objectToPresent={queryParameters}
+                              validationRules={ItemQueryRequestEditableMetadata}
+                              handleInputChangeCallback={handleInputChange}/>
+
+
+                                    <Grid size={{xs: 12}} container spacing={2}>
                         <Grid size="auto">
                             <Button type="submit" variant="contained" name={itemQueryUrl}>Search</Button>
                         </Grid>
@@ -192,12 +189,13 @@ const ItemQuery = () => {
 
             <Box sx={{height: 400, width: '100%', mb: 10}}>
 
+
                 <DataGridHelper apiRef={apiRef}
                                 label="Item Query Results"
                                 rows={rowsOfQueryResults}
                                 columns={ItemQueryResultsMetadata}
-                                handleRowChangeCallback={ItemQueryRowChange}
-                                handleCellClickCallback={handleCellClick} />
+                                handleRowChangeCallback={handleRowSelectionChange}
+                />
 
                 <Grid container sx={{mt: 1}}>
                     <Grid size="auto">

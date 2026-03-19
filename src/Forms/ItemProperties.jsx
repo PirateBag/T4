@@ -265,33 +265,33 @@ const ItemProperties = () => {
             </form>
 
             <Box sx={{height: 400, width: '100%', mb: 10}}>
-
-
+                {ScreenStack.stackTop().activityState === CRUD_ACTION_CHANGE && (
+                    <>
                         <DataGridHelper apiRef={apiRef}
                                         label={components.length === 0 ? "There are no components of " + itemNameForPresent() : "Components of " + itemNameForPresent()}
                                         rows={components}
                                         columns={BomComponentsDto}
                                         handleRowChangeCallback={ComponentsUpdateRowHandler}
-                                        selectionMode="single"
-                                        rowSelectionModel={selectedRows}
                                         onSelectionChange={(rows) => setSelectedRows(rows.map(r => r.id))}
+                                        onCellClick={undefined}
                         />
 
+                        <Grid container sx={{mt: 2}} size={{xs: 12}}>
+                            <Grid size={{xs: 'auto'}}>
+                                <Button variant="outlined" onClick={transitionToComponentDelete}>Delete</Button>
+                                <Button variant="outlined" onClick={SpecialTransitionToComponentDelete}>Special Delete</Button>
+                                <Button variant="outlined" onClick={transitionToComponentAdd}>Add</Button>
+                            </Grid>
+                        </Grid>
 
-                        <DataGridHelper label={whereUsed.length === 0 ? itemNameForPresent() + " is not a component of any item." : "Items where " + itemNameForPresent() + " is Used."}
-                                        rows={whereUsed}
-                                        columns={BomParentsDto}
-                                        selectionMode="none"
+                        <DataGridHelper
+                            label={whereUsed.length === 0 ? itemNameForPresent() + " is not a component of any item." : "Items where " + itemNameForPresent() + " is Used."}
+                            rows={whereUsed}
+                            columns={BomParentsDto}
+                            onSelectionChange={undefined}
                         />
-
-                <Grid container sx={{mt: 2}} size={{xs: 12}}>
-                    <Grid size={{xs: 'auto'}}>
-                        <Button variant="outlined" onClick={transitionToComponentDelete}>Delete</Button>
-                        <Button variant="outlined" onClick={SpecialTransitionToComponentDelete}>Special Delete</Button>
-                        <Button variant="outlined" onClick={transitionToComponentAdd}>Add</Button>
-                    </Grid>
-                </Grid>
-
+                    </>
+                )}
             </Box>
         </div>
     );

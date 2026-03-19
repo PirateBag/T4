@@ -1,5 +1,5 @@
 
-import {DataGrid} from "@mui/x-data-grid";
+import {DataGrid } from "@mui/x-data-grid";
 import {Typography} from "@mui/material";
 import React from "react";
 
@@ -9,37 +9,40 @@ export function DataGridHelper({
                                    rows,
                                    columns,
                                    handleRowChangeCallback,
-                                   handleCellClickCallback,
-                                   selectionMode = 'single',
-                                   onSelectionChange,
-                                   rowSelectionModel = [],
-                                   disableRowSelectionOnClick = false,
                                    sx,
                                    initialState
                                }) {
 
-    const safeRows = rows || [];
-    const safeColumns = columns || [];
+    const safeRows = React.useMemo(() => rows || [], [rows]);
+    const safeColumns = React.useMemo(() => columns || [], [columns]);
 
-    const isSingleSelection = selectionMode === 'single';
-    const isMultipleSelection = selectionMode === 'multiple';
-    const isSelectionEnabled = selectionMode !== 'none';
-
-    const handleSelectionModelChange = (newSelectionModel) => {
-        let modelToSet = newSelectionModel || [];
-
-        // Enforce single selection logic if in single mode
-        if (isSingleSelection && modelToSet.length > 1) {
-            modelToSet = [modelToSet[modelToSet.length - 1]];
-            if (apiRef && apiRef.current) {
-                apiRef.current.setRowSelectionModel(modelToSet);
-            }
+    const handleInternalCellClick = ( params ) => {
+        // Handle ID column click for selection
+        if (params.field === 'id' && handleRowChangeCallback) {
+            handleRowChangeCallback([params.row]);
         }
+    };
 
-        // Map IDs back to full row objects if callback is provided
-        if (onSelectionChange) {
-            const selectedRows = safeRows.filter(row => modelToSet.includes(row.id));
-            onSelectionChange(selectedRows);
+    // Construct common DataGrid props
+    const gridProps = {
+        apiRef,
+        columns: safeColumns,
+        rows: safeRows,
+        density: "compact",
+        rowSelection: false, // Disable standard MUI selection
+        getRowId: (row) => row.id,
+        onCellClick: handleInternalCellClick,
+        sx,
+        initialState,
+        sortingMode: "client",
+        filterMode: "client",
+        slotProps: {
+            footer: {
+                sx: { display: 'flex' },
+            },
+            noRowsOverlay: {
+                sx: { display: 'none' }
+            }
         }
     };
 
@@ -51,33 +54,7 @@ export function DataGridHelper({
                 </Typography>
             )}
 
-            <DataGrid columns={safeColumns}
-                      //  apiRef={apiRef}
-                      rows={safeRows}
-                      density="compact"
-                      rowSelection={isSelectionEnabled}
-                      // checkboxSelection={isMultipleSelection}
-                      // disableMultipleRowSelection={isSingleSelection}
-                      //  rowSelectionModel={rowSelectionModel || []}
-                      onRowSelectionModelChange={handleSelectionModelChange}
-                      disableRowSelectionOnClick={disableRowSelectionOnClick}
-                      getRowId={(row) => row.id}
-                      //  processRowUpdate={handleRowChangeCallback}
-                      //  onCellClick={handleCellClickCallback}
-                      onProcessRowUpdateError={(error) => console.error("Row update failed:", error)}
-                      //  sx={sx}
-                      //  initialState={initialState}
-                      // slotProps={{
-                      //     footer: {
-                      //         sx: { display: safeRows.length === 0 ? 'none' : 'flex' }
-                      //     }
-                      // }}
-            />
-            {/*{safeRows.length === 0 && (*/}
-            {/*    <Typography variant="h5" gutterBottom sx={{ml: 2, mt: 2}} align={"center"}>*/}
-            {/*        No data for you.*/}
-            {/*    </Typography>*/}
-            {/*)}*/}
+            <DataGrid {...gridProps} />
         </div>
     );
 }

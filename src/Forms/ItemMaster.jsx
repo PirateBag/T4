@@ -19,7 +19,13 @@ const ItemMaster = () => {
         console.log("afterQueryCallback received:", response.status);
         if (response.status === 200) {
             setMessage("Success");
-            setRowsOfQueryResults(response.data.data);
+            const data = response.data.data || [];
+            // Assign sequential IDs if missing or needed for the report
+            const rowsWithIds = data.map((row, index) => ({
+                ...row,
+                id: row.id || (index + 1)
+            }));
+            setRowsOfQueryResults(rowsWithIds);
         } else {
             setMessage("Error");
             setRowsOfQueryResults([]);
@@ -45,12 +51,7 @@ const ItemMaster = () => {
             }
         };
         fetchData();
-    }, [rowsOfQueryResults.length]); // Dependency array ensures this runs only on mount
-
-    if (rowsOfQueryResults.length > 0) {
-        let counter = 1;
-        rowsOfQueryResults.map((row) => row.id = counter++);
-    }
+    }, []); // Dependency array ensures this runs only on mount
 
     const safeRows = rowsOfQueryResults || [];
 
@@ -93,7 +94,7 @@ const ItemMaster = () => {
             <Box sx={{height: 600, width: '100%', mb: 10}}>
                 <DataGridHelper columns={textReportConfig}
                                 rows={safeRows}
-                                selectionMode="single"
+                                onCellClick={undefined}
                                 sx={{
                                     '& .MuiDataGrid-columnHeaderTitle': {
                                         fontFamily: 'monospace',
