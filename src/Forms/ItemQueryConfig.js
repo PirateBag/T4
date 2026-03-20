@@ -15,6 +15,17 @@ export const ItemQueryRequestEditableMetadata = [
     QUANTITY_VALIDATION.appendGridFieldOptions({ 'editable': true, 'headerName': 'On Hand'} )
 ];
 
+export const ItemQueryRequestCrudInsertMetadata = [
+    ID_VALIDATION.appendGridFieldOptions( { 'editable': false } ),
+    DESCRIPTION_VALIDATION.appendGridFieldOptions({ 'editable': true } ),
+    COST_VALIDATION.appendGridFieldOptions({ 'editable': true } ),
+    SOURCING_VALIDATION.appendGridFieldOptions({ 'editable': true } ),
+    MAX_DEPTH_VALIDATION.appendGridFieldOptions({ 'editable': false } ),
+    LEAD_TIME_VALIDATION.appendGridFieldOptions({ 'editable': true } ),
+    QUANTITY_VALIDATION.appendGridFieldOptions({ 'editable': false, 'headerName': 'On Hand'} )
+];
+
+
 export const ItemQueryResultsMetadata  = [
     ID_VALIDATION.appendGridFieldOptions(  { 'editable': false, 'headerName': 'Id'  } ),
     DESCRIPTION_VALIDATION.appendGridFieldOptions({ 'editable': true, 'headerName': 'Description', width: 300 } ),

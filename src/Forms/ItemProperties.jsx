@@ -20,6 +20,7 @@ import {DataGridHelper} from "../Objects/DataGridHelper.jsx";
 import {ScreenTransition} from "../ScreenTransition.js";
 import BomProperties from "./BomProperties.jsx";
 import {PropertyGrid} from "../Objects/PropertyGrid.jsx";
+import {ItemQueryRequestCrudInsertMetadata} from "./ItemQueryConfig.js";
 
 const ItemProperties = () => {
 
@@ -243,7 +244,7 @@ const ItemProperties = () => {
 
                 <PropertyGrid label={queryParameters.description}
                               objectToPresent={queryParameters}
-                              validationRules={ItemRoDTO}
+                              validationRules={ItemQueryRequestCrudInsertMetadata}
                               handleInputChangeCallback={handleInputChange}></PropertyGrid>
 
                 <Grid size={12} container spacing={2}>
