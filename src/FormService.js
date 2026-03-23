@@ -1,5 +1,6 @@
 import axios from "axios";
 import {validateFieldsOfObject} from "./Metadata/ValidateRule.js";
+import {CRUD_ACTION_NONE} from "./crudAction.js";
 
 export const isShallowEqual = (obj1, obj2) => {
     const keys1 = Object.keys(obj1);
@@ -25,6 +26,20 @@ class FormService {
         this.requestTemplate = options.requestTemplate;
         this.validationRules = options.validationRules ?? [];
     }
+
+
+    /**
+     * Pull all object entries from a form and return as an object.
+     * @param event
+     * @returns {{[p: string]: unknown}}
+     */
+    setCrudActionInObject( source, crudAction ) {
+        source.crudAction = crudAction;
+        console.log( "Object with Crud Action is '" + source + "'" );
+        return source;
+    }
+
+
 
     handleBlurOnTextField( event, validationRule ) {
         const valueToValidate = event.target.value.trim();
@@ -95,15 +110,16 @@ class FormService {
 
         const queryParametersFromForm = this.extractRequestAsObject(event);
 
+
         messagesFromFormValidation = validateFieldsOfObject(this.validationRules, queryParametersFromForm)
         if (messagesFromFormValidation.length > 0) {
             this.messageFormSetter(messagesFromFormValidation);
             return
         }
 
+        const requestPriorToCrudAction = this.singleRowToRequest( this.requestObject ?? queryParametersFromForm);
+        const finalRequestAsObject = this.setCrudActionInObject( requestPriorToCrudAction, event.nativeEvent.submitter.value ?? CRUD_ACTION_NONE );
 
-        const finalRequestAsObject = this.singleRowToRequest( this.requestObject ?? queryParametersFromForm);
-            this.extractRequestAsObject( event );
         console.log( "Final request prior to CrudAction:", finalRequestAsObject );
         console.log( "submitter value:", event.nativeEvent.submitter.value );
         const overrideForCrudAction = event.nativeEvent.submitter.value ?? "";

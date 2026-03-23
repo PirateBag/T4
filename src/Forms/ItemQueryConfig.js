@@ -1,5 +1,5 @@
 import {
-    COST_VALIDATION,
+    COST_VALIDATION, CRUD_VALIDATION,
     DESCRIPTION_VALIDATION,
     ID_VALIDATION, LEAD_TIME_VALIDATION, MAX_DEPTH_VALIDATION, QUANTITY_VALIDATION,
     SOURCING_VALIDATION
@@ -22,7 +22,9 @@ export const ItemQueryRequestCrudInsertMetadata = [
     SOURCING_VALIDATION.appendGridFieldOptions({ 'editable': true } ),
     MAX_DEPTH_VALIDATION.appendGridFieldOptions({ 'editable': false } ),
     LEAD_TIME_VALIDATION.appendGridFieldOptions({ 'editable': true } ),
-    QUANTITY_VALIDATION.appendGridFieldOptions({ 'editable': false, 'headerName': 'On Hand'} )
+    QUANTITY_VALIDATION.appendGridFieldOptions({ 'editable': false, 'headerName': 'On Hand'} ),
+    CRUD_VALIDATION.appendGridFieldOptions( { 'editable': false, 'hidden': 'true'} )
+
 ];
 
 

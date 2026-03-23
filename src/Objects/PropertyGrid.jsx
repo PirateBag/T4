@@ -16,6 +16,8 @@ export function  PropertyGrid( {label, objectToPresent, validationRules, handleI
 
     const direction = layout || 'row';
 
+    if (objectToPresent)
+
     return (
         <div>
         <Typography variant="h5" gutterBottom sx={{ml: 2, mt: 2}} align={"center"}>{label}
@@ -23,9 +25,7 @@ export function  PropertyGrid( {label, objectToPresent, validationRules, handleI
 
 
     <Grid container spacing={2} padding={2} direction={direction}>
-        {validationRules.map((col) => {
-            const isEditable = col.editable !== false;
-            return (
+        {validationRules.map((col) => (
             <Grid size={{xs: 12, sm: 6, md: 4}} key={col.field}>
                 <TextField
                     type={col.type}
@@ -36,17 +36,11 @@ export function  PropertyGrid( {label, objectToPresent, validationRules, handleI
                     maxLength={col.maxLength}
                     value={objectToPresent[col.field] || col.defaultValue ||''}
                     onChange={handleInputChangeCallback(col.field)}
-                    sx={{width: '240px', backgroundColor: isEditable ? 'white' : 'inherit'}}
-                    slotProps={{
-                        htmlInput: {
-                            readOnly: !isEditable,
-                            tabIndex: isEditable ? undefined : -1,
-                        },
-                    }}
+                    disabled={col.editable === false}
+                    sx={{width: '240px', display: col.hidden ? 'none' : 'block'}}
                 />
             </Grid>
-            )
-        })}
+        ))}
         </Grid>
         </div>
 

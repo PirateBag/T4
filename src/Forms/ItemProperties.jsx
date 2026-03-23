@@ -250,7 +250,7 @@ const ItemProperties = () => {
                 <Grid size={12} container spacing={2}>
                     <Grid size="auto">
                         <Button type="submit" variant="contained" name={itemUpdateUrl}
-                                tabIndex={workingTabIndex++}>{saveButtonMessage}</Button>
+                                tabIndex={workingTabIndex++}  value={CRUD_ACTION_INSERT} >{saveButtonMessage}</Button>
                     </Grid>
                     <Grid size="auto">
                         <Button variant="outlined" tabIndex={workingTabIndex++} onClick={() => ScreenStack.pop()}>Return
