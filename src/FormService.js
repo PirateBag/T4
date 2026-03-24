@@ -139,7 +139,8 @@ class FormService {
      */
     extractRequestAsObject = (event) => {
         event.preventDefault();
-        const formEntries = Object.fromEntries(new FormData(event.target.closest('form')).entries());
+        const formData = new FormData( event.target.closest('form') );
+        const formEntries = Object.fromEntries(formData );
         return  this.copyObjectRemovingEmptyStrings(formEntries);
     }
 

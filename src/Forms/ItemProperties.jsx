@@ -250,7 +250,7 @@ const ItemProperties = () => {
                 <Grid size={12} container spacing={2}>
                     <Grid size="auto">
                         <Button type="submit" variant="contained" name={itemUpdateUrl}
-                                tabIndex={workingTabIndex++}  value={CRUD_ACTION_INSERT} >{saveButtonMessage}</Button>
+                                tabIndex={workingTabIndex++}  value={queryParameters.crudAction} >{saveButtonMessage}</Button>
                     </Grid>
                     <Grid size="auto">
                         <Button variant="outlined" tabIndex={workingTabIndex++} onClick={() => ScreenStack.pop()}>Return
@@ -258,7 +258,7 @@ const ItemProperties = () => {
                     </Grid>
                     {ScreenStack.stackTop().activityState === CRUD_ACTION_CHANGE && (
                         <Grid size="auto">
-                            <Button type="submit" variant="outlined" name={itemUpdateUrl} value={CRUD_ACTION_DELETE}
+                            <Button type="submit" variant="outlined" name={itemUpdateUrl} value={ScreenStack.stackTop().activityState}
                                     tabIndex={workingTabIndex++}>Delete</Button>
                         </Grid>
                     )}

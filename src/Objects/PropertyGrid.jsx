@@ -26,7 +26,7 @@ export function  PropertyGrid( {label, objectToPresent, validationRules, handleI
 
     <Grid container spacing={2} padding={2} direction={direction}>
         {validationRules.map((col) => (
-            <Grid size={{xs: 12, sm: 6, md: 4}} key={col.field}>
+            // <Grid size={{xs: 12, sm: 6, md: 4}} key={col.field}>
                 <TextField
                     type={col.type}
                     size="small"
@@ -36,10 +36,10 @@ export function  PropertyGrid( {label, objectToPresent, validationRules, handleI
                     maxLength={col.maxLength}
                     value={objectToPresent[col.field] || col.defaultValue ||''}
                     onChange={handleInputChangeCallback(col.field)}
-                    disabled={col.editable === false}
+                    readonly={col.editable === false}
                     sx={{width: '240px', display: col.hidden ? 'none' : 'block'}}
                 />
-            </Grid>
+            // </Grid>
         ))}
         </Grid>
         </div>
