@@ -34,9 +34,14 @@ export function  PropertyGrid( {label, objectToPresent, validationRules, handleI
                     name={col.domainName}
                     placeholder={col.headerName}
                     maxLength={col.maxLength}
-                    value={objectToPresent[col.field] || col.defaultValue ||''}
-                    onChange={handleInputChangeCallback(col.field)}
-                    readonly={col.editable === false}
+                    value={objectToPresent[col.field] ?? col.defaultValue ?? ''}
+                    onChange={handleInputChangeCallback(col)}
+                    disabled={col.disabled === true}
+                    slotProps={{
+                        input: {
+                            readOnly: col.editable === false,
+                        },
+                    }}
                     sx={{width: '240px', display: col.hidden ? 'none' : 'block'}}
                 />
             // </Grid>

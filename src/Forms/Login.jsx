@@ -23,9 +23,13 @@ function Login(  )
 
     const [queryParameters, setQueryParameters] = useState( { userName: "fred", password: "dilban" })
 
-    const handleInputChange = (field) => {
+    const handleInputChange = (rule) => {
         return (event) => {
-            setQueryParameters({...queryParameters, [field]: event.target.value});
+            let value = event.target.value;
+            if (rule.type === 'number') {
+                value = value === '' ? 0 : Number(value);
+            }
+            setQueryParameters({...queryParameters, [rule.field]: value});
         }
     }
 

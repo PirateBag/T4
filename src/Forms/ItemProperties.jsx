@@ -1,7 +1,7 @@
 import React, {useEffect, useState} from 'react';
 import ErrorMessage from "../ErrorMessage.jsx";
 import FormService, {extractMessageFromResponse, isShallowEqual} from "../FormService.js";
-import {Box, Button, Typography} from '@mui/material';
+import {Box, Button} from '@mui/material';
 import Grid from '@mui/material/Grid';
 import {CRUD_ACTION_CHANGE, CRUD_ACTION_DELETE, CRUD_ACTION_INSERT} from "../crudAction.js";
 import {ScreenStack} from "../Stack.js";
@@ -13,7 +13,7 @@ import {
     ItemQueryParameterConfig,
     itemUpdateUrl
 } from "../Globals.js";
-import {BomComponentsDto, BomDtoToString, BomParentsDto, ItemDtoToString, ItemRoDTO} from "./ItemPropertiesConfig.js";
+import {BomComponentsDto, BomDtoToString, BomParentsDto, ItemDtoToString } from "./ItemPropertiesConfig.js";
 import {generateDefaultFromRules} from "../Metadata/ValidateRule.js";
 import {useGridApiRef} from "@mui/x-data-grid";
 import {DataGridHelper} from "../Objects/DataGridHelper.jsx";
@@ -116,9 +116,9 @@ const ItemProperties = () => {
     }, []); // Runs once on mount
 
     useEffect(() => {
-        if (components && components.length >= 0) {
+        if (components && components.length > 0) {
             const total = components.reduce((sum, c) => sum + (c.quantityPer * c.unitCost || 0), 0);
-
+            console.log("Total extended cost is " + total);
             setQueryParameters(prev => {
                 // Only update if the value actually changed to avoid unnecessary re-renders
                 if (prev && prev.unitCost !== total) {
@@ -130,9 +130,13 @@ const ItemProperties = () => {
     }, [components]);
 
 
-    const handleInputChange = (field) => {
+    const handleInputChange = (rule) => {
         return (event) => {
-            setQueryParameters({...queryParameters, [field]: event.target.value});
+            let value = event.target.value;
+            if (rule.type === 'number') {
+                value = value === '' ? 0 : Number(value);
+            }
+            setQueryParameters({...queryParameters, [rule.field]: value});
         }
     }
 

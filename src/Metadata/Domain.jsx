@@ -219,8 +219,3 @@ export const VALIDATION_RULES = [
 ];
 
 
-export const getValidationRuleByName = (fieldName) => {
-    return VALIDATION_RULES.find(rule => rule.field === fieldName);
-}
-
-

@@ -109,9 +109,13 @@ const BomProperties = () => {
     }, []); // Runs once on mount
 
 
-    const handleInputChange = (field) => {
+    const handleInputChange = (rule) => {
         return (event) => {
-            setQueryParameters({...queryParameters, [field]: event.target.value});
+            let value = event.target.value;
+            if (rule.type === 'number') {
+                value = value === '' ? 0 : Number(value);
+            }
+            setQueryParameters({...queryParameters, [rule.field]: value});
         }
     }
     if (queryParameters === undefined) return (<div>Loading ...</div>)
@@ -140,13 +144,15 @@ const BomProperties = () => {
                                 margin="dense"
                                 name={col.field}
                                 placeholder={col.placeholder}
-                                value={queryParameters[col.field]}
+                                value={queryParameters[col.field] ?? col.defaultValue ?? ''}
                                 label={col.headerName}
-                                onChange={handleInputChange(col.field)}
+                                onChange={handleInputChange(col)}
                                 select={col.useSelect}
+                                disabled={col.disabled === true}
                                 slotProps={{
                                     input: {
-                                        maxLength: 50
+                                        maxLength: 50,
+                                        readOnly: col.editable === false,
                                     }
                                 }}
                                 sx={{

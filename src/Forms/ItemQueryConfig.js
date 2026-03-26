@@ -8,7 +8,7 @@ import {
 export const ItemQueryRequestEditableMetadata = [
     ID_VALIDATION.appendGridFieldOptions( { 'editable': true } ),
     DESCRIPTION_VALIDATION.appendGridFieldOptions({ 'editable': true } ),
-    COST_VALIDATION.appendGridFieldOptions({ 'editable': true } ),
+    COST_VALIDATION.appendGridFieldOptions({ 'editable': true, 'headerName': 'Unit Cost' } ),
     SOURCING_VALIDATION.appendGridFieldOptions({ 'editable': true } ),
     MAX_DEPTH_VALIDATION.appendGridFieldOptions({ 'editable': true } ),
     LEAD_TIME_VALIDATION.appendGridFieldOptions({ 'editable': true } ),
@@ -18,7 +18,7 @@ export const ItemQueryRequestEditableMetadata = [
 export const ItemQueryRequestCrudInsertMetadata = [
     ID_VALIDATION.appendGridFieldOptions( { 'editable': false } ),
     DESCRIPTION_VALIDATION.appendGridFieldOptions({ 'editable': true } ),
-    COST_VALIDATION.appendGridFieldOptions({ 'editable': true } ),
+    COST_VALIDATION.appendGridFieldOptions({ 'editable': true,'headerName': 'Unit Cost' } ),
     SOURCING_VALIDATION.appendGridFieldOptions({ 'editable': true } ),
     MAX_DEPTH_VALIDATION.appendGridFieldOptions({ 'editable': false } ),
     LEAD_TIME_VALIDATION.appendGridFieldOptions({ 'editable': true } ),

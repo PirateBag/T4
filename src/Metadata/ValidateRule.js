@@ -141,11 +141,9 @@ export class ValidationRule {
             case CaseConversion.NONE:
                 break;
             case CaseConversion.LOWER:
-            case CaseConversion.LOWERCASE:
                 reformattedTextOfField = xValue.toLowerCase().trim();
                 break;
             case CaseConversion.UPPER:
-            case CaseConversion.UPPERCASE:
                 reformattedTextOfField = xValue.toUpperCase().trim();
                 break;
             default:
