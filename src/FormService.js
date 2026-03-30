@@ -123,7 +123,7 @@ class FormService {
         console.log( "Final request prior to CrudAction:", finalRequestAsObject );
         console.log( "submitter value:", event.nativeEvent.submitter.value );
         const overrideForCrudAction = event.nativeEvent.submitter.value ?? "";
-        if ( overrideForCrudAction !== "" ) {
+        if ( overrideForCrudAction !== "" && finalRequestAsObject.updatedRows ) {
             finalRequestAsObject.updatedRows[ 0 ].crudAction = overrideForCrudAction;
             console.log( "CrudAction updated top  '" + finalRequestAsObject.updatedRows[ 0 ].crudAction + "'" );
         }

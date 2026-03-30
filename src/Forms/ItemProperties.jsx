@@ -1,7 +1,7 @@
 import React, {useEffect, useState} from 'react';
 import ErrorMessage from "../ErrorMessage.jsx";
 import FormService, {extractMessageFromResponse, isShallowEqual} from "../FormService.js";
-import {Box, Button} from '@mui/material';
+import {Box, Button, Typography} from '@mui/material';
 import Grid from '@mui/material/Grid';
 import {CRUD_ACTION_CHANGE, CRUD_ACTION_DELETE, CRUD_ACTION_INSERT} from "../crudAction.js";
 import {ScreenStack} from "../Stack.js";
@@ -20,7 +20,7 @@ import {DataGridHelper} from "../Objects/DataGridHelper.jsx";
 import {ScreenTransition} from "../ScreenTransition.js";
 import BomProperties from "./BomProperties.jsx";
 import {PropertyGrid} from "../Objects/PropertyGrid.jsx";
-import {ItemQueryRequestCrudInsertMetadata} from "./ItemQueryConfig.js";
+import {ItemQueryRequestCrudDeleteMetadata, ItemQueryRequestCrudInsertMetadata} from "./ItemQueryConfig.js";
 
 const ItemProperties = () => {
 
@@ -31,6 +31,14 @@ const ItemProperties = () => {
     const [components, setComponents] = useState();
     const [saveButtonMessage, setSaveButtonMessage] = useState("Save Changes");
     const [whereUsed, setWhereUsed] = useState([]);
+
+    let metadata = undefined
+    switch ( ScreenStack.stackTop().activityState ) {
+        case CRUD_ACTION_INSERT: metadata = ItemQueryRequestCrudInsertMetadata;
+        break;
+        case CRUD_ACTION_DELETE: metadata = ItemQueryRequestCrudDeleteMetadata;
+        break
+    }
 
     const afterUpdateCallback = (response) => {
         console.log("afterQueryCallback received:", response.status);
@@ -60,17 +68,23 @@ const ItemProperties = () => {
 
     const ItemPropertiesUpdateFormService = new FormService({
             messageFormSetter: setMessage,
+            validationRules: metadata,
+            messagesFromForm: message,
+            afterPostCallback: afterUpdateCallback,
+            requestTemplate: itemCrudRequestTemplate
+        }
+    );
+    const ItemPropertiesInsertFormService = new FormService({
+            messageFormSetter: setMessage,
+            validationRules: metadata,
             messagesFromForm: message,
             afterPostCallback: afterUpdateCallback,
             requestTemplate: itemCrudRequestTemplate
         }
     );
 
-    const itemNameForPresent = () => {
-        return (
-            <i>{queryParameters.id},{queryParameters.description}</i>
-        )
-    }
+
+
 
     // Consolidate data initialization into a single useEffect
     useEffect(() => {
@@ -134,7 +148,7 @@ const ItemProperties = () => {
         return (event) => {
             let value = event.target.value;
             if (rule.type === 'number') {
-                value = value === '' ? 0 : Number(value);
+                value = value === '' ? undefined : Number(value);
             }
             setQueryParameters({...queryParameters, [rule.field]: value});
         }
@@ -237,68 +251,127 @@ const ItemProperties = () => {
     if (queryParameters === undefined) return (<div>Loading...</div>)
     if (components === undefined) return (<div>Loading...</div>)
 
-    let workingTabIndex = 0;
-    return (
-        <div>
-            <br/>
+    const itemNameForPresent = () => {
+        if (queryParameters === undefined) return (
+            <div>"loading...</div>
+        );
 
-            <form onSubmit={ItemPropertiesUpdateFormService.handleSubmit}>
-                <ErrorMessage message={message}/>
+        return (
+            <div>
+            {queryParameters.description }
+            </div>
+        )
+    }
+
+
+    let workingTabIndex = 0;
+
+    function renderInsertForm() {
+        return (
+            <div>
                 <br/>
 
-                <PropertyGrid label={queryParameters.description}
-                              objectToPresent={queryParameters}
-                              validationRules={ItemQueryRequestCrudInsertMetadata}
-                              handleInputChangeCallback={handleInputChange}></PropertyGrid>
+                <form onSubmit={ItemPropertiesInsertFormService.handleSubmit}>
+                    <ErrorMessage message={message}/>
+                    <br/>
 
-                <Grid size={12} container spacing={2}>
-                    <Grid size="auto">
-                        <Button type="submit" variant="contained" name={itemUpdateUrl}
-                                tabIndex={workingTabIndex++}  value={queryParameters.crudAction} >{saveButtonMessage}</Button>
-                    </Grid>
-                    <Grid size="auto">
-                        <Button variant="outlined" tabIndex={workingTabIndex++} onClick={() => ScreenStack.pop()}>Return
-                            without Saving</Button>
-                    </Grid>
-                    {ScreenStack.stackTop().activityState === CRUD_ACTION_CHANGE && (
+                    <PropertyGrid label="Create a new item with the following details:"
+                                  objectToPresent={queryParameters}
+                                  validationRules={ItemQueryRequestCrudInsertMetadata}
+                                  handleInputChangeCallback={handleInputChange}></PropertyGrid>
+
+                    <Grid size={12} container spacing={2}>
                         <Grid size="auto">
-                            <Button type="submit" variant="outlined" name={itemUpdateUrl} value={ScreenStack.stackTop().activityState}
-                                    tabIndex={workingTabIndex++}>Delete</Button>
+                            <Button type="submit" variant="contained" name={itemUpdateUrl}
+                                    tabIndex={workingTabIndex++}  value={queryParameters.crudAction} >{saveButtonMessage}</Button>
                         </Grid>
-                    )}
-                </Grid>
-            </form>
+                        <Grid size="auto">
+                            <Button variant="outlined" tabIndex={workingTabIndex++} onClick={() => ScreenStack.pop()}>Return
+                                without Saving</Button>
+                        </Grid>
+                    </Grid>
+                </form>
+            </div>
+        );
+    }
+    function renderUpdateOrDeleteForm() {
+        return (
+            <div>
+                <br/>
 
-            <Box sx={{height: 400, width: '100%', mb: 10}}>
-                {ScreenStack.stackTop().activityState === CRUD_ACTION_CHANGE && (
-                    <>
-                        <DataGridHelper apiRef={apiRef}
-                                        label={components.length === 0 ? "There are no components of " + itemNameForPresent() : "Components of " + itemNameForPresent()}
-                                        rows={components}
-                                        columns={BomComponentsDto}
-                                        handleRowChangeCallback={ComponentsUpdateRowHandler}
-                                        onSelectionChange={(rows) => setSelectedRows(rows.map(r => r.id))}
-                                        onCellClick={undefined}
-                        />
+                <form onSubmit={ItemPropertiesUpdateFormService.handleSubmit}>
+                    <ErrorMessage message={message}/>
+                    <br/>
 
-                        <Grid container sx={{mt: 2}} size={{xs: 12}}>
-                            <Grid size={{xs: 'auto'}}>
-                                <Button variant="outlined" onClick={transitionToComponentDelete}>Delete</Button>
-                                <Button variant="outlined" onClick={SpecialTransitionToComponentDelete}>Special Delete</Button>
-                                <Button variant="outlined" onClick={transitionToComponentAdd}>Add</Button>
+                    <PropertyGrid label={queryParameters.description}
+                                  objectToPresent={queryParameters}
+                                  validationRules={ItemQueryRequestCrudInsertMetadata}
+                                  handleInputChangeCallback={handleInputChange}></PropertyGrid>
+
+                    <Grid size={12} container spacing={2}>
+                        <Grid size="auto">
+                            <Button type="submit" variant="contained" name={itemUpdateUrl}
+                                    tabIndex={workingTabIndex++}  value={queryParameters.crudAction} >{saveButtonMessage}</Button>
+                        </Grid>
+                        <Grid size="auto">
+                            <Button variant="outlined" tabIndex={workingTabIndex++} onClick={() => ScreenStack.pop()}>Return
+                                without Saving</Button>
+                        </Grid>
+                        {ScreenStack.stackTop().activityState === CRUD_ACTION_CHANGE && (
+                            <Grid size="auto">
+                                <Button type="submit" variant="outlined" name={itemUpdateUrl} value={ScreenStack.stackTop().activityState}
+                                        tabIndex={workingTabIndex++}>Delete</Button>
                             </Grid>
-                        </Grid>
+                        )}
+                    </Grid>
+                </form>
 
-                        <DataGridHelper
-                            label={whereUsed.length === 0 ? itemNameForPresent() + " is not a component of any item." : "Items where " + itemNameForPresent() + " is Used."}
-                            rows={whereUsed}
-                            columns={BomParentsDto}
-                            onSelectionChange={undefined}
-                        />
-                    </>
-                )}
-            </Box>
-        </div>
-    );
+                <Box sx={{height: 400, width: '100%', mb: 10}}>
+                    {ScreenStack.stackTop().activityState === CRUD_ACTION_CHANGE && (
+                        <>
+                            <DataGridHelper apiRef={apiRef}
+                                            label={components.length === 0 ? "There are no components of " + queryParameters.description : "Components of " + queryParameters.description }
+                                            rows={components}
+                                            columns={BomComponentsDto}
+                                            handleRowChangeCallback={ComponentsUpdateRowHandler}
+                                            onSelectionChange={(rows) => setSelectedRows(rows.map(r => r.id))}
+                                            onCellClick={undefined}
+                            />
+
+                            <Grid container sx={{mt: 2}} size={{xs: 12}}>
+                                <Grid size={{xs: 'auto'}}>
+                                    <Button variant="outlined" onClick={transitionToComponentDelete}>Delete</Button>
+                                    <Button variant="outlined" onClick={SpecialTransitionToComponentDelete}>Special Delete</Button>
+                                    <Button variant="outlined" onClick={transitionToComponentAdd}>Add</Button>
+                                </Grid>
+                            </Grid>
+
+                            <DataGridHelper
+                                label={whereUsed.length === 0 ? queryParameters.description + " is not a component of any item." : "Items where " + queryParameters.description + " is used."}
+                                rows={whereUsed}
+                                columns={BomParentsDto}
+                                onSelectionChange={undefined}
+                            />
+                        </>
+                    )}
+                </Box>
+            </div>
+        );
+    }
+
+    switch (ScreenStack.stackTop().activityState) {
+        case CRUD_ACTION_INSERT:
+            return renderInsertForm();
+        case CRUD_ACTION_CHANGE:
+            return renderUpdateOrDeleteForm();
+        default:
+            return(
+                <div>
+                <Typography variant="h5" gutterBottom sx={{ml: 2, mt: 2}} align={"center"}>
+                    Illegal State:  Form Caller passed  {ScreenStack.stackTop().activityState}
+                </Typography>
+                </div>
+            )
+    }
 }
 export default ItemProperties;

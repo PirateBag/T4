@@ -1,4 +1,4 @@
-import {CaseConversion, REQUIRED_NONE, ValidationRuleTypes} from "./ValidationRuleConstants.js";
+import { CaseConversion, REQUIRED_NONE, ValidationRuleTypes} from "./ValidationRuleConstants.js";
 
 export class ValidationRule {
     constructor(options) {
@@ -19,8 +19,6 @@ export class ValidationRule {
         this.defaultValue = options.defaultValue ?? null;
         this.headerName = options.header ?? options.domainName;
         this.placeholder = options.placeholder ?? this.headerName;
-
-
     }
 
     /**
@@ -43,16 +41,22 @@ export class ValidationRule {
     }
 
 
-
     /**
      * Validates a value against validation rules.
      * @param {string|number} value - The value to validate
-     * @returns {string|null} - Returns null if valid, otherwise returns an error message
+     * @returns {string |null} - Returns null if valid, otherwise returns an error message
      */
     validate(value) {
+        if (value === undefined || value === null || value === '') {
+            if (this.whenRequired === REQUIRED_NONE) {
+                return null;
+            } else {
+                return `'${this.headerName}' is a required field.`;
+            }
+        }
         if (this.type === "number") {
             return this.applyRulesToDoubleValue(Number(value));
-        } else if (this.type === "text" || this.type === "password" ) {
+        } else if (this.type === "text" || this.type === "password" || this.type === "singleSelect")  {
             return this.applyRulesToStringValue(String(value));
         } else {
             throw new Error('Cannot enforce rules on this type.  ' + this.type);
@@ -125,7 +129,6 @@ export class ValidationRule {
         } else if (numValue > this.maxValue) {
             return `'${this.headerName}' must not exceed ${this.maxValue}.`;
         }
-
         return null;
     }
 
@@ -158,7 +161,7 @@ export class ValidationRule {
      * @returns {string|null} - List of values, or null if no values or not String type
      */
     getListOfPermittedValues() {
-        if (this.valueOptions === null ) {
+        if (this.valueOptions === null) {
             return null;
         }
 
@@ -172,28 +175,6 @@ export class ValidationRule {
     valuesAsString() {
         return this.valueOptions;
     }
-
-/**
- *
- * @param event belonging to a form.  One of the "submit" buttons.
- * @returns {string} contains error messages if any.  Otherwise, zero length string.
-
-export const validateAllFieldsOnForm = ( event ) => {
-
-    const formData = new FormData(event.target);
-    const fieldsForValidation = Object.fromEntries(formData.entries());
-    let combinedMessages = "";
-
-
-    for (const [key, value] of Object.entries(fieldsForValidation)) {
-        const resultsOfValidation = getValidationRuleByName(key).validate(value );
-        if (resultsOfValidation != null) {
-            combinedMessages = combinedMessages + "\n" + resultsOfValidation;
-        }
-    }
-    return combinedMessages;
- }
- */
 }
 
 /**
@@ -221,14 +202,15 @@ export const validateFieldsOfObject = (validationRules, objectToBeValidated) => 
 }
 
 export const generateDefaultFromRules = (rules) => {
-    let returnValue = {};
-    rules.forEach(rule => {
-        if (rule.defaultValue !== null) {
-            returnValue[ rule.field ] = rule.defaultValue;
-        }
-    });
-    return returnValue;
-}
+        let returnValue = {};
+        rules.forEach(rule => {
+            if (rule.defaultValue !== null) {
+                returnValue[rule.field] = rule.defaultValue;
+            }
+        });
+        return returnValue;
+    }
+
 
 
  

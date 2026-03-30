@@ -90,7 +90,7 @@ export const COST_VALIDATION = new ValidationRule({
     maxLengthInChars: 10,
     caseConversion: CaseConversion.NONE,
     whenRequired: REQUIRED_ADD,
-    defaultValue: 0.0,
+    // defaultValue: 0.0,
     defaultHeader: 'Unit Cost'
 });
 
@@ -109,7 +109,6 @@ export const SOURCING_VALIDATION = new ValidationRule({
     caseConversion: CaseConversion.NONE,
     whenRequired: REQUIRED_ADD,
     valueOptions: ['MAN', 'PUR' ],
-    defaultValue: 'MAN',
     defaultHeader: 'Source'
 });
 
@@ -144,7 +143,7 @@ export const MAX_DEPTH_VALIDATION = new ValidationRule({
     maxLengthInChars: 3,
     caseConversion: CaseConversion.NONE,
     whenRequired: REQUIRED_ADD,
-    defaultValue: 0,
+    // defaultValue: 0,
     defaultHeader: 'Depth'
 });
 
@@ -160,7 +159,7 @@ export const LEAD_TIME_VALIDATION = new ValidationRule({
     maxLengthInChars: 9,
     caseConversion: CaseConversion.NONE,
     whenRequired: REQUIRED_ADD,
-    defaultValue: 0,
+    // defaultValue: 0,
     defaultHeader: 'Lead Time'
 });
 
@@ -172,7 +171,7 @@ export const QUANTITY_VALIDATION = new ValidationRule({
     maxLengthInChars: 8,
     caseConversion: CaseConversion.NONE,
     whenRequired: REQUIRED_ADD,
-    defaultValue: 0.0,
+    // defaultValue: 0.0,
     defaultHeader: 'Quantity Per Volume'
 });
 

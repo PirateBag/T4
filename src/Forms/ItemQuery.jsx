@@ -29,7 +29,7 @@ const ItemQuery = () => {
         return (event) => {
             let value = event.target.value;
             if (rule.type === 'number') {
-                value = value === '' ? 0 : Number(value);
+                value = value === '' ? undefined : Number(value);
             }
             setQueryParameters({...queryParameters, [rule.field]: value});
         }

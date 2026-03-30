@@ -16,7 +16,9 @@ export function  PropertyGrid( {label, objectToPresent, validationRules, handleI
 
     const direction = layout || 'row';
 
-    if (objectToPresent)
+    if (objectToPresent === undefined) return (
+        <div>Loading ...</div>
+    )
 
     return (
         <div>
@@ -26,27 +28,27 @@ export function  PropertyGrid( {label, objectToPresent, validationRules, handleI
 
     <Grid container spacing={2} padding={2} direction={direction}>
         {validationRules.map((col) => (
-            // <Grid size={{xs: 12, sm: 6, md: 4}} key={col.field}>
+                    <Grid key={col.field}>
                 <TextField
                     type={col.type}
                     size="small"
                     margin="dense"
                     name={col.domainName}
                     placeholder={col.headerName}
-                    maxLength={col.maxLength}
-                    value={objectToPresent[col.field] ?? col.defaultValue ?? ''}
+                    value={objectToPresent[col.field] ?? ''}
                     onChange={handleInputChangeCallback(col)}
                     disabled={col.disabled === true}
                     slotProps={{
                         input: {
                             readOnly: col.editable === false,
+                            maxLength: col.maxLengthInChars > 0 ? col.maxLengthInChars : undefined
                         },
                     }}
                     sx={{width: '240px', display: col.hidden ? 'none' : 'block'}}
                 />
-            // </Grid>
+            </Grid>
         ))}
-        </Grid>
+    </Grid>
         </div>
 
         )

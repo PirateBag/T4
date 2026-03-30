@@ -91,9 +91,9 @@ const BomProperties = () => {
                     "childId": 9,
                     "parentId": ScreenStack.stackTop().data.id,
                     "childDescription": "default",
-                    "quantityPer": 1.0,
-                    "unitCost": 0.0,
-                    "extendedCost": 0.0,
+                    "quantityPer": undefined,
+                    "unitCost": undefined,
+                    "extendedCost": undefined,
                     "parentDescription": ScreenStack.stackTop().data.description,
                     "crudAction": CRUD_ACTION_INSERT
                 };
@@ -113,7 +113,7 @@ const BomProperties = () => {
         return (event) => {
             let value = event.target.value;
             if (rule.type === 'number') {
-                value = value === '' ? 0 : Number(value);
+                value = value === '' ? undefined : Number(value);
             }
             setQueryParameters({...queryParameters, [rule.field]: value});
         }
@@ -137,14 +137,14 @@ const BomProperties = () => {
 
                 <Grid container direction="column" alignItems="center" spacing={1} sx={{ mb: 2 }}>
                     {BomComponentsDto.map((col) => (
-                        <Grid item key={col.headerName}>
+                        <Grid key={col.headerName}>
                             <TextField
                                 type={col.type}
                                 size="small"
                                 margin="dense"
                                 name={col.field}
                                 placeholder={col.placeholder}
-                                value={queryParameters[col.field] ?? col.defaultValue ?? ''}
+                                value={queryParameters[col.field] ?? ''}
                                 label={col.headerName}
                                 onChange={handleInputChange(col)}
                                 select={col.useSelect}
