@@ -20,25 +20,21 @@ import {DataGridHelper} from "../Objects/DataGridHelper.jsx";
 import {ScreenTransition} from "../ScreenTransition.js";
 import BomProperties from "./BomProperties.jsx";
 import {PropertyGrid} from "../Objects/PropertyGrid.jsx";
-import {ItemQueryRequestCrudDeleteMetadata, ItemQueryRequestCrudInsertMetadata} from "./ItemQueryConfig.js";
+import {
+    ItemQueryRequestCrudInsertMetadata,
+    ItemQueryRequestCrudUpdateMetadata
+} from "./ItemQueryConfig.js";
 
 const ItemProperties = () => {
 
-    const [selectedRows, setSelectedRows] = useState([]);
+    //  The entire row being selected.  Usuallyh a BOM Present.
+    const [selectedRow, setSelectedRow] = useState( undefined );
     const apiRef = useGridApiRef();
     const [message, setMessage] = useState("");
     const [queryParameters, setQueryParameters] = useState();
     const [components, setComponents] = useState();
     const [saveButtonMessage, setSaveButtonMessage] = useState("Save Changes");
     const [whereUsed, setWhereUsed] = useState([]);
-
-    let metadata = undefined
-    switch ( ScreenStack.stackTop().activityState ) {
-        case CRUD_ACTION_INSERT: metadata = ItemQueryRequestCrudInsertMetadata;
-        break;
-        case CRUD_ACTION_DELETE: metadata = ItemQueryRequestCrudDeleteMetadata;
-        break
-    }
 
     const afterUpdateCallback = (response) => {
         console.log("afterQueryCallback received:", response.status);
@@ -68,7 +64,7 @@ const ItemProperties = () => {
 
     const ItemPropertiesUpdateFormService = new FormService({
             messageFormSetter: setMessage,
-            validationRules: metadata,
+            validationRules: ItemQueryRequestCrudUpdateMetadata,
             messagesFromForm: message,
             afterPostCallback: afterUpdateCallback,
             requestTemplate: itemCrudRequestTemplate
@@ -76,7 +72,7 @@ const ItemProperties = () => {
     );
     const ItemPropertiesInsertFormService = new FormService({
             messageFormSetter: setMessage,
-            validationRules: metadata,
+            validationRules: ItemQueryRequestCrudInsertMetadata,
             messagesFromForm: message,
             afterPostCallback: afterUpdateCallback,
             requestTemplate: itemCrudRequestTemplate
@@ -197,38 +193,12 @@ const ItemProperties = () => {
         return updatedRow
     }
 
-    async function SpecialTransitionToComponentDelete() {
-        if (selectedRows.length === 0) {
-            setMessage("Please select a row to delete.");
-            return;
-        }
-
-        const selectedRow = components.find(r => r.id === selectedRows[0]);
-        console.log("Selected item for deletion:", selectedRow);
-
-        const objectToBeTransmitted = {
-            updatedRows: [{...selectedRow, crudAction: CRUD_ACTION_DELETE}]
-        };
-
-        try {
-            await ItemPropertiesUpdateFormService.postData(objectToBeTransmitted, bomCrudUrl);
-            setComponents(prev => prev.filter(row => row.id !== selectedRow.id));
-        } catch (error) {
-            console.error("Error deleting component:", error);
-            setMessage("Error deleting component: " + error.message);
-        }
-    }
-
-
-
     async function transitionToComponentDelete() {
-        if (selectedRows.length === 0) {
+        if (selectedRow  === undefined ) {
             setMessage("Please select a row to delete.");
             return;
         }
-
-        const selectedRow = components.find(r => r.id === selectedRows[0]);
-        console.log("Selected item for deletion:", selectedRow);
+        console.log("Selected BOM for deletion:", selectedRow);
 
         const objectToBeTransmitted = {
             updatedRows: [{...selectedRow, crudAction: CRUD_ACTION_DELETE}]
@@ -237,32 +207,44 @@ const ItemProperties = () => {
         try {
             await ItemPropertiesUpdateFormService.postData(objectToBeTransmitted, bomCrudUrl);
             setComponents(prev => prev.filter(row => row.id !== selectedRow.id));
+            setSelectedRow( undefined );
         } catch (error) {
             console.error("Error deleting component:", error);
             setMessage("Error deleting component: " + error.message);
         }
     }
 
+
+    //
+    // async function transitionToComponentDelete() {
+    //     if (selectedRow === undefined ) {
+    //         setMessage("Please select a row to delete.");
+    //         return;
+    //     }
+    //
+    //     console.log("Selected item for deletion:", selectedRow);
+    //
+    //     const objectToBeTransmitted = {
+    //         updatedRows: [{...selectedRow, crudAction: CRUD_ACTION_DELETE}]
+    //     };
+    //
+    //     try {
+    //         await ItemPropertiesUpdateFormService.postData(objectToBeTransmitted, bomCrudUrl);
+    //         setComponents(prev => prev.filter(row => row.id !== selectedRow.id));
+    //     } catch (error) {
+    //         console.error("Error deleting component:", error);
+    //         setMessage("Error deleting component: " + error.message);
+    //     }
+    // }
+    //
     function transitionToComponentAdd() {
         ScreenStack.push(new ScreenTransition("Add Component for" + queryParameters, BomProperties, CRUD_ACTION_INSERT,
             queryParameters));
+        setSelectedRow( undefined );
     }
 
     if (queryParameters === undefined) return (<div>Loading...</div>)
     if (components === undefined) return (<div>Loading...</div>)
-
-    const itemNameForPresent = () => {
-        if (queryParameters === undefined) return (
-            <div>"loading...</div>
-        );
-
-        return (
-            <div>
-            {queryParameters.description }
-            </div>
-        )
-    }
-
 
     let workingTabIndex = 0;
 
@@ -282,10 +264,8 @@ const ItemProperties = () => {
 
                     <Grid size={12} container spacing={2}>
                         <Grid size="auto">
-                            <Button type="submit" variant="contained" name={itemUpdateUrl}
+                            <Button type="submit" variant="contained" name={itemUpdateUrl} sx={{ mr: 1 }}
                                     tabIndex={workingTabIndex++}  value={queryParameters.crudAction} >{saveButtonMessage}</Button>
-                        </Grid>
-                        <Grid size="auto">
                             <Button variant="outlined" tabIndex={workingTabIndex++} onClick={() => ScreenStack.pop()}>Return
                                 without Saving</Button>
                         </Grid>
@@ -305,24 +285,18 @@ const ItemProperties = () => {
 
                     <PropertyGrid label={queryParameters.description}
                                   objectToPresent={queryParameters}
-                                  validationRules={ItemQueryRequestCrudInsertMetadata}
+                                  validationRules={ItemPropertiesUpdateFormService.validationRules}
                                   handleInputChangeCallback={handleInputChange}></PropertyGrid>
 
                     <Grid size={12} container spacing={2}>
                         <Grid size="auto">
-                            <Button type="submit" variant="contained" name={itemUpdateUrl}
-                                    tabIndex={workingTabIndex++}  value={queryParameters.crudAction} >{saveButtonMessage}</Button>
-                        </Grid>
-                        <Grid size="auto">
-                            <Button variant="outlined" tabIndex={workingTabIndex++} onClick={() => ScreenStack.pop()}>Return
+                            <Button type="submit" variant="contained" name={itemUpdateUrl} sx={{ mr: 1 }}
+                                    tabIndex={workingTabIndex++}  value={CRUD_ACTION_CHANGE} >{saveButtonMessage}</Button>
+                            <Button variant="outlined" tabIndex={workingTabIndex++} sx={{ mr: 1 }} onClick={() => ScreenStack.pop()}>Return
                                 without Saving</Button>
+                            <Button type="submit" variant="outlined" name={itemUpdateUrl} value={CRUD_ACTION_DELETE}
+                                    tabIndex={workingTabIndex++}>Delete this Item</Button>
                         </Grid>
-                        {ScreenStack.stackTop().activityState === CRUD_ACTION_CHANGE && (
-                            <Grid size="auto">
-                                <Button type="submit" variant="outlined" name={itemUpdateUrl} value={ScreenStack.stackTop().activityState}
-                                        tabIndex={workingTabIndex++}>Delete</Button>
-                            </Grid>
-                        )}
                     </Grid>
                 </form>
 
@@ -334,14 +308,13 @@ const ItemProperties = () => {
                                             rows={components}
                                             columns={BomComponentsDto}
                                             handleRowChangeCallback={ComponentsUpdateRowHandler}
-                                            onSelectionChange={(rows) => setSelectedRows(rows.map(r => r.id))}
+                                            onSelectionChange={(rows) => setSelectedRow( rows[ 0 ] )}
                                             onCellClick={undefined}
                             />
 
                             <Grid container sx={{mt: 2}} size={{xs: 12}}>
                                 <Grid size={{xs: 'auto'}}>
-                                    <Button variant="outlined" onClick={transitionToComponentDelete}>Delete</Button>
-                                    <Button variant="outlined" onClick={SpecialTransitionToComponentDelete}>Special Delete</Button>
+                                    <Button variant="outlined" sx={{ mr: 1 }} onClick={transitionToComponentDelete}>Delete Component</Button>
                                     <Button variant="outlined" onClick={transitionToComponentAdd}>Add</Button>
                                 </Grid>
                             </Grid>

@@ -10,17 +10,21 @@ export function DataGridHelper({
                                    columns,
                                    handleRowChangeCallback,
                                    sx,
-                                   initialState
+                                   initialState,
+                                   onSelectionChange
                                }) {
 
     const safeRows = React.useMemo(() => rows || [], [rows]);
     const safeColumns = React.useMemo(() => columns || [], [columns]);
 
     const handleInternalCellClick = ( params ) => {
-        // Handle ID column click for selection
-        if (params.field === 'id' && handleRowChangeCallback) {
-            handleRowChangeCallback([params.row]);
-        }
+        // // Consider a click on the ID a row selection.
+        // if (params.field === 'id' && onSelectionChange) {
+        //     onSelectionChange(params.row);
+        // }
+
+        //  Consider a click on any other field to trigger a row change.
+        onSelectionChange([params.row] )
     };
 
     // Construct common DataGrid props
@@ -29,13 +33,14 @@ export function DataGridHelper({
         columns: safeColumns,
         rows: safeRows,
         density: "compact",
-        rowSelection: false, // Disable standard MUI selection
+        rowSelection: (onSelectionChange === undefined ? false : onSelectionChange), // Disable standard MUI selection
         getRowId: (row) => row.id,
         onCellClick: handleInternalCellClick,
         sx,
         initialState,
         sortingMode: "client",
         filterMode: "client",
+        processRowUpdate: handleRowChangeCallback,
         slotProps: {
             footer: {
                 sx: { display: 'flex' },

@@ -198,7 +198,7 @@ const ItemQuery = () => {
                                 label="Item Query Results"
                                 rows={rowsOfQueryResults}
                                 columns={ItemQueryResultsMetadata}
-                                handleRowChangeCallback={handleRowSelectionChange}
+                                onSelectionChange={handleRowSelectionChange}
                 />
 
                 <Grid container sx={{mt: 1}}>

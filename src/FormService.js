@@ -23,7 +23,7 @@ class FormService {
         this.messageFormSetter = options.messageFormSetter;
         this.afterPostCallback = options.afterPostCallback ?? (() => {});
         this.onErrorCallback = options.onErrorCallback ?? (() => {});
-        this.requestTemplate = options.requestTemplate;
+        this.requestTemplate = options.requestTemplate ?? "${rowWithQuery}";
         this.validationRules = options.validationRules ?? [];
     }
 
@@ -119,9 +119,6 @@ class FormService {
 
         const requestPriorToCrudAction = this.singleRowToRequest( this.requestObject ?? queryParametersFromForm);
         const finalRequestAsObject = this.setCrudActionInObject( requestPriorToCrudAction, event.nativeEvent.submitter.value ?? CRUD_ACTION_NONE );
-
-        console.log( "Final request prior to CrudAction:", finalRequestAsObject );
-        console.log( "submitter value:", event.nativeEvent.submitter.value );
         const overrideForCrudAction = event.nativeEvent.submitter.value ?? "";
         if ( overrideForCrudAction !== "" && finalRequestAsObject.updatedRows ) {
             finalRequestAsObject.updatedRows[ 0 ].crudAction = overrideForCrudAction;

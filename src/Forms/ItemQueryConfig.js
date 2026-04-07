@@ -30,10 +30,10 @@ export const ItemQueryRequestCrudInsertMetadata = [
     CRUD_VALIDATION.appendGridFieldOptions( { 'editable': false, 'hidden': 'true'} )
 
 ];
-export const ItemQueryRequestCrudDeleteMetadata = [
-    ID_VALIDATION.appendGridFieldOptions( { 'editable': false, hidden: true, whenRequired: REQUIRED_NONE } ),
-    DESCRIPTION_VALIDATION.appendGridFieldOptions({ 'editable': false, whenRequired: REQUIRED_ADD } ),
-    COST_VALIDATION.appendGridFieldOptions({ 'editable': false,'headerName': 'Unit Cost', whenRequired: REQUIRED_ADD } ),
+export const ItemQueryRequestCrudUpdateMetadata = [
+    ID_VALIDATION.appendGridFieldOptions( { 'editable': false } ),
+    DESCRIPTION_VALIDATION.appendGridFieldOptions({ 'editable': true, } ),
+    COST_VALIDATION.appendGridFieldOptions({ 'editable': true,'headerName': 'Unit Cost', whenRequired: REQUIRED_ADD } ),
     SOURCING_VALIDATION.appendGridFieldOptions({ 'editable': false, whenRequired: REQUIRED_ADD } ),
     MAX_DEPTH_VALIDATION.appendGridFieldOptions({ 'editable': false, whenRequired: REQUIRED_NONE } ),
     LEAD_TIME_VALIDATION.appendGridFieldOptions({ 'editable': false, whenRequired: REQUIRED_ADD } ),
