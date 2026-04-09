@@ -19,6 +19,7 @@ export const itemQueryUrl = 'http://localhost:8080/item/crudQuery'
 export const itemCrudRequestTemplate = '{ "updatedRows" : [ ${rowWithQuery} ] }';
 export const itemUpdateUrl = 'http://localhost:8080/item/crud'
 export const itemMasterReportUrl = 'http://localhost:8080/itemReport/showAllItems'
+export const itemExplosionReportUrl = 'http://localhost:8080/itemReport/explosion';
 export const itemQueryAll = { "updatedRows" : [  ] };
 export const bomComponents = "http://localhost:8080/bom/findByParent";
 export const bomWhereUsed = "http://localhost:8080/bom/findByChild";

@@ -174,9 +174,7 @@ const ItemQuery = () => {
                               objectToPresent={queryParameters}
                               validationRules={ItemQueryRequestEditableMetadata}
                               handleInputChangeCallback={handleInputChange}/>
-
-
-                                    <Grid size={{xs: 12}} container spacing={2}>
+                <Grid size={{xs: 12}} container spacing={2}>
                         <Grid size="auto">
                             <Button type="submit" variant="contained" name={itemQueryUrl} >Search</Button>
                         </Grid>

@@ -3,13 +3,13 @@ import ErrorMessage from "../ErrorMessage.jsx";
 import FormService, {extractMessageFromResponse, isShallowEqual} from "../FormService.js";
 import {Box, Button, Typography} from '@mui/material';
 import Grid from '@mui/material/Grid';
-import {CRUD_ACTION_CHANGE, CRUD_ACTION_DELETE, CRUD_ACTION_INSERT} from "../crudAction.js";
+import {CRUD_ACTION_CHANGE, CRUD_ACTION_DELETE, CRUD_ACTION_INSERT, CRUD_ACTION_NONE} from "../crudAction.js";
 import {ScreenStack} from "../Stack.js";
 import {
     bomComponents,
     bomCrudUrl,
     bomWhereUsed,
-    itemCrudRequestTemplate,
+    itemCrudRequestTemplate, itemExplosionReportUrl,
     ItemQueryParameterConfig,
     itemUpdateUrl
 } from "../Globals.js";
@@ -24,10 +24,10 @@ import {
     ItemQueryRequestCrudInsertMetadata,
     ItemQueryRequestCrudUpdateMetadata
 } from "./ItemQueryConfig.js";
+import {ItemExplosion} from "./ItemExplosion.jsx";
 
 const ItemProperties = () => {
 
-    //  The entire row being selected.  Usuallyh a BOM Present.
     const [selectedRow, setSelectedRow] = useState( undefined );
     const apiRef = useGridApiRef();
     const [message, setMessage] = useState("");
@@ -35,6 +35,7 @@ const ItemProperties = () => {
     const [components, setComponents] = useState();
     const [saveButtonMessage, setSaveButtonMessage] = useState("Save Changes");
     const [whereUsed, setWhereUsed] = useState([]);
+    const [ , setItemMasterQueryResults] = useState([]);
 
     const afterUpdateCallback = (response) => {
         console.log("afterQueryCallback received:", response.status);
@@ -79,8 +80,14 @@ const ItemProperties = () => {
         }
     );
 
-
-
+    const ItemExplosionFormService = new FormService({
+            messageFormSetter: setItemMasterQueryResults,
+            validationRules: ItemQueryParameterConfig,
+            messagesFromForm: null,
+            afterPostCallback: null,
+            requestTemplate: null
+        }
+    );
 
     // Consolidate data initialization into a single useEffect
     useEffect(() => {
@@ -214,34 +221,24 @@ const ItemProperties = () => {
         }
     }
 
-
-    //
-    // async function transitionToComponentDelete() {
-    //     if (selectedRow === undefined ) {
-    //         setMessage("Please select a row to delete.");
-    //         return;
-    //     }
-    //
-    //     console.log("Selected item for deletion:", selectedRow);
-    //
-    //     const objectToBeTransmitted = {
-    //         updatedRows: [{...selectedRow, crudAction: CRUD_ACTION_DELETE}]
-    //     };
-    //
-    //     try {
-    //         await ItemPropertiesUpdateFormService.postData(objectToBeTransmitted, bomCrudUrl);
-    //         setComponents(prev => prev.filter(row => row.id !== selectedRow.id));
-    //     } catch (error) {
-    //         console.error("Error deleting component:", error);
-    //         setMessage("Error deleting component: " + error.message);
-    //     }
-    // }
-    //
     function transitionToComponentAdd() {
         ScreenStack.push(new ScreenTransition("Add Component for" + queryParameters, BomProperties, CRUD_ACTION_INSERT,
             queryParameters));
         setSelectedRow( undefined );
     }
+
+    async function transitionToExplosion() {
+        const parametersForExplosionRequest = { "parentId" : queryParameters.id, "childId" : 0  };
+        const response = await ItemExplosionFormService.postData(parametersForExplosionRequest, itemExplosionReportUrl);
+
+        if (response && response.data && response.data.data) {
+            let nextScreen = new ScreenTransition("Item Explosion Report", ItemExplosion, CRUD_ACTION_NONE, response.data.data);
+            ScreenStack.push(nextScreen);
+        } else {
+            setMessage("Failed to fetch explosion report data.");
+        }
+    }
+
 
     if (queryParameters === undefined) return (<div>Loading...</div>)
     if (components === undefined) return (<div>Loading...</div>)
@@ -288,6 +285,8 @@ const ItemProperties = () => {
                                   validationRules={ItemPropertiesUpdateFormService.validationRules}
                                   handleInputChangeCallback={handleInputChange}></PropertyGrid>
 
+                    <br/>
+
                     <Grid size={12} container spacing={2}>
                         <Grid size="auto">
                             <Button type="submit" variant="contained" name={itemUpdateUrl} sx={{ mr: 1 }}
@@ -296,6 +295,7 @@ const ItemProperties = () => {
                                 without Saving</Button>
                             <Button type="submit" variant="outlined" name={itemUpdateUrl} value={CRUD_ACTION_DELETE}
                                     tabIndex={workingTabIndex++}>Delete this Item</Button>
+                            <Button variant="outlined" onClick={transitionToExplosion}>Item Explosion Report</Button>
                         </Grid>
                     </Grid>
                 </form>
@@ -316,6 +316,7 @@ const ItemProperties = () => {
                                 <Grid size={{xs: 'auto'}}>
                                     <Button variant="outlined" sx={{ mr: 1 }} onClick={transitionToComponentDelete}>Delete Component</Button>
                                     <Button variant="outlined" onClick={transitionToComponentAdd}>Add</Button>
+
                                 </Grid>
                             </Grid>
 
