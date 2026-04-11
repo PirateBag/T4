@@ -10,6 +10,8 @@ import {
     bomCrudUrl,
     bomWhereUsed,
     itemCrudRequestTemplate, itemExplosionReportUrl,
+    itemMaxLevelReportUrl,
+    itemQueryAll,
     ItemQueryParameterConfig,
     itemUpdateUrl
 } from "../Globals.js";
@@ -227,12 +229,40 @@ const ItemProperties = () => {
         setSelectedRow( undefined );
     }
 
+    async function transitionToMaxLevelReport() {
+        try {
+            const response = await ItemExplosionFormService.postData(itemQueryAll, itemMaxLevelReportUrl);
+
+            if (response && response.data && response.data.data) {
+                const data = response.data.data;
+                const rowsWithIds = data.map((row, index) => ({
+                    ...row,
+                    id: row.id || (index + 1)
+                }));
+
+                let nextScreen = new ScreenTransition("Max Level Report", ItemExplosion, CRUD_ACTION_NONE, rowsWithIds);
+                ScreenStack.push(nextScreen);
+            } else {
+                setMessage("Failed to fetch Max Level report data.");
+            }
+        } catch (error) {
+            console.error("Error fetching Max Level report:", error);
+            setMessage("Error loading Max Level report.");
+        }
+    }
+
+
     async function transitionToExplosion() {
         const parametersForExplosionRequest = { "parentId" : queryParameters.id, "childId" : 0  };
         const response = await ItemExplosionFormService.postData(parametersForExplosionRequest, itemExplosionReportUrl);
 
         if (response && response.data && response.data.data) {
-            let nextScreen = new ScreenTransition("Item Explosion Report", ItemExplosion, CRUD_ACTION_NONE, response.data.data);
+            const data = response.data.data;
+            const rowsWithIds = data.map((row, index) => ({
+                ...row,
+                id: row.id || (index + 1)
+            }));
+            let nextScreen = new ScreenTransition("ItemExplosion Master Report", ItemExplosion, CRUD_ACTION_NONE, rowsWithIds);
             ScreenStack.push(nextScreen);
         } else {
             setMessage("Failed to fetch explosion report data.");
@@ -294,7 +324,8 @@ const ItemProperties = () => {
                             <Button variant="outlined" tabIndex={workingTabIndex++} sx={{ mr: 1 }} onClick={() => ScreenStack.pop()}>Return
                                 without Saving</Button>
                             <Button type="submit" variant="outlined" name={itemUpdateUrl} value={CRUD_ACTION_DELETE}
-                                    tabIndex={workingTabIndex++}>Delete this Item</Button>
+                                    tabIndex={workingTabIndex++} sx={{ mr: 1 }}>Delete this Item</Button>
+                            <Button variant="outlined" sx={{ mr: 1 }} onClick={transitionToMaxLevelReport}>Max Level Report</Button>
                             <Button variant="outlined" onClick={transitionToExplosion}>Item Explosion Report</Button>
                         </Grid>
                     </Grid>
