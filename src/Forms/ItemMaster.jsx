@@ -8,7 +8,7 @@ import {ScreenStack} from "../Stack.js";
 import ErrorMessage from "../ErrorMessage.jsx";
 import {ItemQueryRequestEditableMetadata} from "./ItemQueryConfig.js";
 import TextField from "@mui/material/TextField";
-import {itemMasterReportUrl, itemQueryAll, itemQueryUrl, itemCrudRequestTemplate} from "../Globals.js";
+import {itemMasterReportUrl, itemQueryUrl, itemCrudRequestTemplate} from "../Globals.js";
 
 const ItemMaster = () => {
 
@@ -47,7 +47,7 @@ const ItemMaster = () => {
         const fetchData = async () => {
             if (rowsOfQueryResults.length === 0) {
                 // Trigger search with empty values
-                queryFormService.postData(itemQueryAll, itemMasterReportUrl);
+                queryFormService.postData(olderEmptyQueryTemplate, itemMasterReportUrl);
             }
         };
         fetchData();

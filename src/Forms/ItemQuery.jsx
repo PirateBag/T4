@@ -9,7 +9,7 @@ import {CRUD_ACTION_CHANGE, CRUD_ACTION_INSERT, CRUD_ACTION_NONE} from "../crudA
 import {ScreenTransition} from "../ScreenTransition.js";
 import ItemMaster from "./ItemMaster.jsx";
 import {ScreenStack} from "../Stack.js";
-import {itemCrudRequestTemplate, itemMasterReportUrl, itemQueryAll, itemQueryUrl, itemUpdateUrl} from "../Globals.js";
+import {itemCrudRequestTemplate, itemMasterReportUrl, olderEmptyQueryConstant, itemQueryUrl, itemUpdateUrl} from "../Globals.js";
 import ItemProperties from "./ItemProperties.jsx";
 import {ItemDtoToStringWithOperation} from "./ItemPropertiesConfig.js";
 import {PropertyGrid} from "../Objects/PropertyGrid.jsx";
@@ -109,7 +109,7 @@ const ItemQuery = () => {
         const fetchData = async () => {
             if (rowsOfQueryResults.length === 0) {
                 // Trigger search with empty values
-                queryFormService.postData(itemQueryAll, itemQueryUrl);
+                queryFormService.postData(olderEmptyQueryConstant, itemQueryUrl);
             }
         };
         fetchData();

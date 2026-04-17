@@ -11,9 +11,8 @@ import {
     bomWhereUsed,
     itemCrudRequestTemplate, itemExplosionReportUrl,
     itemMaxLevelReportUrl,
-    itemQueryAll,
     ItemQueryParameterConfig,
-    itemUpdateUrl
+    itemUpdateUrl, olderEmptyQueryConstant
 } from "../Globals.js";
 import {BomComponentsDto, BomDtoToString, BomParentsDto, ItemDtoToString } from "./ItemPropertiesConfig.js";
 import {generateDefaultFromRules} from "../Metadata/ValidateRule.js";
@@ -27,6 +26,7 @@ import {
     ItemQueryRequestCrudUpdateMetadata
 } from "./ItemQueryConfig.js";
 import {ItemExplosion} from "./ItemExplosion.jsx";
+import OrderMaster from "./OrderMaster.jsx";
 
 const ItemProperties = () => {
 
@@ -231,7 +231,7 @@ const ItemProperties = () => {
 
     async function transitionToMaxLevelReport() {
         try {
-            const response = await ItemExplosionFormService.postData(itemQueryAll, itemMaxLevelReportUrl);
+            const response = await ItemExplosionFormService.postData(olderEmptyQueryConstant, itemMaxLevelReportUrl);
 
             if (response && response.data && response.data.data) {
                 const data = response.data.data;
@@ -325,8 +325,12 @@ const ItemProperties = () => {
                                 without Saving</Button>
                             <Button type="submit" variant="outlined" name={itemUpdateUrl} value={CRUD_ACTION_DELETE}
                                     tabIndex={workingTabIndex++} sx={{ mr: 1 }}>Delete this Item</Button>
+                        </Grid>
+                        <br/>
+                        <Grid size="auto">
                             <Button variant="outlined" sx={{ mr: 1 }} onClick={transitionToMaxLevelReport}>Max Level Report</Button>
                             <Button variant="outlined" onClick={transitionToExplosion}>Item Explosion Report</Button>
+                            <Button variant="outlined" sx={{ mr: 1 }} onClick={() => ScreenStack.push(new ScreenTransition("Show Orders for" + queryParameters, OrderMaster, CRUD_ACTION_NONE, queryParameters))}>Show Orders</Button>
                         </Grid>
                     </Grid>
                 </form>

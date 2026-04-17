@@ -21,10 +21,16 @@ export const itemUpdateUrl = 'http://localhost:8080/item/crud'
 export const itemMasterReportUrl = 'http://localhost:8080/itemReport/showAllItems'
 export const itemExplosionReportUrl = 'http://localhost:8080/itemReport/explosion';
 export const itemMaxLevelReportUrl = 'http://localhost:8080/itemReport/calculateMaxDepth';
-export const itemQueryAll = { "updatedRows" : [  ] };
+export const olderEmptyQueryConstant = { "updatedRows" : [  ] };
+export const newEmptyQueryConstant = { "rows" : [  ] };
 export const bomComponents = "http://localhost:8080/bom/findByParent";
 export const bomWhereUsed = "http://localhost:8080/bom/findByChild";
 export const bomCrudUrl  = "http://localhost:8080/bom/crud";
+
+export const orderLineItemQueryUrl =  "http://localhost:8080/oli/query";
+export const modernRequestPayloadTemplate =  '{ "rows" : [ ${rowWithQuery} ] }';
+
+
 
 //  Uses GenericSingleIdDto
 export const itemPickAll = 'itemPick/all';

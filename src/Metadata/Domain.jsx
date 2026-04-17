@@ -196,9 +196,42 @@ export const CRUD_VALIDATION = new ValidationRule({
     defaultValue: " ",
     defaultHeader: ' ',
     editable: false
-
-
 });
+
+export const DATE_VALIDATION = new ValidationRule({
+    domainName: 'date',
+    type: 'text',
+    minLengthInChars: 10,
+    maxLengthInChars: 10,
+    caseConversion: CaseConversion.UPPERCASE,
+    whenRequired: REQUIRED_NONE,
+    defaultValue: " ",
+    defaultHeader: ' ',
+    editable: false
+});
+
+export const ORDER_STATE_VALIDATION  = new ValidationRule({
+    domainName: 'orderState',
+    type: 'singleSelect',
+    minLengthInChars: 4,
+    maxLengthInChars: 6,
+    caseConversion: CaseConversion.UPPER,
+    whenRequired: REQUIRED_ADD,
+    valueOptions: ['PLANNED', 'OPEN', 'CLOSED'],
+    defaultHeader: 'Order State'
+});
+
+export const ORDER_TYPE_VALIDATION = new ValidationRule({
+    domainName: 'orderType',
+    type: 'singleSelect',
+    minLengthInChars: 2,
+    maxLengthInChars: 6,
+    caseConversion: CaseConversion.UPPER,
+    whenRequired: REQUIRED_ADD,
+    valueOptions: ['PO', 'MODET', 'MOHEAD', 'NA' ],
+    defaultHeader: 'Order State'
+});
+
 /**
  * Array of all validation rules
  */
@@ -214,7 +247,10 @@ export const VALIDATION_RULES = [
     LEAD_TIME_VALIDATION,
     QUANTITY_VALIDATION,
     TEXT_VALIDATION,
-    CRUD_VALIDATION
+    CRUD_VALIDATION,
+    DATE_VALIDATION,
+    ORDER_STATE_VALIDATION,
+    ORDER_TYPE_VALIDATION
 ];
 
 
