@@ -13,6 +13,7 @@ import {DataGridHelper} from "../Objects/DataGridHelper.jsx";
 import {OrderLineItemResultsEditableMetaData, OrderQueryRequestEditableMetadata} from "./OrderMasterConfig.js";
 
 
+
 const OrderMaster = () => {
 
     //  const emptyResponse = { responseType: "MULTILINE", data: [], errors : []  };
@@ -49,7 +50,6 @@ const OrderMaster = () => {
             setRowsOfQueryResults(response.data.data);
         } else {
             setMessage("Error");
-            setRowsOfQueryResults([]);
         }
     }
     //  const afterChangeCallback = (responseFromUpdate) => {
@@ -99,12 +99,27 @@ const OrderMaster = () => {
     // );
     //
     //
+
+
+    function mapItemQueryToOliQueryParameters( rowOfItem ) {
+        return { 'itemId' : rowOfItem.id };
+    }
+
     // Fetch data on mount if empty
     useEffect(() => {
         const fetchData = async () => {
             if (rowsOfQueryResults.length === 0) {
-                // Trigger search with empty values
-                queryFormService.postData(newEmptyQueryConstant, orderLineItemQueryUrl);
+                let queryParametersForOpeningScreen;
+                let objectToBeTransmitted;
+                if ( ScreenStack.stackTop().data === undefined) {
+                    queryParametersForOpeningScreen = {};
+                    objectToBeTransmitted = newEmptyQueryConstant;
+                } else {
+                    queryParametersForOpeningScreen = mapItemQueryToOliQueryParameters( ScreenStack.stackTop().data );
+                    objectToBeTransmitted = queryFormService.singleRowToRequest(queryParametersForOpeningScreen);
+                }
+                setQueryParameters( queryParametersForOpeningScreen );
+                await queryFormService.postData(objectToBeTransmitted, orderLineItemQueryUrl);
             }
         };
         fetchData();
@@ -169,6 +184,7 @@ const OrderMaster = () => {
                               objectToPresent={queryParameters}
                               validationRules={OrderQueryRequestEditableMetadata}
                               handleInputChangeCallback={handleInputChange}/>
+                <hr style={{margin: "20px 0", borderTop: "1px solid #ccc"}}/>
                 <Grid size={{xs: 12}} container spacing={2}>
                             <Button type="submit" variant="contained" name={'dontpushme'} >Search</Button>
                             <Button onClick={clearQueryParameters}>Clear</Button>
@@ -181,7 +197,7 @@ const OrderMaster = () => {
             <Box sx={{height: 400, width: '100%', mb: 10}}>
 
 
-                <DataGridHelper label="Item Query Results"
+                <DataGridHelper label="Order Query Results"
                                 rows={rowsOfQueryResults}
                                 columns={OrderLineItemResultsEditableMetaData}
                                 onSelectionChange={handleRowSelectionChange}
