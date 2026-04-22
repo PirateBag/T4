@@ -1,12 +1,11 @@
 import React, {useEffect, useState} from 'react';
 import ErrorMessage from "../ErrorMessage.jsx";
-import FormService, {extractMessageFromResponse, isShallowEqual} from "../FormService.js";
+import FormService from "../FormService.js";
 import {Box, Button} from '@mui/material';
 import Grid from '@mui/material/Grid';
 import {ScreenTransition} from "../ScreenTransition.js";
 import {ScreenStack} from "../Stack.js";
-import {
-    modernRequestPayloadTemplate, newEmptyQueryConstant, orderLineItemQueryUrl
+import { modernRequestPayloadTemplate, newEmptyQueryConstant, orderLineItemQueryUrl
 } from "../Globals.js";
 import {PropertyGrid} from "../Objects/PropertyGrid.jsx";
 import {DataGridHelper} from "../Objects/DataGridHelper.jsx";
@@ -22,6 +21,9 @@ const OrderMaster = () => {
     const [message, setMessage] = useState("");
     const [rowsOfQueryResults, setRowsOfQueryResults] = useState([]);
     const [queryParameters, setQueryParameters] = useState({});
+    const [selectedRow, setSelectedRow] = useState(undefined);
+
+    const[ orderDetailsQueryResults, setOrderDetailsQueryResults ] = useState( [] );
 
     const handleInputChange = (rule) => {
         return (event) => {
@@ -79,6 +81,25 @@ const OrderMaster = () => {
             messageFormSetter: setMessage,
             messagesFromForm: message,
             afterPostCallback: afterQueryPostedCallback,
+            requestTemplate: modernRequestPayloadTemplate
+        }
+    );
+
+    const afterDetailsPostedCallback = (response) => {
+        console.log("afterQueryCallback received:", response.status);
+        if (response.status === 200) {
+            setMessage("Success, retrieved " + response.data.data.length + " rows");
+            setOrderDetailsQueryResults(response.data.data);
+        } else {
+            setMessage("Error");
+        }
+    }
+
+
+    const orderDetailFormService = new FormService({
+            messageFormSetter: setMessage,
+            messagesFromForm: message,
+            afterPostCallback: afterDetailsPostedCallback,
             requestTemplate: modernRequestPayloadTemplate
         }
     );
@@ -174,8 +195,25 @@ const OrderMaster = () => {
     }
 
 
+    async function showComponentsOfOrder() {
+
+        if (selectedRow === undefined) {
+            // console.log("No row selected");
+            setOrderDetailsQueryResults([]);
+            return;
+        }
+        const componentQueryParameters = { rows: [ {'parentOliId': selectedRow.id } ] };
+        const response = await orderDetailFormService.postData(componentQueryParameters, orderLineItemQueryUrl);
+
+        if (response.status === 200) {
+            setOrderDetailsQueryResults(response.data.data);
+        } else {
+            setOrderDetailsQueryResults([]);
+        }
+    }
+
     const handleRowSelectionChange = ( row ) => {
-            const selectedRow = row[0];
+            setSelectedRow( row[0] );
             // const transitionLabel = "Change Item Properties" + ItemDtoToStringWithOperation(selectedRow);
             //
             // const nextScreen = new ScreenTransition( transitionLabel,
@@ -216,10 +254,36 @@ const OrderMaster = () => {
                 <Grid container sx={{mt: 1}}>
                     <Grid size="auto">
                         <Button variant="outlined" onClick={transitionToOliPropertiesAdd}>Add</Button>
+                        <Button variant="outlined" onClick={showComponentsOfOrder}>Show Components</Button>
                     </Grid>
                 </Grid>
 
+
             </Box>
+            {orderDetailsQueryResults.length > 0 && (
+                <>
+                    <hr style={{margin: "20px 0", borderTop: "1px solid #ccc"}}/>
+
+                    <Box sx={{height: 400, width: '100%', mb: 10}}>
+
+                        <DataGridHelper label="Inputs to order:"
+                                        rows={orderDetailsQueryResults}
+                                        columns={OrderLineItemResultsEditableMetaData}
+                                        onSelectionChange={handleRowSelectionChange}
+                        />
+
+                        <Grid container sx={{mt: 1}}>
+                            <Grid size="auto">
+                                <Button variant="outlined" onClick={transitionToOliPropertiesAdd}>Add</Button>
+                                <Button variant="outlined" onClick={showComponentsOfOrder}>Show Components</Button>
+                            </Grid>
+                        </Grid>
+
+
+                    </Box>
+                </>
+            )}
+
         </div>
     );
 };
