@@ -1,6 +1,6 @@
 import axios from "axios";
 import {validateFieldsOfObject} from "./Metadata/ValidateRule.js";
-import {CRUD_ACTION_NONE} from "./crudAction.js";
+import {CRUD_ACTION_NONE} from "./enums/crudAction.js";
 
 export const isShallowEqual = (obj1, obj2) => {
     const keys1 = Object.keys(obj1);

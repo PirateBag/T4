@@ -11,6 +11,8 @@ import {
 import {PropertyGrid} from "../Objects/PropertyGrid.jsx";
 import {DataGridHelper} from "../Objects/DataGridHelper.jsx";
 import {OrderLineItemResultsEditableMetaData, OrderQueryRequestEditableMetadata} from "./OrderMasterConfig.js";
+import {sourceAndOrderTypeMap} from "../enums/orderType.js";
+import {ORDER_STATE_OPEN} from "../enums/orderState.js";
 
 
 
@@ -102,7 +104,15 @@ const OrderMaster = () => {
 
 
     function mapItemQueryToOliQueryParameters( rowOfItem ) {
-        return { 'itemId' : rowOfItem.id };
+        if ( rowOfItem.id === undefined ) {
+            return newEmptyQueryConstant
+        }
+
+        let oliQueryParameters = { 'itemId' : rowOfItem.id };
+        oliQueryParameters.orderType = sourceAndOrderTypeMap[ rowOfItem.sourcing ];
+        oliQueryParameters.orderState = ORDER_STATE_OPEN;
+
+        return oliQueryParameters;
     }
 
     // Fetch data on mount if empty

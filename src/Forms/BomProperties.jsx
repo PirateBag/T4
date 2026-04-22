@@ -4,7 +4,7 @@ import FormService, {extractMessageFromResponse} from "../FormService.js";
 import {Button, MenuItem, Typography} from '@mui/material';
 import Grid from '@mui/material/Grid';
 import TextField from "@mui/material/TextField";
-import {CRUD_ACTION_DELETE, CRUD_ACTION_INSERT} from "../crudAction.js";
+import {CRUD_ACTION_DELETE, CRUD_ACTION_INSERT} from "../enums/crudAction.js";
 import {ScreenStack} from "../Stack.js";
 import {bomCrudUrl, itemCrudRequestTemplate, itemPickAll, pickListRequestTemplate,} from "../Globals.js";
 import {BomComponentsDto} from "./BomPropertiesConfig.js";

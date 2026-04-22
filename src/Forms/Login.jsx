@@ -9,7 +9,7 @@ import {LoginRequestEditableMetadata} from "./LoginConfig.js";
 import {Button} from "@mui/material";
 import {ScreenStack} from "../Stack.js";
 import {VerifyCredentialsUrl} from "../Globals.js";
-import {CRUD_ACTION_NONE} from "../crudAction.js";
+import {CRUD_ACTION_NONE} from "../enums/crudAction.js";
 import {PropertyGrid} from "../Objects/PropertyGrid.jsx";
 
 function Login(  )

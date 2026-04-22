@@ -5,7 +5,7 @@ import {Box, Button} from '@mui/material';
 import Grid from '@mui/material/Grid';
 import {ItemQueryRequestEditableMetadata, ItemQueryResultsMetadata} from "./ItemQueryConfig.js";
 import {useGridApiRef} from "@mui/x-data-grid";
-import {CRUD_ACTION_CHANGE, CRUD_ACTION_INSERT, CRUD_ACTION_NONE} from "../crudAction.js";
+import {CRUD_ACTION_CHANGE, CRUD_ACTION_INSERT, CRUD_ACTION_NONE} from "../enums/crudAction.js";
 import {ScreenTransition} from "../ScreenTransition.js";
 import ItemMaster from "./ItemMaster.jsx";
 import {ScreenStack} from "../Stack.js";

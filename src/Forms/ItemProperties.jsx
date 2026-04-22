@@ -3,7 +3,7 @@ import ErrorMessage from "../ErrorMessage.jsx";
 import FormService, {extractMessageFromResponse, isShallowEqual} from "../FormService.js";
 import {Box, Button, Typography} from '@mui/material';
 import Grid from '@mui/material/Grid';
-import {CRUD_ACTION_CHANGE, CRUD_ACTION_DELETE, CRUD_ACTION_INSERT, CRUD_ACTION_NONE} from "../crudAction.js";
+import {CRUD_ACTION_CHANGE, CRUD_ACTION_DELETE, CRUD_ACTION_INSERT, CRUD_ACTION_NONE} from "../enums/crudAction.js";
 import {ScreenStack} from "../Stack.js";
 import {
     bomComponents,

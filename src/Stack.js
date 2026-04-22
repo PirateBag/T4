@@ -1,6 +1,6 @@
 import {ScreenTransition} from "./ScreenTransition.js";
 import Login from "./Forms/Login.jsx";
-import {CRUD_ACTION_NONE} from "./crudAction.js";
+import {CRUD_ACTION_NONE} from "./enums/crudAction.js";
 
 export class Stack {
     constructor() {
