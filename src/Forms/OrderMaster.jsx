@@ -12,6 +12,7 @@ import {DataGridHelper} from "../Objects/DataGridHelper.jsx";
 import {OrderLineItemResultsEditableMetaData, OrderQueryRequestEditableMetadata} from "./OrderMasterConfig.js";
 import {sourceAndOrderTypeMap} from "../enums/orderType.js";
 import {ORDER_STATE_OPEN} from "../enums/orderState.js";
+import FormQueryPanel from "../FormQueryPanel.js";
 
 
 
@@ -21,32 +22,12 @@ const OrderMaster = () => {
     const [message, setMessage] = useState("");
     const [rowsOfQueryResults, setRowsOfQueryResults] = useState([]);
     const [queryParameters, setQueryParameters] = useState({});
-    const [selectedRow, setSelectedRow] = useState(undefined);
+    const [orderDetailsQueryResults, setOrderDetailsQueryResults ] = useState( [] );
 
-    const[ orderDetailsQueryResults, setOrderDetailsQueryResults ] = useState( [] );
+    const queryFormPanel = new FormQueryPanel({queryPanel: queryParameters,
+        setQueryPanel: setQueryParameters,
+        validationRules: OrderQueryRequestEditableMetadata } );
 
-    const handleInputChange = (rule) => {
-        return (event) => {
-            let value = event.target.value;
-            if (rule.type === 'number') {
-                value = value === '' ? undefined : Number(value);
-            }
-            setQueryParameters({...queryParameters, [rule.field]: value});
-        }
-    }
-
-    //
-    // const afterItemMasterQueryResults = (response) => {
-    //     console.log("afterItemMasterQueryResults received:", response.status);
-    //     if (response.status === 200) {
-    //         setMessage("Success, retrieved " + response.data.data.length + " rows");
-    //         setItemMasterQueryResults(response.data.data);
-    //     } else {
-    //         setMessage("Error");
-    //         setRowsOfQueryResults([]);
-    //     }
-    // }
-    //
     const afterQueryPostedCallback = (response) => {
         console.log("afterQueryCallback received:", response.status);
         if (response.status === 200) {
@@ -56,27 +37,7 @@ const OrderMaster = () => {
             setMessage("Error");
         }
     }
-    //  const afterChangeCallback = (responseFromUpdate) => {
-    //     if (responseFromUpdate.status !== 200) {
-    //         setMessage("Error" + responseFromUpdate.message);
-    //         return;
-    //     }
-    //     const messageFromResponse = extractMessageFromResponse(responseFromUpdate);
-    //     setMessage(messageFromResponse);
-    //
-    //     if (messageFromResponse.length > 0) {
-    //         return;
-    //     }
-    //     const updatedRow = responseFromUpdate.data.data[0];
-    //     updatedRow.crudAction = CRUD_ACTION_NONE;
-    //     const newRowsOfData = rowsOfQueryResults.map((row) =>
-    //         row.id === updatedRow.id ? updatedRow : row);
-    //
-    //     setRowsOfQueryResults(newRowsOfData);
-    //     console.log("Response " + JSON.stringify(rowsOfQueryResults));
-    // }
-    //
-    //
+
     const queryFormService = new FormService({
             messageFormSetter: setMessage,
             messagesFromForm: message,
@@ -103,25 +64,6 @@ const OrderMaster = () => {
             requestTemplate: modernRequestPayloadTemplate
         }
     );
-    //
-    //
-    // const updateFormService = new FormService({
-    //         messageFormSetter: setMessage,
-    //         messagesFromForm: message,
-    //         afterPostCallback: afterChangeCallback,
-    //         requestTemplate: itemCrudRequestTemplate
-    //     }
-    // );
-    //
-    // const itemMasterFormService = new FormService({
-    //         messageFormSetter: setMessage,
-    //         messagesFromForm: message,
-    //         afterPostCallback: afterItemMasterQueryResults,
-    //         requestTemplate: itemMasterReportUrl
-    //     }
-    // );
-    //
-    //
 
 
     function mapItemQueryToOliQueryParameters( rowOfItem ) {
@@ -180,65 +122,44 @@ const OrderMaster = () => {
         queryFormService.clearFormValues(event);
     }
 
-    // function transitionToItemMaster(event) {
-    //     //  The queryFormService owns the form we want to extract from.
-    //     const objectToBeTransmitted = queryFormService.extractRequestAsObject(event)
-    //     itemMasterFormService.postData(objectToBeTransmitted, itemMasterReportUrl);
-    //
-    //     let nextScreen = new ScreenTransition("Item Master Report", ItemMaster, CRUD_ACTION_NONE, itemMasterQueryResults);
-    //     ScreenStack.push(nextScreen);
-    // }
-    //
   function transitionToOliPropertiesAdd() {
         // const nextScreen = new ScreenTransition("Add new item", ItemProperties, CRUD_ACTION_INSERT, []);
         // ScreenStack.push(nextScreen);
     }
 
 
-    async function showComponentsOfOrder() {
-
-        if (selectedRow === undefined) {
-            // console.log("No row selected");
-            setOrderDetailsQueryResults([]);
-            return;
+    const handleRowSelectionChange = async ( row ) => {
+            const selected = row[0];
+            if (selected === undefined) {
+                setOrderDetailsQueryResults([]);
+                return;
+            }
+            console.log("Row " + selected.id + " selected");
+            const componentQueryParameters = { rows: [ {'parentOliId': selected.id } ] };
+            await orderDetailFormService.postData(componentQueryParameters, orderLineItemQueryUrl);
         }
-        const componentQueryParameters = { rows: [ {'parentOliId': selectedRow.id } ] };
-        const response = await orderDetailFormService.postData(componentQueryParameters, orderLineItemQueryUrl);
 
-        if (response.status === 200) {
-            setOrderDetailsQueryResults(response.data.data);
-        } else {
-            setOrderDetailsQueryResults([]);
-        }
-    }
-
-    const handleRowSelectionChange = ( row ) => {
-            setSelectedRow( row[0] );
-            // const transitionLabel = "Change Item Properties" + ItemDtoToStringWithOperation(selectedRow);
-            //
-            // const nextScreen = new ScreenTransition( transitionLabel,
-            //     ItemProperties, CRUD_ACTION_CHANGE, [selectedRow]);
-
-            // ScreenStack.push(nextScreen);
-        }
+        if ( queryParameters !== undefined && queryParameters.itemId !== undefined ) { queryFormPanel.showFieldsOfObject();}
 
     return (
         <div>
-            <form onSubmit={queryFormService.handleSubmit}>
+            <form onSubmit={queryFormPanel.handleSubmit}>
                 <ErrorMessage message={message}/>
                 <br/>
 
                 <PropertyGrid label={"Order Query Parameters"}
                               objectToPresent={queryParameters}
+                              handleInputChangeCallback={queryFormPanel.handleInputChange}
                               validationRules={OrderQueryRequestEditableMetadata}
-                              handleInputChangeCallback={handleInputChange}/>
+                />
                 <hr style={{margin: "20px 0", borderTop: "1px solid #ccc"}}/>
-                <Grid size={{xs: 12}} container spacing={2}>
-                            <Button type="submit" variant="contained" name={'dontpushme'} >Search</Button>
-                            <Button onClick={clearQueryParameters}>Clear</Button>
-                            <Button variant="outlined" onClick={() => ScreenStack.pop()}>Return</Button>
+                <Grid size={{xs: 12}} container spacing={4}>
+                    <Button type="submit" variant="contained" name={orderLineItemQueryUrl} >Search</Button>
+                    <Button onClick={clearQueryParameters}>Clear</Button>
+                    <Button variant="outlined" onClick={() => ScreenStack.pop()}>Return</Button>
                 </Grid>
             </form>
+
 
             <hr style={{margin: "20px 0", borderTop: "1px solid #ccc"}}/>
 
@@ -254,7 +175,6 @@ const OrderMaster = () => {
                 <Grid container sx={{mt: 1}}>
                     <Grid size="auto">
                         <Button variant="outlined" onClick={transitionToOliPropertiesAdd}>Add</Button>
-                        <Button variant="outlined" onClick={showComponentsOfOrder}>Show Components</Button>
                     </Grid>
                 </Grid>
 
@@ -271,15 +191,6 @@ const OrderMaster = () => {
                                         columns={OrderLineItemResultsEditableMetaData}
                                         onSelectionChange={handleRowSelectionChange}
                         />
-
-                        <Grid container sx={{mt: 1}}>
-                            <Grid size="auto">
-                                <Button variant="outlined" onClick={transitionToOliPropertiesAdd}>Add</Button>
-                                <Button variant="outlined" onClick={showComponentsOfOrder}>Show Components</Button>
-                            </Grid>
-                        </Grid>
-
-
                     </Box>
                 </>
             )}

@@ -9,7 +9,7 @@ import {REQUIRED_ADD, REQUIRED_NONE} from "../Metadata/ValidationRuleConstants.j
 //  id, quantityOrdered, quantityAssigned, startDate,completeDate, parentOliId,orderState, orderType
 export const OrderQueryRequestEditableMetadata = [
     ID_VALIDATION.appendGridFieldOptions( { 'editable': true, 'headerName' : 'Order' } ),
-    ID_VALIDATION.appendGridFieldOptions( { 'editable': false , 'field' : 'itemId', 'headerName': 'Item' } ),
+    ID_VALIDATION.appendGridFieldOptions( { 'editable': true , 'field' : 'itemId', 'headerName': 'Item' } ),
     QUANTITY_VALIDATION.appendGridFieldOptions({ 'editable': true, 'headerName': 'Quantity Ordered', 'field' : 'quantityOrdered' } ),
     QUANTITY_VALIDATION.appendGridFieldOptions({ 'editable': true, 'headerName': 'Quantity Assigned', 'field' : 'quantityAssigned' } ),
     DATE_VALIDATION.appendGridFieldOptions({ 'editable': true, 'headerName': 'Start Date', 'field' : 'startDate' } ),

@@ -1,6 +1,7 @@
 import axios from "axios";
 import {validateFieldsOfObject} from "./Metadata/ValidateRule.js";
 import {CRUD_ACTION_NONE} from "./enums/crudAction.js";
+import {httpErrorToString} from "./HttpUtils.js";
 
 export const isShallowEqual = (obj1, obj2) => {
     const keys1 = Object.keys(obj1);
@@ -41,55 +42,6 @@ class FormService {
 
 
 
-    handleBlurOnTextField( event, validationRule ) {
-        const valueToValidate = event.target.value.trim();
-        if (validationRule.required && valueToValidate === '') {
-            this.messageFormSetter("${validationRule.field} is a required field." );
-            return;
-        }
-        const message = validationRule.validate(valueToValidate);
-        this.messageFormSetter( message );
-    }
-
-    formatErrorMessage(error) {
-        if (error.code === 'ERR_NETWORK' || !error.response) {
-            return "Network error code " + error;
-        }
-
-        // HTTP error with response
-        if (error.response) {
-            const status = error.response.status;
-            const data = error.response.data;
-
-            // Check if the server sent a message
-            if (data?.message) {
-                return data.message;
-            }
-
-            // Handle common HTTP status codes
-            switch (status) {
-                case 400:
-                    return "Invalid request. Please check your input.";
-                case 401:
-                    return "Authentication failed. Please check your credentials.";
-                case 403:
-                    return "Access denied. You don't have permission.";
-                case 404:
-                    return "Resource not found.";
-                case 409:
-                    return "Conflict. This resource already exists.";
-                case 500:
-                    return "Server error. Please try again later.";
-                case 503:
-                    return "Service unavailable. Please try again later.";
-                default:
-                    return `Error: ${status}. Please try again.`;
-            }
-        }
-
-        // Generic error
-        return error.message || "An unexpected error occurred. Please try again.";
-    }
 
     copyObjectRemovingEmptyStrings(objectToCopy) {
         return Object.fromEntries(
@@ -167,7 +119,7 @@ class FormService {
             this.afterPostCallback(response);
             return response;
         } catch (error) {
-            const messageFromResponse = extractMessageFromResponse(error.response );
+            const messageFromResponse = httpErrorToString(error.response );
             const errorMessage = this.formatErrorMessage(error);
             this.messageFormSetter( messageFromResponse.length > 0 ? messageFromResponse : errorMessage );
             if (this.onErrorCallback) {
