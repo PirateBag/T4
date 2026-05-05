@@ -1,6 +1,6 @@
 import axios from "axios";
 import {CRUD_ACTION_NONE} from "./enums/crudAction.js";
-import {httpErrorToString} from "./HttpUtils.js";
+import {httpErrorToString, removeBlanksFromShallowObject} from "./HttpUtils.js";
 
 class FormQueryPanel {
     constructor(options) {
@@ -8,6 +8,7 @@ class FormQueryPanel {
         this.setQueryPanel = options.setQueryPanel;
         this.validationRules = options.validationRules;
         this.requestTemplate = options.requestTemplate ?? "${rowWithQuery}";
+        this.afterPostCallback = options.afterPostCallback;
     }
 
     setCrudActionInObject( crudAction ) {
@@ -42,37 +43,16 @@ class FormQueryPanel {
         this.messageFormSetter( message );
     }
 
-    copyObjectRemovingEmptyStrings(objectToCopy) {
-        return Object.fromEntries(
-            Object.entries(objectToCopy).filter(([, value]) =>
-                value !== null &&
-                value !== undefined &&
-                value !== ""
-            )
-        )
-    }
 
     handleSubmit = async (event) => {
         event.preventDefault();
-        // let messagesFromFormValidation = "";
-        // this.messageFormSetter(messagesFromFormValidation);
-        //
-        // if (messagesFromFormValidation.length > 0) return;
-        //
-        // const queryParametersFromForm = this.extractRequestAsObject(event);
-        //
-        // messagesFromFormValidation = validateFieldsOfObject(this.validationRules, queryParametersFromForm)
-        // if (messagesFromFormValidation.length > 0) {
-        //     this.messageFormSetter(messagesFromFormValidation);
-        //     return
-        // }
 
+        const parametersPriorToBuildingRequest =  this.setCrudActionInObject( CRUD_ACTION_NONE );
+        const parametersAfterRemovingFieldsWithEmptyValues = removeBlanksFromShallowObject( parametersPriorToBuildingRequest, this.validationRules );
+        const requestWithParametersInTemplate = this.placeParametersInTemplate(parametersAfterRemovingFieldsWithEmptyValues);
 
-        const parametersPriorToBuildingRequest =  this.setCrudActionInObject( this.queryPanel, event.nativeEvent.submitter.value ?? CRUD_ACTION_NONE );
-        const requestWithParametersInTemplate = this.placeParametersInTemplate(parametersPriorToBuildingRequest);
-
-        console.log( "Final Request after Crud action: '" + requestWithParametersInTemplate + "'" );
-        await this.postData(requestWithParametersInTemplate, event.nativeEvent.submitter.name );
+        const [response] = await Promise.all([this.postData(requestWithParametersInTemplate, event.nativeEvent.submitter.name)]);
+        this.afterPostCallback(response);
     }
 
 
@@ -85,31 +65,25 @@ class FormQueryPanel {
 
     /**
      * Given a request template and a row of request parameters, return a single row of request parameters.
-     * @param SingleRowOfRequestParameters - A single row of request parameters.
      * @returns {Object} - A single row of request parameters.
      */
     placeParametersInTemplate( ) {
         let finalRequestAsObject;
-
-            JSON.parse(this.requestTemplate.replace("${rowWithQuery}", JSON.stringify( this.queryPanel )));
+        finalRequestAsObject = JSON.parse(this.requestTemplate.replace("${rowWithQuery}", JSON.stringify( this.queryPanel )));
         return finalRequestAsObject;
     }
 
     async postData(finalRequestAsObject, finalUrl) {
         console.log( "Final Url: '" + finalUrl + "'" );
+        let response = {};
         try {
-            const response = await axios.post(finalUrl, finalRequestAsObject);
-            this.afterPostCallback(response);
+            response = await axios.post(finalUrl, finalRequestAsObject);
+//             this.afterPostCallback(response);
             return response;
         } catch (error) {
-            const messageFromResponse = httpErrorToString(error.response );
-            const errorMessage = this.formatErrorMessage(error);
-            this.messageFormSetter( messageFromResponse.length > 0 ? messageFromResponse : errorMessage );
-            if (this.onErrorCallback) {
-                this.onErrorCallback(error);
-            }
+            response.status =  httpErrorToString(error.response );
             console.error('Error thrown during post:', error);
-            throw error; // Re-throw so the caller knows it failed
+            return response;
         }
     }
 }

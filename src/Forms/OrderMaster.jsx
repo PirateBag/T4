@@ -24,9 +24,6 @@ const OrderMaster = () => {
     const [queryParameters, setQueryParameters] = useState({});
     const [orderDetailsQueryResults, setOrderDetailsQueryResults ] = useState( [] );
 
-    const queryFormPanel = new FormQueryPanel({queryPanel: queryParameters,
-        setQueryPanel: setQueryParameters,
-        validationRules: OrderQueryRequestEditableMetadata } );
 
     const afterQueryPostedCallback = (response) => {
         console.log("afterQueryCallback received:", response.status);
@@ -64,6 +61,13 @@ const OrderMaster = () => {
             requestTemplate: modernRequestPayloadTemplate
         }
     );
+
+    const queryFormPanel = new FormQueryPanel(
+        {queryPanel: queryParameters,
+            setQueryPanel: setQueryParameters,
+            validationRules: OrderQueryRequestEditableMetadata,
+            requestTemplate: modernRequestPayloadTemplate,
+            afterPostCallback: afterQueryPostedCallback } );
 
 
     function mapItemQueryToOliQueryParameters( rowOfItem ) {
@@ -138,8 +142,6 @@ const OrderMaster = () => {
             const componentQueryParameters = { rows: [ {'parentOliId': selected.id } ] };
             await orderDetailFormService.postData(componentQueryParameters, orderLineItemQueryUrl);
         }
-
-        if ( queryParameters !== undefined && queryParameters.itemId !== undefined ) { queryFormPanel.showFieldsOfObject();}
 
     return (
         <div>

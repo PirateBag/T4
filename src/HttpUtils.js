@@ -1,22 +1,8 @@
 import axios from "axios";
 
 export function httpErrorToString(error) {
-    if (error.code === 'ERR_NETWORK' || !error.response) {
-        return "Network error code " + error;
-    }
-
-    // HTTP error with response
-    if (error.response) {
-        const status = error.response.status;
-        const data = error.response.data;
-
-        // Check if the server sent a message
-        if (data?.message) {
-            return data.message;
-        }
-
         // Handle common HTTP status codes
-        switch (status) {
+        switch ( error.status ) {
             case 400:
                 return "Invalid request. Please check your input.";
             case 401:
@@ -32,24 +18,53 @@ export function httpErrorToString(error) {
             case 503:
                 return "Service unavailable. Please try again later.";
             default:
-                return `Error: ${status}. Please try again.`;
+                return `Error: ${error.status}. Please try again.`;
         }
     }
 
-    // Generic error
-    return error.message || "An unexpected error occurred. Please try again.";
+export function removeBlanksFromShallowObject(obj, validationRules) {
+    return validationRules.reduce((response, validationRule) => {
+        const type = validationRule.type;
+        const value = obj[validationRule.field];
+
+        if (value === undefined || value === null) {
+            return response;
+        }
+
+        if (type === 'string' || type === 'selectSelect') {
+            const effectiveValue = value.trimEnd();
+            // Note: Ensure .isNotEmpty() is defined on String prototype or use !effectiveValue
+            if (effectiveValue && effectiveValue.length > 0) {
+                response[validationRule.field] = effectiveValue;
+            }
+        } else {
+            response[validationRule.field] = value;
+        }
+
+        return response;
+    }, {}); // Initialized as an object {}
 }
 
-export async function postData( { requestToSend, destinationUrl } )  {
-    console.log( "Final Url: '" + destinationUrl + "'" );
-    let response;
-    try {
-        response = await axios.post(destinationUrl, requestToSend);
-    }
-    catch (error) {
-            const messageFromResponse = httpErrorToString(error.response);
-        response.error = messageFromResponse;
-            console.error('Error thrown during new postData' + error);
-        }
-        return response;
-    }
+//
+// export function removeBlanksFromShallowObject(obj,validationRules) {
+//     let response = {};
+//
+//     validationRules.map( (validationRule) =>
+//     {
+//         const type = validationRule.type;
+//         const value = obj[validationRule.field];
+//
+//         if ( value === undefined || value === null  )
+//             return;
+//
+//         if (type === 'string' || type === 'selectSelect') {
+//             const effectiveValue = value.trimEnd();
+//             if (effectiveValue.isNotEmpty()) {
+//                 response[validationRule.field] = effectiveValue;
+//             }
+//         } else {
+//            response[validationRule.field] = value;
+//         }
+//     });
+//     return response;
+// }

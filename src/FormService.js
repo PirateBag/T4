@@ -17,6 +17,17 @@ export function extractMessageFromResponse(response) {
     errors.map((error) => rValue += error.message + "\n");
     return rValue;
 }
+function copyObjectRemovingEmptyStrings(objectToCopy) {
+    return Object.fromEntries(
+        Object.entries(objectToCopy).filter(([, value]) =>
+            value !== null &&
+            value !== undefined &&
+            value !== ""
+        )
+    )
+}
+
+
 
 class FormService {
     constructor(options) {
@@ -40,18 +51,6 @@ class FormService {
         return source;
     }
 
-
-
-
-    copyObjectRemovingEmptyStrings(objectToCopy) {
-        return Object.fromEntries(
-            Object.entries(objectToCopy).filter(([, value]) =>
-                value !== null &&
-                value !== undefined &&
-                value !== ""
-            )
-        )
-    }
 
     handleSubmit = async (event) => {
         event.preventDefault();
@@ -77,7 +76,8 @@ class FormService {
             console.log( "CrudAction updated top  '" + finalRequestAsObject.updatedRows[ 0 ].crudAction + "'" );
         }
         console.log( "Final Request after Crud action: '" + finalRequestAsObject + "'" );
-        await this.postData(finalRequestAsObject, event.nativeEvent.submitter.name );
+        const response = await this.postData(finalRequestAsObject, event.nativeEvent.submitter.name );
+
     }
 
 
@@ -90,7 +90,7 @@ class FormService {
         event.preventDefault();
         const formData = new FormData( event.target.closest('form') );
         const formEntries = Object.fromEntries(formData );
-        return  this.copyObjectRemovingEmptyStrings(formEntries);
+        return  copyObjectRemovingEmptyStrings(formEntries);
     }
 
     /** Clears all form values.
@@ -129,6 +129,7 @@ class FormService {
             throw error; // Re-throw so the caller knows it failed
         }
     }
+
 }
 
 export default FormService

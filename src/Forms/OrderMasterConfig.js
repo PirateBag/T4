@@ -17,6 +17,7 @@ export const OrderQueryRequestEditableMetadata = [
     ID_VALIDATION.appendGridFieldOptions( { 'editable': true , 'field' : 'parentOliId', 'headerName': 'Parent Order' } ),
     ORDER_STATE_VALIDATION.appendGridFieldOptions({ 'editable': true, 'headerName': 'Order State', 'field' : 'orderState' } ),
     ORDER_TYPE_VALIDATION.appendGridFieldOptions({ 'editable': true, 'headerName': 'Order Type', 'field' : 'orderType' } )
+
 ];
 
 
