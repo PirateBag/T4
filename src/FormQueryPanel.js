@@ -1,6 +1,5 @@
-import axios from "axios";
 import {CRUD_ACTION_NONE} from "./enums/crudAction.js";
-import {httpErrorToString, removeBlanksFromShallowObject} from "./HttpUtils.js";
+import { postData, removeBlanksFromShallowObject} from "./HttpUtils.js";
 
 class FormQueryPanel {
     constructor(options) {
@@ -11,19 +10,12 @@ class FormQueryPanel {
         this.afterPostCallback = options.afterPostCallback;
     }
 
-    setCrudActionInObject( crudAction ) {
+    setCrudActionInObject(crudAction) {
         this.setQueryPanel({...this.queryPanel, 'crudAction': crudAction});
         return this.queryPanel;
     }
 
-    showFieldsOfObject( ) {
-        this.validationRules.map((validationRule) => {
-            const valueToValidate = this.queryPanel[validationRule.field] ?? "no value";
-            console.log( "Rule: " + validationRule.field + " is  " + valueToValidate );
-        })
-    }
-
-    handleInputChange = ( rule ) => {
+    handleInputChange = (rule) => {
         return (event) => {
             let value = event.target.value;
             if (rule.type === 'number') {
@@ -33,32 +25,32 @@ class FormQueryPanel {
         }
     }
 
-    handleBlurOnTextField( event, validationRule ) {
+    handleBlurOnTextField(event, validationRule) {
         const valueToValidate = event.target.value.trim();
         if (validationRule.required && valueToValidate === '') {
-            this.messageFormSetter("${validationRule.field} is a required field." );
+            this.messageFormSetter("${validationRule.field} is a required field.");
             return;
         }
         const message = validationRule.validate(valueToValidate);
-        this.messageFormSetter( message );
+        this.messageFormSetter(message);
     }
 
 
     handleSubmit = async (event) => {
         event.preventDefault();
 
-        const parametersPriorToBuildingRequest =  this.setCrudActionInObject( CRUD_ACTION_NONE );
-        const parametersAfterRemovingFieldsWithEmptyValues = removeBlanksFromShallowObject( parametersPriorToBuildingRequest, this.validationRules );
+        const parametersPriorToBuildingRequest = this.setCrudActionInObject(CRUD_ACTION_NONE);
+        const parametersAfterRemovingFieldsWithEmptyValues = removeBlanksFromShallowObject(parametersPriorToBuildingRequest, this.validationRules);
         const requestWithParametersInTemplate = this.placeParametersInTemplate(parametersAfterRemovingFieldsWithEmptyValues);
 
-        const [response] = await Promise.all([this.postData(requestWithParametersInTemplate, event.nativeEvent.submitter.name)]);
+        const [response] = await Promise.all([postData(requestWithParametersInTemplate, event.nativeEvent.submitter.name)]);
         this.afterPostCallback(response);
     }
 
 
     /** Clears all form values.
      *
-      */
+     */
     clearFormValues = (event) => {
         event.target.closest('form').reset();
     }
@@ -67,26 +59,13 @@ class FormQueryPanel {
      * Given a request template and a row of request parameters, return a single row of request parameters.
      * @returns {Object} - A single row of request parameters.
      */
-    placeParametersInTemplate( ) {
+    placeParametersInTemplate() {
         let finalRequestAsObject;
-        finalRequestAsObject = JSON.parse(this.requestTemplate.replace("${rowWithQuery}", JSON.stringify( this.queryPanel )));
+        finalRequestAsObject = JSON.parse(this.requestTemplate.replace("${rowWithQuery}", JSON.stringify(this.queryPanel)));
         return finalRequestAsObject;
     }
-
-    async postData(finalRequestAsObject, finalUrl) {
-        console.log( "Final Url: '" + finalUrl + "'" );
-        let response = {};
-        try {
-            response = await axios.post(finalUrl, finalRequestAsObject);
-//             this.afterPostCallback(response);
-            return response;
-        } catch (error) {
-            response.status =  httpErrorToString(error.response );
-            console.error('Error thrown during post:', error);
-            return response;
-        }
-    }
 }
+
 
 export default FormQueryPanel;
 

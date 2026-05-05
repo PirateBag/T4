@@ -45,6 +45,20 @@ export function removeBlanksFromShallowObject(obj, validationRules) {
     }, {}); // Initialized as an object {}
 }
 
+export async function postData(finalRequestAsObject, finalUrl) {
+    console.log( "PostData: '" + finalUrl + "'" + JSON.stringify(finalRequestAsObject)   );
+    let response = {};
+    try {
+        response = await axios.post(finalUrl, finalRequestAsObject);
+        console.log( "PostData response: '" + JSON.stringify(response.data.data) + "'" );
+        return response;
+    } catch (error) {
+        response.status =  httpErrorToString(error.response );
+        console.error('Error thrown during post:', error);
+        return response;
+    }
+}
+
 //
 // export function removeBlanksFromShallowObject(obj,validationRules) {
 //     let response = {};

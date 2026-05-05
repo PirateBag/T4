@@ -1,6 +1,5 @@
 import React, {useEffect, useState} from 'react';
 import ErrorMessage from "../ErrorMessage.jsx";
-import FormService from "../FormService.js";
 import {Box, Button} from '@mui/material';
 import Grid from '@mui/material/Grid';
 import {ScreenTransition} from "../ScreenTransition.js";
@@ -35,14 +34,6 @@ const OrderMaster = () => {
         }
     }
 
-    const queryFormService = new FormService({
-            messageFormSetter: setMessage,
-            messagesFromForm: message,
-            afterPostCallback: afterQueryPostedCallback,
-            requestTemplate: modernRequestPayloadTemplate
-        }
-    );
-
     const afterDetailsPostedCallback = (response) => {
         console.log("afterQueryCallback received:", response.status);
         if (response.status === 200) {
@@ -54,7 +45,7 @@ const OrderMaster = () => {
     }
 
 
-    const orderDetailFormService = new FormService({
+    const orderDetailFormService = new FormQueryPanel( {
             messageFormSetter: setMessage,
             messagesFromForm: message,
             afterPostCallback: afterDetailsPostedCallback,
@@ -62,7 +53,7 @@ const OrderMaster = () => {
         }
     );
 
-    const queryFormPanel = new FormQueryPanel(
+    const queryFormPanelService = new FormQueryPanel(
         {queryPanel: queryParameters,
             setQueryPanel: setQueryParameters,
             validationRules: OrderQueryRequestEditableMetadata,
@@ -89,14 +80,15 @@ const OrderMaster = () => {
                 let queryParametersForOpeningScreen;
                 let objectToBeTransmitted;
                 if ( ScreenStack.stackTop().data === undefined) {
-                    queryParametersForOpeningScreen = {};
-                    objectToBeTransmitted = newEmptyQueryConstant;
+                    // objectToBeTransmitted = newEmptyQueryConstant;
                 } else {
                     queryParametersForOpeningScreen = mapItemQueryToOliQueryParameters( ScreenStack.stackTop().data );
-                    objectToBeTransmitted = queryFormService.singleRowToRequest(queryParametersForOpeningScreen);
+                    setQueryParameters( queryParametersForOpeningScreen );
+                    objectToBeTransmitted = queryFormPanelService.placeParametersInTemplate(queryParametersForOpeningScreen);
+                    const queryResults =  await queryFormPanelService.postData(objectToBeTransmitted, orderLineItemQueryUrl);
+                    setRowsOfQueryResults( queryResults.data.data )
+
                 }
-                setQueryParameters( queryParametersForOpeningScreen );
-                await queryFormService.postData(objectToBeTransmitted, orderLineItemQueryUrl);
             }
         };
         fetchData();
@@ -123,7 +115,7 @@ const OrderMaster = () => {
     function clearQueryParameters(event) {
         setRowsOfQueryResults([])
         setQueryParameters({})
-        queryFormService.clearFormValues(event);
+        queryFormPanelService.clearFormValues(event);
     }
 
   function transitionToOliPropertiesAdd() {
@@ -145,13 +137,13 @@ const OrderMaster = () => {
 
     return (
         <div>
-            <form onSubmit={queryFormPanel.handleSubmit}>
+            <form onSubmit={queryFormPanelService.handleSubmit}>
                 <ErrorMessage message={message}/>
                 <br/>
 
                 <PropertyGrid label={"Order Query Parameters"}
                               objectToPresent={queryParameters}
-                              handleInputChangeCallback={queryFormPanel.handleInputChange}
+                              handleInputChangeCallback={queryFormPanelService.handleInputChange}
                               validationRules={OrderQueryRequestEditableMetadata}
                 />
                 <hr style={{margin: "20px 0", borderTop: "1px solid #ccc"}}/>
