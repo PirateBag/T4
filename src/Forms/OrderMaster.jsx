@@ -12,6 +12,7 @@ import {OrderLineItemResultsEditableMetaData, OrderQueryRequestEditableMetadata}
 import {sourceAndOrderTypeMap} from "../enums/orderType.js";
 import {ORDER_STATE_OPEN} from "../enums/orderState.js";
 import FormQueryPanel from "../FormQueryPanel.js";
+import {placeParametersInTemplate, postData} from "../HttpUtils.js";
 
 
 
@@ -77,17 +78,13 @@ const OrderMaster = () => {
     useEffect(() => {
         const fetchData = async () => {
             if (rowsOfQueryResults.length === 0) {
-                let queryParametersForOpeningScreen;
-                let objectToBeTransmitted;
-                if ( ScreenStack.stackTop().data === undefined) {
-                    // objectToBeTransmitted = newEmptyQueryConstant;
-                } else {
-                    queryParametersForOpeningScreen = mapItemQueryToOliQueryParameters( ScreenStack.stackTop().data );
+                if ( ScreenStack.stackTop().data !== undefined) {
+                    const queryParametersForOpeningScreen = mapItemQueryToOliQueryParameters( ScreenStack.stackTop().data );
                     setQueryParameters( queryParametersForOpeningScreen );
-                    objectToBeTransmitted = queryFormPanelService.placeParametersInTemplate(queryParametersForOpeningScreen);
-                    const queryResults =  await queryFormPanelService.postData(objectToBeTransmitted, orderLineItemQueryUrl);
+                    const objectToBeTransmitted = placeParametersInTemplate(   { requestTemplate : modernRequestPayloadTemplate,
+                        singleRowOfQueryParameters: queryParametersForOpeningScreen });
+                    const queryResults =  await postData(objectToBeTransmitted, orderLineItemQueryUrl);
                     setRowsOfQueryResults( queryResults.data.data )
-
                 }
             }
         };

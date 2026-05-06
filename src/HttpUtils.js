@@ -59,6 +59,17 @@ export async function postData(finalRequestAsObject, finalUrl) {
     }
 }
 
+/**
+ * Given a request template and a row of request parameters, return a single row of request parameters.
+ * @param {Object} singleRowOfQueryParameters - The row of query parameters to be placed in the template.
+ * @returns {Object} - A single row of request parameters.
+ */
+export function placeParametersInTemplate( {requestTemplate, singleRowOfQueryParameters} ) {
+    let finalRequestAsObject;
+    finalRequestAsObject = JSON.parse( requestTemplate.replace("${rowWithQuery}", JSON.stringify(singleRowOfQueryParameters)));
+    return finalRequestAsObject;
+}
+
 //
 // export function removeBlanksFromShallowObject(obj,validationRules) {
 //     let response = {};

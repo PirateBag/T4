@@ -1,5 +1,6 @@
 import {CRUD_ACTION_NONE} from "./enums/crudAction.js";
-import { postData, removeBlanksFromShallowObject} from "./HttpUtils.js";
+import {placeParametersInTemplate, postData, removeBlanksFromShallowObject} from "./HttpUtils.js";
+import {modernRequestPayloadTemplate} from "./Globals.js";
 
 class FormQueryPanel {
     constructor(options) {
@@ -41,7 +42,9 @@ class FormQueryPanel {
 
         const parametersPriorToBuildingRequest = this.setCrudActionInObject(CRUD_ACTION_NONE);
         const parametersAfterRemovingFieldsWithEmptyValues = removeBlanksFromShallowObject(parametersPriorToBuildingRequest, this.validationRules);
-        const requestWithParametersInTemplate = this.placeParametersInTemplate(parametersAfterRemovingFieldsWithEmptyValues);
+        const requestWithParametersInTemplate = placeParametersInTemplate( {
+            'requestTemplate' : modernRequestPayloadTemplate,
+            'singleRowOfQueryParameters' : parametersAfterRemovingFieldsWithEmptyValues } );
 
         const [response] = await Promise.all([postData(requestWithParametersInTemplate, event.nativeEvent.submitter.name)]);
         this.afterPostCallback(response);
@@ -55,15 +58,7 @@ class FormQueryPanel {
         event.target.closest('form').reset();
     }
 
-    /**
-     * Given a request template and a row of request parameters, return a single row of request parameters.
-     * @returns {Object} - A single row of request parameters.
-     */
-    placeParametersInTemplate() {
-        let finalRequestAsObject;
-        finalRequestAsObject = JSON.parse(this.requestTemplate.replace("${rowWithQuery}", JSON.stringify(this.queryPanel)));
-        return finalRequestAsObject;
-    }
+
 }
 
 
