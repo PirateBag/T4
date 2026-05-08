@@ -4,7 +4,8 @@ import {Box, Button} from '@mui/material';
 import Grid from '@mui/material/Grid';
 import {ScreenTransition} from "../ScreenTransition.js";
 import {ScreenStack} from "../Stack.js";
-import { modernRequestPayloadTemplate, newEmptyQueryConstant, orderLineItemQueryUrl
+import {
+    modernRequestPayloadTemplate, newEmptyQueryConstant, orderLineItemQueryUrl
 } from "../Globals.js";
 import {PropertyGrid} from "../Objects/PropertyGrid.jsx";
 import {DataGridHelper} from "../Objects/DataGridHelper.jsx";
@@ -13,6 +14,7 @@ import {sourceAndOrderTypeMap} from "../enums/orderType.js";
 import {ORDER_STATE_OPEN} from "../enums/orderState.js";
 import FormQueryPanel from "../FormQueryPanel.js";
 import {placeParametersInTemplate, postData} from "../HttpUtils.js";
+import {CRUD_ACTION_INSERT} from "../enums/crudAction.js";
 
 
 
@@ -23,6 +25,7 @@ const OrderMaster = () => {
     const [rowsOfQueryResults, setRowsOfQueryResults] = useState([]);
     const [queryParameters, setQueryParameters] = useState({});
     const [orderDetailsQueryResults, setOrderDetailsQueryResults ] = useState( [] );
+    // const [selectedRow, setSelectedRow] = useState( undefined );
 
 
     const afterQueryPostedCallback = (response) => {
@@ -34,25 +37,6 @@ const OrderMaster = () => {
             setMessage("Error");
         }
     }
-
-    const afterDetailsPostedCallback = (response) => {
-        console.log("afterQueryCallback received:", response.status);
-        if (response.status === 200) {
-            setMessage("Success, retrieved " + response.data.data.length + " rows");
-            setOrderDetailsQueryResults(response.data.data);
-        } else {
-            setMessage("Error");
-        }
-    }
-
-
-    const orderDetailFormService = new FormQueryPanel( {
-            messageFormSetter: setMessage,
-            messagesFromForm: message,
-            afterPostCallback: afterDetailsPostedCallback,
-            requestTemplate: modernRequestPayloadTemplate
-        }
-    );
 
     const queryFormPanelService = new FormQueryPanel(
         {queryPanel: queryParameters,
@@ -81,10 +65,10 @@ const OrderMaster = () => {
                 if ( ScreenStack.stackTop().data !== undefined) {
                     const queryParametersForOpeningScreen = mapItemQueryToOliQueryParameters( ScreenStack.stackTop().data );
                     setQueryParameters( queryParametersForOpeningScreen );
-                    const objectToBeTransmitted = placeParametersInTemplate(   { requestTemplate : modernRequestPayloadTemplate,
+                    const objectToBeTransmitted = placeParametersInTemplate( { requestTemplate : modernRequestPayloadTemplate,
                         singleRowOfQueryParameters: queryParametersForOpeningScreen });
-                    const queryResults =  await postData(objectToBeTransmitted, orderLineItemQueryUrl);
-                    setRowsOfQueryResults( queryResults.data.data )
+                    const allQueryResultsButShouldOnlyBeOne =  await Promise.all(  [postData( {'parameters' : objectToBeTransmitted, 'url' : orderLineItemQueryUrl}) ] );
+                    setRowsOfQueryResults( allQueryResultsButShouldOnlyBeOne[0].data.data )
                 }
             }
         };
@@ -115,10 +99,32 @@ const OrderMaster = () => {
         queryFormPanelService.clearFormValues(event);
     }
 
-  function transitionToOliPropertiesAdd() {
+  // function transitionToOliPropertiesAdd() {
         // const nextScreen = new ScreenTransition("Add new item", ItemProperties, CRUD_ACTION_INSERT, []);
         // ScreenStack.push(nextScreen);
+    // }
+
+    function transitionToComponentDelete() {
+        // if (selectedRow  === undefined ) {
+        //     setMessage("Please select a row to delete.");
+        //     return;
+        // }
+        // console.log("Selected BOM for deletion:", selectedRow);
+        //
+        // const objectToBeTransmitted = {
+        //     updatedRows: [{...selectedRow, crudAction: CRUD_ACTION_DELETE}]
+        // };
+        //
+        // try {
+        //     await ItemPropertiesUpdateFormService.postData(objectToBeTransmitted, bomCrudUrl);
+        //     setComponents(prev => prev.filter(row => row.id !== selectedRow.id));
+        //     setSelectedRow( undefined );
+        // } catch (error) {
+        //     console.error("Error deleting component:", error);
+        //     setMessage("Error deleting component: " + error.message);
+        // }
     }
+
 
 
     const handleRowSelectionChange = async ( row ) => {
@@ -129,7 +135,9 @@ const OrderMaster = () => {
             }
             console.log("Row " + selected.id + " selected");
             const componentQueryParameters = { rows: [ {'parentOliId': selected.id } ] };
-            await orderDetailFormService.postData(componentQueryParameters, orderLineItemQueryUrl);
+            const allQueryResultsFromPromiseButShouldOnlyBeOne = await Promise.all([postData( {'parameters' : componentQueryParameters,
+                'url' : orderLineItemQueryUrl })] );
+            setOrderDetailsQueryResults( allQueryResultsFromPromiseButShouldOnlyBeOne[0].data.data )
         }
 
     return (
@@ -164,9 +172,9 @@ const OrderMaster = () => {
                 />
 
                 <Grid container sx={{mt: 1}}>
-                    <Grid size="auto">
-                        <Button variant="outlined" onClick={transitionToOliPropertiesAdd}>Add</Button>
-                    </Grid>
+                        <Grid container sx={{mt: 2}} size={{xs: 12}}>
+                                <Button variant="outlined" sx={{ mr: 1 }} onClick={transitionToComponentDelete}>Delete Order</Button>
+                        </Grid>
                 </Grid>
 
 
@@ -180,7 +188,6 @@ const OrderMaster = () => {
                         <DataGridHelper label="Inputs to order:"
                                         rows={orderDetailsQueryResults}
                                         columns={OrderLineItemResultsEditableMetaData}
-                                        onSelectionChange={handleRowSelectionChange}
                         />
                     </Box>
                 </>

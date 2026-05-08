@@ -45,11 +45,11 @@ export function removeBlanksFromShallowObject(obj, validationRules) {
     }, {}); // Initialized as an object {}
 }
 
-export async function postData(finalRequestAsObject, finalUrl) {
-    console.log( "PostData: '" + finalUrl + "'" + JSON.stringify(finalRequestAsObject)   );
+export async function postData( { parameters, url } ) {
+    console.log( "PostData: '" + url + "'" + JSON.stringify(parameters)   );
     let response = {};
     try {
-        response = await axios.post(finalUrl, finalRequestAsObject);
+        response = await axios.post(url, parameters);
         console.log( "PostData response: '" + JSON.stringify(response.data.data) + "'" );
         return response;
     } catch (error) {
@@ -61,6 +61,7 @@ export async function postData(finalRequestAsObject, finalUrl) {
 
 /**
  * Given a request template and a row of request parameters, return a single row of request parameters.
+ * @param {requestTemplate} a string that indicates where via %s substition the parameters should be placed.
  * @param {Object} singleRowOfQueryParameters - The row of query parameters to be placed in the template.
  * @returns {Object} - A single row of request parameters.
  */

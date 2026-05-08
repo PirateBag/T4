@@ -46,7 +46,8 @@ class FormQueryPanel {
             'requestTemplate' : modernRequestPayloadTemplate,
             'singleRowOfQueryParameters' : parametersAfterRemovingFieldsWithEmptyValues } );
 
-        const [response] = await Promise.all([postData(requestWithParametersInTemplate, event.nativeEvent.submitter.name)]);
+        const [response] = await Promise.all([postData( {'parameters' : requestWithParametersInTemplate,
+            'url' : event.nativeEvent.submitter.name })]);
         this.afterPostCallback(response);
     }
 
