@@ -53,9 +53,11 @@ export async function postData( { parameters, url } ) {
         console.log( "PostData response: '" + JSON.stringify(response.data.data) + "'" );
         return response;
     } catch (error) {
-        response.status =  httpErrorToString(error.response );
         console.error('Error thrown during post:', error);
-        return response;
+        if (error.response?.status === 500) {
+            throw error;
+        }
+        return error.response;
     }
 }
 

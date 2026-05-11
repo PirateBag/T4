@@ -184,7 +184,10 @@ const ItemQuery = () => {
                         <Grid size="auto">
                             <Button variant="outlined" onClick={transitionToItemMaster}>Item Master Report</Button>
                         </Grid>
-                    </Grid>
+
+                    <Button variant="outlined" onClick={() => ScreenStack.pop()}>Return</Button>
+
+                </Grid>
             </form>
 
             <hr style={{margin: "20px 0", borderTop: "1px solid #ccc"}}/>

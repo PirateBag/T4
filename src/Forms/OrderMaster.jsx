@@ -5,7 +5,7 @@ import Grid from '@mui/material/Grid';
 import {ScreenTransition} from "../ScreenTransition.js";
 import {ScreenStack} from "../Stack.js";
 import {
-    modernRequestPayloadTemplate, newEmptyQueryConstant, orderLineItemQueryUrl
+    modernRequestPayloadTemplate, newEmptyQueryConstant, orderLineItemCrudUrl, orderLineItemQueryUrl
 } from "../Globals.js";
 import {PropertyGrid} from "../Objects/PropertyGrid.jsx";
 import {DataGridHelper} from "../Objects/DataGridHelper.jsx";
@@ -14,7 +14,7 @@ import {sourceAndOrderTypeMap} from "../enums/orderType.js";
 import {ORDER_STATE_OPEN} from "../enums/orderState.js";
 import FormQueryPanel from "../FormQueryPanel.js";
 import {placeParametersInTemplate, postData} from "../HttpUtils.js";
-import {CRUD_ACTION_INSERT} from "../enums/crudAction.js";
+import {CRUD_ACTION_DELETE, CRUD_ACTION_INSERT} from "../enums/crudAction.js";
 
 
 
@@ -25,7 +25,7 @@ const OrderMaster = () => {
     const [rowsOfQueryResults, setRowsOfQueryResults] = useState([]);
     const [queryParameters, setQueryParameters] = useState({});
     const [orderDetailsQueryResults, setOrderDetailsQueryResults ] = useState( [] );
-    // const [selectedRow, setSelectedRow] = useState( undefined );
+    const [selectedRow, setSelectedRow] = useState( undefined );
 
 
     const afterQueryPostedCallback = (response) => {
@@ -99,30 +99,32 @@ const OrderMaster = () => {
         queryFormPanelService.clearFormValues(event);
     }
 
-  // function transitionToOliPropertiesAdd() {
-        // const nextScreen = new ScreenTransition("Add new item", ItemProperties, CRUD_ACTION_INSERT, []);
-        // ScreenStack.push(nextScreen);
-    // }
+    async function transitionToComponentDelete() {
+        if (selectedRow  === undefined ) {
+            setMessage("Please select a row to delete.");
+            return;
+        }
 
-    function transitionToComponentDelete() {
-        // if (selectedRow  === undefined ) {
-        //     setMessage("Please select a row to delete.");
-        //     return;
-        // }
-        // console.log("Selected BOM for deletion:", selectedRow);
-        //
-        // const objectToBeTransmitted = {
-        //     updatedRows: [{...selectedRow, crudAction: CRUD_ACTION_DELETE}]
-        // };
-        //
-        // try {
-        //     await ItemPropertiesUpdateFormService.postData(objectToBeTransmitted, bomCrudUrl);
-        //     setComponents(prev => prev.filter(row => row.id !== selectedRow.id));
-        //     setSelectedRow( undefined );
-        // } catch (error) {
-        //     console.error("Error deleting component:", error);
-        //     setMessage("Error deleting component: " + error.message);
-        // }
+        const objectToBeTransmitted = {
+            rows: [{...selectedRow, crudAction: CRUD_ACTION_DELETE}]
+        };
+
+        try {
+            const response  = await postData({
+                'parameters': objectToBeTransmitted,
+                'url': orderLineItemCrudUrl
+            });
+
+            if (response.data.errors) {
+                setMessage("Error deleting component: " + response.data.errors[0].message);
+                return;
+            }
+            setRowsOfQueryResults(prev => prev.filter(row => row.id !== selectedRow.id));
+            setSelectedRow( undefined );
+        } catch (error) {
+            console.error("Error deleting component:", error);
+            setMessage("Error deleting component: " + error.message);
+        }
     }
 
 
@@ -134,6 +136,7 @@ const OrderMaster = () => {
                 return;
             }
             console.log("Row " + selected.id + " selected");
+            setSelectedRow( selected );
             const componentQueryParameters = { rows: [ {'parentOliId': selected.id } ] };
             const allQueryResultsFromPromiseButShouldOnlyBeOne = await Promise.all([postData( {'parameters' : componentQueryParameters,
                 'url' : orderLineItemQueryUrl })] );

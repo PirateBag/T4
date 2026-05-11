@@ -28,6 +28,7 @@ export const bomWhereUsed = "http://localhost:8080/bom/findByChild";
 export const bomCrudUrl  = "http://localhost:8080/bom/crud";
 
 export const orderLineItemQueryUrl =  "http://localhost:8080/oli/query";
+export const orderLineItemCrudUrl =  "http://localhost:8080/oli/crud";
 export const modernRequestPayloadTemplate =  '{ "rows" : [ ${rowWithQuery} ] }';
 
 

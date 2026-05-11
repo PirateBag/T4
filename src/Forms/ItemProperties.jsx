@@ -207,8 +207,6 @@ const ItemProperties = () => {
             setMessage("Please select a row to delete.");
             return;
         }
-        console.log("Selected BOM for deletion:", selectedRow);
-
         const objectToBeTransmitted = {
             updatedRows: [{...selectedRow, crudAction: CRUD_ACTION_DELETE}]
         };
