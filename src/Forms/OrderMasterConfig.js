@@ -27,8 +27,8 @@ export const OrderLineItemResultsEditableMetaData = [
     QUANTITY_VALIDATION.appendGridFieldOptions({ 'editable': true, 'headerName': 'Ordered', 'field' : 'quantityOrdered', 'width' : 140 } ),
     QUANTITY_VALIDATION.appendGridFieldOptions({ 'editable': true, 'headerName': 'Assigned', 'field' : 'quantityAssigned', 'width' : 140 } ),
     DATE_VALIDATION.appendGridFieldOptions({ 'editable': true, 'headerName': 'Start Date', 'field' : 'startDate', 'width' : 135 } ),
-    DATE_VALIDATION.appendGridFieldOptions({ 'editable': true, 'headerName': 'Complete Date', 'field' : 'completeDate', width : 155 } ),
+    DATE_VALIDATION.appendGridFieldOptions({ 'editable': true, 'headerName': 'Complete Date', 'field' : 'completeDate', width : 150} ),
     ID_VALIDATION.appendGridFieldOptions( { 'editable': true , 'field' : 'parentOliId', 'headerName': 'Parent Order', width : 130 } ),
-    ORDER_STATE_VALIDATION.appendGridFieldOptions({ 'editable': true, 'headerName': 'State', 'field' : 'orderState' } ),
+    ORDER_STATE_VALIDATION.appendGridFieldOptions({ 'editable': true, 'headerName': 'State', 'field' : 'orderState', width:130 } ),
     ORDER_TYPE_VALIDATION.appendGridFieldOptions({ 'editable': true, 'headerName': 'Type', 'field' : 'orderType' } )
 ];

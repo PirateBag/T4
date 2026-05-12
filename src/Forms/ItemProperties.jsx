@@ -1,6 +1,6 @@
 import React, {useEffect, useState} from 'react';
 import ErrorMessage from "../ErrorMessage.jsx";
-import FormService, {extractMessageFromResponse, isShallowEqual} from "../FormService.js";
+import FormService, {isShallowEqual} from "../FormService.js";
 import {Box, Button, Typography} from '@mui/material';
 import Grid from '@mui/material/Grid';
 import {CRUD_ACTION_CHANGE, CRUD_ACTION_DELETE, CRUD_ACTION_INSERT, CRUD_ACTION_NONE} from "../enums/crudAction.js";
@@ -27,6 +27,7 @@ import {
 } from "./ItemQueryConfig.js";
 import {ItemExplosion} from "./ItemExplosion.jsx";
 import OrderMaster from "./OrderMaster.jsx";
+import {extractMessageFromResponse} from "../FormQueryPanel.js";
 
 const ItemProperties = () => {
 

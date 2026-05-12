@@ -18,13 +18,9 @@ export function DataGridHelper({
     const safeColumns = React.useMemo(() => columns || [], [columns]);
 
     const handleInternalCellClick = ( params ) => {
-        // // Consider a click on the ID a row selection.
-        // if (params.field === 'id' && onSelectionChange) {
-        //     onSelectionChange(params.row);
-        // }
-
-        //  Consider a click on any other field to trigger a row change.
-        onSelectionChange([params.row] )
+        if (params.field === safeColumns[0]?.field && onSelectionChange) {
+            onSelectionChange([params.row]);
+        }
     };
 
     // Construct common DataGrid props

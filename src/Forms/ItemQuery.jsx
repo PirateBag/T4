@@ -1,6 +1,6 @@
 import React, {useEffect, useState} from 'react';
 import ErrorMessage from "../ErrorMessage.jsx";
-import FormService, {extractMessageFromResponse, isShallowEqual} from "../FormService.js";
+import FormService, {isShallowEqual} from "../FormService.js";
 import {Box, Button} from '@mui/material';
 import Grid from '@mui/material/Grid';
 import {ItemQueryRequestEditableMetadata, ItemQueryResultsMetadata} from "./ItemQueryConfig.js";
@@ -14,6 +14,7 @@ import ItemProperties from "./ItemProperties.jsx";
 import {ItemDtoToStringWithOperation} from "./ItemPropertiesConfig.js";
 import {PropertyGrid} from "../Objects/PropertyGrid.jsx";
 import {DataGridHelper} from "../Objects/DataGridHelper.jsx";
+import {extractMessageFromResponse} from "../FormQueryPanel.js";
 
 
 const ItemQuery = () => {

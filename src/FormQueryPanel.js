@@ -2,6 +2,13 @@ import {CRUD_ACTION_NONE} from "./enums/crudAction.js";
 import {placeParametersInTemplate, postData, removeBlanksFromShallowObject} from "./HttpUtils.js";
 import {modernRequestPayloadTemplate} from "./Globals.js";
 
+export function extractMessageFromResponse(response) {
+    let rValue = "";
+    const errors = response?.data?.errors ?? [];
+    errors.map((error) => rValue += error.message + "\n");
+    return rValue;
+}
+
 class FormQueryPanel {
     constructor(options) {
         this.queryPanel = options.queryPanel;
@@ -37,6 +44,7 @@ class FormQueryPanel {
     }
 
 
+
     handleSubmit = async (event) => {
         event.preventDefault();
 
@@ -58,8 +66,6 @@ class FormQueryPanel {
     clearFormValues = (event) => {
         event.target.closest('form').reset();
     }
-
-
 }
 
 

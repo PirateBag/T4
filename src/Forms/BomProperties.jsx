@@ -1,6 +1,6 @@
 import React, {useEffect, useState} from 'react';
 import ErrorMessage from "../ErrorMessage.jsx";
-import FormService, {extractMessageFromResponse} from "../FormService.js";
+import FormService from "../FormService.js";
 import {Button, MenuItem, Typography} from '@mui/material';
 import Grid from '@mui/material/Grid';
 import TextField from "@mui/material/TextField";
@@ -8,6 +8,7 @@ import {CRUD_ACTION_DELETE, CRUD_ACTION_INSERT} from "../enums/crudAction.js";
 import {ScreenStack} from "../Stack.js";
 import {bomCrudUrl, itemCrudRequestTemplate, itemPickAll, pickListRequestTemplate,} from "../Globals.js";
 import {BomComponentsDto} from "./BomPropertiesConfig.js";
+import {extractMessageFromResponse} from "../FormQueryPanel.js";
 
 const BomProperties = () => {
 

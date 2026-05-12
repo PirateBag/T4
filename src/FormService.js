@@ -10,13 +10,6 @@ export const isShallowEqual = (obj1, obj2) => {
     return keys1.every(key => obj1[key] === obj2[key]);
 };
 
-export function extractMessageFromResponse(response) {
-
-    let rValue = "";
-    const errors = response?.data?.errors ?? [];
-    errors.map((error) => rValue += error.message + "\n");
-    return rValue;
-}
 function copyObjectRemovingEmptyStrings(objectToCopy) {
     return Object.fromEntries(
         Object.entries(objectToCopy).filter(([, value]) =>

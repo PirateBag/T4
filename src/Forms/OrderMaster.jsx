@@ -12,9 +12,9 @@ import {DataGridHelper} from "../Objects/DataGridHelper.jsx";
 import {OrderLineItemResultsEditableMetaData, OrderQueryRequestEditableMetadata} from "./OrderMasterConfig.js";
 import {sourceAndOrderTypeMap} from "../enums/orderType.js";
 import {ORDER_STATE_OPEN} from "../enums/orderState.js";
-import FormQueryPanel from "../FormQueryPanel.js";
+import FormQueryPanel, {extractMessageFromResponse} from "../FormQueryPanel.js";
 import {placeParametersInTemplate, postData} from "../HttpUtils.js";
-import {CRUD_ACTION_DELETE, CRUD_ACTION_INSERT} from "../enums/crudAction.js";
+import {CRUD_ACTION_CHANGE, CRUD_ACTION_DELETE, CRUD_ACTION_INSERT} from "../enums/crudAction.js";
 
 
 
@@ -98,10 +98,9 @@ const OrderMaster = () => {
         setQueryParameters({})
         queryFormPanelService.clearFormValues(event);
     }
-
-    async function transitionToComponentDelete() {
+    async function deleteSelectedOrder( ) {
         if (selectedRow  === undefined ) {
-            setMessage("Please select a row to delete.");
+            setMessage("Please select an order to delete.");
             return;
         }
 
@@ -115,19 +114,53 @@ const OrderMaster = () => {
                 'url': orderLineItemCrudUrl
             });
 
-            if (response.data.errors) {
-                setMessage("Error deleting component: " + response.data.errors[0].message);
-                return;
+            const errorMessage = extractMessageFromResponse( response );
+            if ( errorMessage.length > 0 ) {
+                setMessage( errorMessage );
             }
+            setSelectedRow( undefined );            //  Remove the deleted item from the list of orders.
             setRowsOfQueryResults(prev => prev.filter(row => row.id !== selectedRow.id));
+        } catch (error) {
+            setMessage("Unable to delete order:  " + error.message);
+        }
+    }
+
+    async function saveChanges( ) {
+        const objectToBeTransmitted = { rows: rowsOfQueryResults.filter( row => row.crudAction === CRUD_ACTION_CHANGE ) };
+
+        try {
+            const response  = await postData({
+                'parameters': objectToBeTransmitted,
+                'url': orderLineItemCrudUrl
+            });
+
+            const errorMessage = extractMessageFromResponse( response );
+            if ( errorMessage.length > 0 ) {
+                setMessage( errorMessage );
+            }
             setSelectedRow( undefined );
         } catch (error) {
-            console.error("Error deleting component:", error);
-            setMessage("Error deleting component: " + error.message);
+            const errorMessage = extractMessageFromResponse( error );
+            setMessage("Unusual error updating order: " +  errorMessage );
         }
     }
 
 
+    function handleProcessRowUpdate( newRow, oldRow ) {
+        if ( newRow === undefined || oldRow === undefined ) {
+            console.log("Invalid row data provided for handleProcessRowUpdate");
+            return oldRow;
+        }
+        newRow.crudAction = CRUD_ACTION_CHANGE;
+
+        // setRowsOfQueryResults( rowsOfQueryResults.map( row => row.id === newRow.id ? newRow : row ) );
+        setRowsOfQueryResults( rowsOfQueryResults.map( row => { if ( row.id === newRow.id ) {
+            console.log("Updated master");
+            return newRow;
+        } else { return row;} } ) );
+        console.log("Row state updated for ID: " + newRow.id + " " + newRow.orderState );
+        return newRow;
+    }
 
     const handleRowSelectionChange = async ( row ) => {
             const selected = row[0];
@@ -172,11 +205,15 @@ const OrderMaster = () => {
                                 rows={rowsOfQueryResults}
                                 columns={OrderLineItemResultsEditableMetaData}
                                 onSelectionChange={handleRowSelectionChange}
+                                handleRowChangeCallback={handleProcessRowUpdate}
+
+
                 />
 
                 <Grid container sx={{mt: 1}}>
                         <Grid container sx={{mt: 2}} size={{xs: 12}}>
-                                <Button variant="outlined" sx={{ mr: 1 }} onClick={transitionToComponentDelete}>Delete Order</Button>
+                            <Button variant="outlined" sx={{ mr: 1 }} onClick={deleteSelectedOrder}>Delete Order</Button>
+                            <Button variant="outlined" sx={{ mr: 1 }} onClick={saveChanges}>Save Changes</Button>
                         </Grid>
                 </Grid>
 
