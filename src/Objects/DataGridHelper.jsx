@@ -15,7 +15,10 @@ export function DataGridHelper({
                                }) {
 
     const safeRows = React.useMemo(() => rows || [], [rows]);
-    const safeColumns = React.useMemo(() => columns || [], [columns]);
+    const safeColumns = React.useMemo(() =>
+        (columns || []).map(col =>
+            col.clickable ? { ...col, cellClassName: 'clickable-cell' } : col
+        ), [columns]);
 
     const handleInternalCellClick = ( params ) => {
         if (params.field === safeColumns[0]?.field && onSelectionChange) {
@@ -32,8 +35,24 @@ export function DataGridHelper({
         rowSelection: (onSelectionChange === undefined ? false : onSelectionChange), // Disable standard MUI selection
         getRowId: (row) => row.id,
         onCellClick: handleInternalCellClick,
-        sx,
-        initialState,
+        sx: {
+            ...sx,
+            '& .MuiDataGrid-cell': {
+                backgroundColor: '#f5f5f5',
+            },
+            '& .MuiDataGrid-cell--editable': {
+                backgroundColor: '#ffffff',
+            },
+            '& .clickable-cell': {
+                color: '#1976d2',
+                fontWeight: 'bold',
+            },
+        },
+        initialState: {
+            pagination: { paginationModel: { pageSize: 10 } },
+            ...initialState,
+        },
+        pageSizeOptions: [10, 25, 50],
         sortingMode: "client",
         filterMode: "client",
         processRowUpdate: handleRowChangeCallback,

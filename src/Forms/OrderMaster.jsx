@@ -22,17 +22,18 @@ const OrderMaster = () => {
 
     //  const emptyResponse = { responseType: "MULTILINE", data: [], errors : []  };
     const [message, setMessage] = useState("");
-    const [rowsOfQueryResults, setRowsOfQueryResults] = useState([]);
+    const [orderParentQueryResults, setOrderParentQueryResults] = useState([]);
     const [queryParameters, setQueryParameters] = useState({});
-    const [orderDetailsQueryResults, setOrderDetailsQueryResults ] = useState( [] );
-    const [selectedRow, setSelectedRow] = useState( undefined );
+    const [orderComponentQueryResults, setOrderComponentQueryResults ] = useState( [] );
+    const [selectedParentRow, setselectedParentRow] = useState( undefined );
+    const [selectedComponentRow, setSelectedComponentRow] = useState( undefined );
 
 
     const afterQueryPostedCallback = (response) => {
         console.log("afterQueryCallback received:", response.status);
         if (response.status === 200) {
             setMessage("Success, retrieved " + response.data.data.length + " rows");
-            setRowsOfQueryResults(response.data.data);
+            setOrderParentQueryResults(response.data.data);
         } else {
             setMessage("Error");
         }
@@ -61,14 +62,14 @@ const OrderMaster = () => {
     // Fetch data on mount if empty
     useEffect(() => {
         const fetchData = async () => {
-            if (rowsOfQueryResults.length === 0) {
+            if (orderParentQueryResults.length === 0) {
                 if ( ScreenStack.stackTop().data !== undefined) {
                     const queryParametersForOpeningScreen = mapItemQueryToOliQueryParameters( ScreenStack.stackTop().data );
                     setQueryParameters( queryParametersForOpeningScreen );
                     const objectToBeTransmitted = placeParametersInTemplate( { requestTemplate : modernRequestPayloadTemplate,
                         singleRowOfQueryParameters: queryParametersForOpeningScreen });
                     const allQueryResultsButShouldOnlyBeOne =  await Promise.all(  [postData( {'parameters' : objectToBeTransmitted, 'url' : orderLineItemQueryUrl}) ] );
-                    setRowsOfQueryResults( allQueryResultsButShouldOnlyBeOne[0].data.data )
+                    setOrderParentQueryResults( allQueryResultsButShouldOnlyBeOne[0].data.data )
                 }
             }
         };
@@ -94,18 +95,18 @@ const OrderMaster = () => {
     // }
     //
     function clearQueryParameters(event) {
-        setRowsOfQueryResults([])
+        setOrderParentQueryResults([])
         setQueryParameters({})
         queryFormPanelService.clearFormValues(event);
     }
     async function deleteSelectedOrder( ) {
-        if (selectedRow  === undefined ) {
+        if (selectedParentRow  === undefined ) {
             setMessage("Please select an order to delete.");
             return;
         }
 
         const objectToBeTransmitted = {
-            rows: [{...selectedRow, crudAction: CRUD_ACTION_DELETE}]
+            rows: [{...selectedParentRow, crudAction: CRUD_ACTION_DELETE}]
         };
 
         try {
@@ -118,15 +119,15 @@ const OrderMaster = () => {
             if ( errorMessage.length > 0 ) {
                 setMessage( errorMessage );
             }
-            setSelectedRow( undefined );            //  Remove the deleted item from the list of orders.
-            setRowsOfQueryResults(prev => prev.filter(row => row.id !== selectedRow.id));
+            setselectedParentRow( undefined );            //  Remove the deleted item from the list of orders.
+            setOrderParentQueryResults(prev => prev.filter(row => row.id !== selectedParentRow.id));
         } catch (error) {
             setMessage("Unable to delete order:  " + error.message);
         }
     }
 
-    async function saveChanges( ) {
-        const objectToBeTransmitted = { rows: rowsOfQueryResults.filter( row => row.crudAction === CRUD_ACTION_CHANGE ) };
+    async function saveParentChanges( ) {
+        const objectToBeTransmitted = { rows: orderParentQueryResults.filter( row => row.crudAction === CRUD_ACTION_CHANGE ) };
 
         try {
             const response  = await postData({
@@ -138,7 +139,7 @@ const OrderMaster = () => {
             if ( errorMessage.length > 0 ) {
                 setMessage( errorMessage );
             }
-            setSelectedRow( undefined );
+            setselectedParentRow( undefined );
         } catch (error) {
             const errorMessage = extractMessageFromResponse( error );
             setMessage("Unusual error updating order: " +  errorMessage );
@@ -154,7 +155,7 @@ const OrderMaster = () => {
         newRow.crudAction = CRUD_ACTION_CHANGE;
 
         // setRowsOfQueryResults( rowsOfQueryResults.map( row => row.id === newRow.id ? newRow : row ) );
-        setRowsOfQueryResults( rowsOfQueryResults.map( row => { if ( row.id === newRow.id ) {
+        setOrderParentQueryResults( orderParentQueryResults.map( row => { if ( row.id === newRow.id ) {
             console.log("Updated master");
             return newRow;
         } else { return row;} } ) );
@@ -162,19 +163,67 @@ const OrderMaster = () => {
         return newRow;
     }
 
-    const handleRowSelectionChange = async ( row ) => {
+    const handleParentRowSelectionChange = async ( row ) => {
             const selected = row[0];
             if (selected === undefined) {
-                setOrderDetailsQueryResults([]);
+                setOrderComponentQueryResults([]);
                 return;
             }
-            console.log("Row " + selected.id + " selected");
-            setSelectedRow( selected );
+            console.log("Parent " + selected.id + " selected");
+            setselectedParentRow( selected );
             const componentQueryParameters = { rows: [ {'parentOliId': selected.id } ] };
             const allQueryResultsFromPromiseButShouldOnlyBeOne = await Promise.all([postData( {'parameters' : componentQueryParameters,
                 'url' : orderLineItemQueryUrl })] );
-            setOrderDetailsQueryResults( allQueryResultsFromPromiseButShouldOnlyBeOne[0].data.data )
+            setOrderComponentQueryResults( allQueryResultsFromPromiseButShouldOnlyBeOne[0].data.data )
         }
+
+    const handleComponentSelectionChange = ( row ) => {
+        const selected = row[0];
+        if (selected === undefined) {
+            setOrderComponentQueryResults([]);
+            return;
+        }
+        console.log("Component " + selected.id + " selected");
+        setSelectedComponentRow( selected );
+    }
+
+    function handleComponentRowUpdate( newRow, oldRow ) {
+        if ( newRow === undefined || oldRow === undefined ) {
+            console.log("Invalid row data provided for handleProcessRowUpdate");
+            return oldRow;
+        }
+        newRow.crudAction = CRUD_ACTION_CHANGE;
+
+        // setRowsOfQueryResults( rowsOfQueryResults.map( row => row.id === newRow.id ? newRow : row ) );
+        setOrderComponentQueryResults( orderComponentQueryResults.map( row => { if ( row.id === newRow.id ) {
+            console.log("Updated master");
+            return newRow;
+        } else { return row;} } ) );
+        console.log("Row state updated for ID: " + newRow.id + " " + newRow.orderState );
+        return newRow;
+    }
+
+
+    async function saveComponentChanges( ) {
+        const objectToBeTransmitted = { rows: orderComponentQueryResults.filter( row => row.crudAction === CRUD_ACTION_CHANGE ) };
+
+        try {
+            const response  = await postData({
+                'parameters': objectToBeTransmitted,
+                'url': orderLineItemCrudUrl
+            });
+
+            const errorMessage = extractMessageFromResponse( response );
+            if ( errorMessage.length > 0 ) {
+                setMessage( errorMessage );
+            }
+            setSelectedComponentRow( undefined );
+        } catch (error) {
+            const errorMessage = extractMessageFromResponse( error );
+            setMessage("Unusual error updating order: " +  errorMessage );
+        }
+    }
+
 
     return (
         <div>
@@ -202,9 +251,9 @@ const OrderMaster = () => {
 
 
                 <DataGridHelper label="Order Query Results"
-                                rows={rowsOfQueryResults}
+                                rows={orderParentQueryResults}
                                 columns={OrderLineItemResultsEditableMetaData}
-                                onSelectionChange={handleRowSelectionChange}
+                                onSelectionChange={handleParentRowSelectionChange}
                                 handleRowChangeCallback={handleProcessRowUpdate}
 
 
@@ -213,22 +262,31 @@ const OrderMaster = () => {
                 <Grid container sx={{mt: 1}}>
                         <Grid container sx={{mt: 2}} size={{xs: 12}}>
                             <Button variant="outlined" sx={{ mr: 1 }} onClick={deleteSelectedOrder}>Delete Order</Button>
-                            <Button variant="outlined" sx={{ mr: 1 }} onClick={saveChanges}>Save Changes</Button>
+                            <Button variant="outlined" sx={{ mr: 1 }} onClick={saveParentChanges}>Save Changes</Button>
                         </Grid>
                 </Grid>
 
 
             </Box>
-            {orderDetailsQueryResults.length > 0 && (
+            {orderComponentQueryResults.length > 0 && (
                 <>
                     <hr style={{margin: "20px 0", borderTop: "1px solid #ccc"}}/>
 
                     <Box sx={{height: 400, width: '100%', mb: 10}}>
 
                         <DataGridHelper label="Inputs to order:"
-                                        rows={orderDetailsQueryResults}
+                                        rows={orderComponentQueryResults}
                                         columns={OrderLineItemResultsEditableMetaData}
+                                        onSelectionChange={handleComponentSelectionChange}
+                                        handleRowChangeCallback={handleComponentRowUpdate}
                         />
+                        <Grid container sx={{mt: 1}}>
+                            <Grid container sx={{mt: 2}} size={{xs: 12}}>
+                                <Button variant="outlined" sx={{ mr: 1 }} onClick={deleteSelectedOrder}>Delete Component</Button>
+                                <Button variant="outlined" sx={{ mr: 1 }} onClick={saveComponentChanges}>Save Component Changes</Button>
+                            </Grid>
+                        </Grid>
+
                     </Box>
                 </>
             )}
