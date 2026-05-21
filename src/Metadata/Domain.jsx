@@ -210,6 +210,14 @@ export const DATE_VALIDATION = new ValidationRule({
     editable: false
 });
 
+export const CHECKBOX_VALIDATION = new ValidationRule({
+    domainName: 'checkbox',
+    type: 'checkbox',
+    whenRequired: REQUIRED_NONE,
+    defaultValue: false,
+    defaultHeader: 'Checkbox'
+});
+
 export const ORDER_STATE_VALIDATION  = new ValidationRule({
     domainName: 'orderState',
     type: 'singleSelect',
@@ -249,6 +257,7 @@ export const VALIDATION_RULES = [
     TEXT_VALIDATION,
     CRUD_VALIDATION,
     DATE_VALIDATION,
+    CHECKBOX_VALIDATION,
     ORDER_STATE_VALIDATION,
     ORDER_TYPE_VALIDATION
 ];

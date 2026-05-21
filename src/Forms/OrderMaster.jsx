@@ -9,7 +9,11 @@ import {
 } from "../Globals.js";
 import {PropertyGrid} from "../Objects/PropertyGrid.jsx";
 import {DataGridHelper} from "../Objects/DataGridHelper.jsx";
-import {OrderLineItemResultsEditableMetaData, OrderQueryRequestEditableMetadata} from "./OrderMasterConfig.js";
+import {
+    OrderLineItemComponentResultsMetaData,
+    OrderLineItemResultsEditableMetaData,
+    OrderQueryRequestEditableMetadata
+} from "./OrderMasterConfig.js";
 import {sourceAndOrderTypeMap} from "../enums/orderType.js";
 import {ORDER_STATE_OPEN} from "../enums/orderState.js";
 import FormQueryPanel, {extractMessageFromResponse} from "../FormQueryPanel.js";
@@ -99,7 +103,7 @@ const OrderMaster = () => {
         setQueryParameters({})
         queryFormPanelService.clearFormValues(event);
     }
-    async function deleteSelectedOrder( ) {
+    async function deleteSelectedParentOrder( ) {
         if (selectedParentRow  === undefined ) {
             setMessage("Please select an order to delete.");
             return;
@@ -121,6 +125,35 @@ const OrderMaster = () => {
             }
             setselectedParentRow( undefined );            //  Remove the deleted item from the list of orders.
             setOrderParentQueryResults(prev => prev.filter(row => row.id !== selectedParentRow.id));
+        } catch (error) {
+            setMessage("Unable to delete order:  " + error.message);
+        }
+    }
+
+    async function deleteSelectedChildOrder( ) {
+        if (selectedComponentRow  === undefined ) {
+            setMessage("Please select an order component to delete.");
+            return;
+        }
+
+        const objectToBeTransmitted = {
+            rows: [{...selectedComponentRow, crudAction: CRUD_ACTION_DELETE}]
+        };
+
+        try {
+            const response  = await postData({
+                'parameters': objectToBeTransmitted,
+                'url': orderLineItemCrudUrl
+            });
+
+            const errorMessage = extractMessageFromResponse( response );
+            if ( errorMessage.length > 0 ) {
+                setMessage( errorMessage );
+            }
+            setSelectedComponentRow( undefined );
+
+            //  Remove the deleted item from the list of orders.
+            setOrderComponentQueryResults(prev => prev.filter(row => row.id !== selectedComponentRow.id));
         } catch (error) {
             setMessage("Unable to delete order:  " + error.message);
         }
@@ -261,14 +294,14 @@ const OrderMaster = () => {
 
                 <Grid container sx={{mt: 1}}>
                         <Grid container sx={{mt: 2}} size={{xs: 12}}>
-                            <Button variant="outlined" sx={{ mr: 1 }} onClick={deleteSelectedOrder}>Delete Order</Button>
+                            <Button variant="outlined" sx={{ mr: 1 }} onClick={deleteSelectedParentOrder}>Delete Order</Button>
                             <Button variant="outlined" sx={{ mr: 1 }} onClick={saveParentChanges}>Save Changes</Button>
                         </Grid>
                 </Grid>
 
 
             </Box>
-            {orderComponentQueryResults.length > 0 && (
+            {  /*orderComponentQueryResults.length > 0 && (*/
                 <>
                     <hr style={{margin: "20px 0", borderTop: "1px solid #ccc"}}/>
 
@@ -276,20 +309,20 @@ const OrderMaster = () => {
 
                         <DataGridHelper label="Inputs to order:"
                                         rows={orderComponentQueryResults}
-                                        columns={OrderLineItemResultsEditableMetaData}
+                                        columns={OrderLineItemComponentResultsMetaData}
                                         onSelectionChange={handleComponentSelectionChange}
                                         handleRowChangeCallback={handleComponentRowUpdate}
                         />
                         <Grid container sx={{mt: 1}}>
                             <Grid container sx={{mt: 2}} size={{xs: 12}}>
-                                <Button variant="outlined" sx={{ mr: 1 }} onClick={deleteSelectedOrder}>Delete Component</Button>
+                                <Button variant="outlined" sx={{ mr: 1 }} onClick={deleteSelectedChildOrder}>Delete Component</Button>
                                 <Button variant="outlined" sx={{ mr: 1 }} onClick={saveComponentChanges}>Save Component Changes</Button>
                             </Grid>
                         </Grid>
 
                     </Box>
                 </>
-            )}
+            }
 
         </div>
     );

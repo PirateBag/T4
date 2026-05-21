@@ -1,7 +1,7 @@
 import React from "react";
 import Grid from "@mui/material/Grid";
 import TextField from "@mui/material/TextField";
-import {Typography} from "@mui/material";
+import {Checkbox, FormControlLabel, Typography} from "@mui/material";
 
 export function PropertyGrid({label, objectToPresent, validationRules, handleInputChangeCallback, layout}) {
     const handleInputChangeDefault = (field) => {
@@ -28,23 +28,38 @@ export function PropertyGrid({label, objectToPresent, validationRules, handleInp
             <Grid container spacing={2} direction={direction}>
                 {validationRules.map((col) => (
                     <Grid key={col.field}>
-                        <TextField
-                            type={col.type}
-                            size="small"
-                            margin="dense"
-                            name={col.domainName}
-                            placeholder={col.headerName}
-                            value={objectToPresent[col.field] ?? ''}
-                            onChange={handleInputChangeCallback(col)}
-                            disabled={col.disabled === true}
-                            slotProps={{
-                                input: {
-                                    readOnly: col.editable === false,
-                                    maxLength: col.maxLengthInChars > 0 ? col.maxLengthInChars : undefined
-                                },
-                            }}
-                            sx={{width: '240px', display: col.hidden ? 'none' : 'block'}}
-                        />
+                        {col.type === 'checkbox' ? (
+                            <FormControlLabel
+                                control={
+                                    <Checkbox
+                                        checked={!!objectToPresent[col.field]}
+                                        onChange={handleInputChangeCallback(col)}
+                                        name={col.domainName}
+                                        disabled={col.editable === false || col.disabled === true}
+                                    />
+                                }
+                                label={col.headerName}
+                                sx={{width: '240px', display: col.hidden ? 'none' : 'block', ml: 1}}
+                            />
+                        ) : (
+                            <TextField
+                                type={col.type}
+                                size="small"
+                                margin="dense"
+                                name={col.domainName}
+                                placeholder={col.headerName}
+                                value={objectToPresent[col.field] ?? ''}
+                                onChange={handleInputChangeCallback(col)}
+                                disabled={col.disabled === true}
+                                slotProps={{
+                                    input: {
+                                        readOnly: col.editable === false,
+                                        maxLength: col.maxLengthInChars > 0 ? col.maxLengthInChars : undefined
+                                    },
+                                }}
+                                sx={{width: '240px', display: col.hidden ? 'none' : 'block'}}
+                            />
+                        )}
                     </Grid>
                 ))}
             </Grid>

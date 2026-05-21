@@ -25,7 +25,7 @@ class FormQueryPanel {
 
     handleInputChange = (rule) => {
         return (event) => {
-            let value = event.target.value;
+            let value = rule.type === 'checkbox' ? event.target.checked : event.target.value;
             if (rule.type === 'number') {
                 value = value === '' ? undefined : Number(value);
             }

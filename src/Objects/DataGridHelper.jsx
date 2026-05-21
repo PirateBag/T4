@@ -16,9 +16,13 @@ export function DataGridHelper({
 
     const safeRows = React.useMemo(() => rows || [], [rows]);
     const safeColumns = React.useMemo(() =>
-        (columns || []).map(col =>
-            col.clickable ? { ...col, cellClassName: 'clickable-cell' } : col
-        ), [columns]);
+        (columns || []).map(col => {
+            let newCol = col.clickable ? { ...col, cellClassName: 'clickable-cell' } : col;
+            if (newCol.type === 'checkbox') {
+                newCol = { ...newCol, type: 'boolean' };
+            }
+            return newCol;
+        }), [columns]);
 
     const handleInternalCellClick = ( params ) => {
         if (params.field === safeColumns[0]?.field && onSelectionChange) {
