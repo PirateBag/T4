@@ -1,7 +1,9 @@
 export const CaseConversion = {
     NONE: 'NONE',
-    UPPER: 'UPPERCASE', // Alias for compatibility
-    LOWER: 'LOWERCASE'  // Alias for compatibility
+    UPPER: 'UPPERCASE',
+    LOWER: 'LOWERCASE',
+    UPPERCASE: 'UPPERCASE',
+    LOWERCASE: 'LOWERCASE'
 };
 
 export const ValidationRuleTypes = [ 'text', 'number', 'date', 'boolean', 'checkbox', 'password', 'singleSelect' ];

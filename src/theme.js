@@ -20,7 +20,7 @@ export const theme = createTheme({
                     fontSize: '16px', // Base font size for DataGrid
                 },
                 columnHeader: {
-                    fontSize: '18x', // Header font size
+                    fontSize: '18px', // Header font size
                     fontWeight: 'bold',
                 },
                 cell: {

@@ -1,6 +1,6 @@
 
 import {DataGrid } from "@mui/x-data-grid";
-import {Typography} from "@mui/material";
+import {Typography, Checkbox} from "@mui/material";
 import React from "react";
 
 export function DataGridHelper({
@@ -19,7 +19,27 @@ export function DataGridHelper({
         (columns || []).map(col => {
             let newCol = col.clickable ? { ...col, cellClassName: 'clickable-cell' } : col;
             if (newCol.type === 'checkbox') {
-                newCol = { ...newCol, type: 'boolean' };
+                newCol = {
+                    ...newCol,
+                    type: 'boolean',
+                    renderCell: (params) => {
+                        const isChecked = params.value === true || params.value === 'x' || params.value === 'X';
+                        return isChecked ? <Checkbox checked readOnly size="small" /> : null;
+                    },
+                    renderEditCell: (params) => (
+                        <Checkbox
+                            checked={params.value === true || params.value === 'x' || params.value === 'X'}
+                            onChange={(e) => {
+                                params.api.setEditCellValue({
+                                    id: params.id,
+                                    field: params.field,
+                                    value: e.target.checked
+                                });
+                            }}
+                            size="small"
+                        />
+                    )
+                };
             }
             return newCol;
         }), [columns]);
@@ -27,6 +47,14 @@ export function DataGridHelper({
     const handleInternalCellClick = ( params ) => {
         if (params.field === safeColumns[0]?.field && onSelectionChange) {
             onSelectionChange([params.row]);
+        }
+
+        const columnDef = columns.find(col => col.field === params.field);
+        if (columnDef && columnDef.type === 'checkbox') {
+            const isCurrentlyChecked = params.value === true || params.value === 'x' || params.value === 'X';
+            const newValue = !isCurrentlyChecked;
+
+            params.api.updateRows([{ id: params.id, [params.field]: newValue }]);
         }
     };
 

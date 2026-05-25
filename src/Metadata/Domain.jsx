@@ -214,7 +214,7 @@ export const CHECKBOX_VALIDATION = new ValidationRule({
     domainName: 'checkbox',
     type: 'checkbox',
     whenRequired: REQUIRED_NONE,
-    defaultValue: false,
+    defaultValue: true,
     defaultHeader: 'Checkbox'
 });
 

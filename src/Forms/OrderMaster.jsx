@@ -2,7 +2,6 @@ import React, {useEffect, useState} from 'react';
 import ErrorMessage from "../ErrorMessage.jsx";
 import {Box, Button} from '@mui/material';
 import Grid from '@mui/material/Grid';
-import {ScreenTransition} from "../ScreenTransition.js";
 import {ScreenStack} from "../Stack.js";
 import {
     modernRequestPayloadTemplate, newEmptyQueryConstant, orderLineItemCrudUrl, orderLineItemQueryUrl
@@ -18,7 +17,7 @@ import {sourceAndOrderTypeMap} from "../enums/orderType.js";
 import {ORDER_STATE_OPEN} from "../enums/orderState.js";
 import FormQueryPanel, {extractMessageFromResponse} from "../FormQueryPanel.js";
 import {placeParametersInTemplate, postData} from "../HttpUtils.js";
-import {CRUD_ACTION_CHANGE, CRUD_ACTION_DELETE, CRUD_ACTION_INSERT} from "../enums/crudAction.js";
+import {CRUD_ACTION_CHANGE, CRUD_ACTION_DELETE } from "../enums/crudAction.js";
 
 
 
@@ -37,6 +36,15 @@ const OrderMaster = () => {
         console.log("afterQueryCallback received:", response.status);
         if (response.status === 200) {
             setMessage("Success, retrieved " + response.data.data.length + " rows");
+            const results = response.data.data;
+            let index = 0;
+            results.map( (row) => {
+                console.log("before delete :", row);
+                row.delete = (index % 2 === 0);
+                console.log("Processing row:", row);
+                index++;
+            })
+
             setOrderParentQueryResults(response.data.data);
         } else {
             setMessage("Error");
@@ -73,6 +81,7 @@ const OrderMaster = () => {
                     const objectToBeTransmitted = placeParametersInTemplate( { requestTemplate : modernRequestPayloadTemplate,
                         singleRowOfQueryParameters: queryParametersForOpeningScreen });
                     const allQueryResultsButShouldOnlyBeOne =  await Promise.all(  [postData( {'parameters' : objectToBeTransmitted, 'url' : orderLineItemQueryUrl}) ] );
+
                     setOrderParentQueryResults( allQueryResultsButShouldOnlyBeOne[0].data.data )
                 }
             }
