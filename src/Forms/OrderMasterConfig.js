@@ -4,7 +4,7 @@ import {
     ID_VALIDATION, ORDER_STATE_VALIDATION,
     ORDER_TYPE_VALIDATION, QUANTITY_VALIDATION
 } from "../Metadata/Domain.jsx";
-import {REQUIRED_ADD, REQUIRED_NONE} from "../Metadata/ValidationRuleConstants.js";
+
 
 
 //  id, quantityOrdered, quantityAssigned, startDate,completeDate, parentOliId,orderState, orderType

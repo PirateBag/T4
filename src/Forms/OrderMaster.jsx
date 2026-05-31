@@ -17,7 +17,7 @@ import {sourceAndOrderTypeMap} from "../enums/orderType.js";
 import {ORDER_STATE_OPEN} from "../enums/orderState.js";
 import FormQueryPanel, {extractMessageFromResponse} from "../FormQueryPanel.js";
 import {placeParametersInTemplate, postData} from "../HttpUtils.js";
-import {CRUD_ACTION_CHANGE, CRUD_ACTION_DELETE } from "../enums/crudAction.js";
+import {CRUD_ACTION_CHANGE, CRUD_ACTION_DELETE, CRUD_ACTION_INSERT, CRUD_ACTION_NONE} from "../enums/crudAction.js";
 
 
 
@@ -30,7 +30,6 @@ const OrderMaster = () => {
     const [orderComponentQueryResults, setOrderComponentQueryResults ] = useState( [] );
     const [selectedParentRow, setselectedParentRow] = useState( undefined );
     const [selectedComponentRow, setSelectedComponentRow] = useState( undefined );
-
 
     const afterQueryPostedCallback = (response) => {
         console.log("afterQueryCallback received:", response.status);
@@ -169,7 +168,8 @@ const OrderMaster = () => {
     }
 
     async function saveParentChanges( ) {
-        const objectToBeTransmitted = { rows: orderParentQueryResults.filter( row => row.crudAction === CRUD_ACTION_CHANGE ) };
+        const objectToBeTransmitted = { rows: orderParentQueryResults.filter(
+            row => row.crudAction === CRUD_ACTION_DELETE || row.crudAction === CRUD_ACTION_CHANGE ) } ;
 
         try {
             const response  = await postData({
@@ -186,6 +186,9 @@ const OrderMaster = () => {
             const errorMessage = extractMessageFromResponse( error );
             setMessage("Unusual error updating order: " +  errorMessage );
         }
+        const priorOrderQueryResults = orderComponentQueryResults;
+        priorOrderQueryResults.map( row => row.crudAction = CRUD_ACTION_NONE );
+        setOrderComponentQueryResults( priorOrderQueryResults )
     }
 
 
@@ -211,7 +214,7 @@ const OrderMaster = () => {
                 setOrderComponentQueryResults([]);
                 return;
             }
-            console.log("Parent " + selected.id + " selected");
+            console.log("Parent " + selected.id + " selected in ordermaster.handleParentRowSelected");
             setselectedParentRow( selected );
             const componentQueryParameters = { rows: [ {'parentOliId': selected.id } ] };
             const allQueryResultsFromPromiseButShouldOnlyBeOne = await Promise.all([postData( {'parameters' : componentQueryParameters,
@@ -303,7 +306,6 @@ const OrderMaster = () => {
 
                 <Grid container sx={{mt: 1}}>
                         <Grid container sx={{mt: 2}} size={{xs: 12}}>
-                            <Button variant="outlined" sx={{ mr: 1 }} onClick={deleteSelectedParentOrder}>Delete Order</Button>
                             <Button variant="outlined" sx={{ mr: 1 }} onClick={saveParentChanges}>Save Changes</Button>
                         </Grid>
                 </Grid>
@@ -324,7 +326,6 @@ const OrderMaster = () => {
                         />
                         <Grid container sx={{mt: 1}}>
                             <Grid container sx={{mt: 2}} size={{xs: 12}}>
-                                <Button variant="outlined" sx={{ mr: 1 }} onClick={deleteSelectedChildOrder}>Delete Component</Button>
                                 <Button variant="outlined" sx={{ mr: 1 }} onClick={saveComponentChanges}>Save Component Changes</Button>
                             </Grid>
                         </Grid>

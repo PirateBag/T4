@@ -1,4 +1,4 @@
-import {CRUD_ACTION_NONE} from "./enums/crudAction.js";
+import {CRUD_ACTION_CHANGE, CRUD_ACTION_DELETE, CRUD_ACTION_NONE} from "./enums/crudAction.js";
 import {placeParametersInTemplate, postData, removeBlanksFromShallowObject} from "./HttpUtils.js";
 import {modernRequestPayloadTemplate} from "./Globals.js";
 
@@ -26,10 +26,16 @@ class FormQueryPanel {
     handleInputChange = (rule) => {
         return (event) => {
             let value = rule.type === 'checkbox' ? event.target.checked : event.target.value;
+            let localCrudAction = rule.type === 'checkbox' ? CRUD_ACTION_DELETE : CRUD_ACTION_CHANGE;
             if (rule.type === 'number') {
                 value = value === '' ? undefined : Number(value);
             }
-            this.setQueryPanel({...this.queryPanel, [rule.field]: value});
+            this.setQueryPanel({
+                ...this.queryPanel,
+                [rule.field]: value,
+                [rule.crudAction || 'crudAction']: localCrudAction
+            });
+
         }
     }
 

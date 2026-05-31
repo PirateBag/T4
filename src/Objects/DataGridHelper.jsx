@@ -2,6 +2,7 @@
 import {DataGrid } from "@mui/x-data-grid";
 import {Typography, Checkbox} from "@mui/material";
 import React from "react";
+import {CRUD_ACTION_DELETE} from "../enums/crudAction.js";
 
 export function DataGridHelper({
                                    apiRef,
@@ -24,7 +25,7 @@ export function DataGridHelper({
                     type: 'boolean',
                     renderCell: (params) => {
                         const isChecked = params.value === true || params.value === 'x' || params.value === 'X';
-                        return isChecked ? <Checkbox checked readOnly size="small" /> : null;
+                        return <Checkbox checked={isChecked} readOnly size="small" />;
                     },
                     renderEditCell: (params) => (
                         <Checkbox
@@ -45,16 +46,19 @@ export function DataGridHelper({
         }), [columns]);
 
     const handleInternalCellClick = ( params ) => {
+        console.log('DataGridHelper:handleInternalCellClick:', params);
         if (params.field === safeColumns[0]?.field && onSelectionChange) {
             onSelectionChange([params.row]);
         }
 
-        const columnDef = columns.find(col => col.field === params.field);
-        if (columnDef && columnDef.type === 'checkbox') {
+        const validationRuleForField = columns.find(col => col.field === params.field);
+        if ( !validationRuleForField?.clickable ) return;
+
+        if (validationRuleForField && validationRuleForField.type === 'checkbox') {
             const isCurrentlyChecked = params.value === true || params.value === 'x' || params.value === 'X';
             const newValue = !isCurrentlyChecked;
-
-            params.api.updateRows([{ id: params.id, [params.field]: newValue }]);
+            params.row([{ id: params.id, [params.field]: newValue, crudAction : CRUD_ACTION_DELETE }]);
+            console.log('DataGridHelper:handleInternalCellClick:updatedCheckBox', params);
         }
     };
 
