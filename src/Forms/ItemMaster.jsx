@@ -1,7 +1,7 @@
 import React, {useEffect, useState} from 'react';
 import FormService from "../FormService.js";
 import {Box, Button} from '@mui/material';
-import {DataGridHelper} from "../Objects/DataGridHelper.jsx";
+import DataGridHelper from "../Objects/DataGridHelper.jsx";
 import {textReportConfig} from "./ItemMasterConfig.js";
 import Grid from "@mui/material/Grid";
 import {ScreenStack} from "../Stack.js";

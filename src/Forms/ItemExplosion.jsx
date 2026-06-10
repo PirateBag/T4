@@ -1,6 +1,6 @@
 import React from 'react';
 import {Box, Button, Typography} from '@mui/material';
-import {DataGridHelper} from "../Objects/DataGridHelper.jsx";
+import DataGridHelper from "../Objects/DataGridHelper.jsx";
 import {textReportConfig} from "./ItemMasterConfig.js";
 import {ScreenStack} from "../Stack.js";
 

@@ -17,7 +17,7 @@ import {
 import {BomComponentsDto, BomDtoToString, BomParentsDto, ItemDtoToString } from "./ItemPropertiesConfig.js";
 import {generateDefaultFromRules} from "../Metadata/ValidateRule.js";
 import {useGridApiRef} from "@mui/x-data-grid";
-import {DataGridHelper} from "../Objects/DataGridHelper.jsx";
+import DataGridHelper from "../Objects/DataGridHelper.jsx";
 import {ScreenTransition} from "../ScreenTransition.js";
 import BomProperties from "./BomProperties.jsx";
 import {PropertyGrid} from "../Objects/PropertyGrid.jsx";

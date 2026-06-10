@@ -13,7 +13,7 @@ import {itemCrudRequestTemplate, itemMasterReportUrl, olderEmptyQueryConstant, i
 import ItemProperties from "./ItemProperties.jsx";
 import {ItemDtoToStringWithOperation} from "./ItemPropertiesConfig.js";
 import {PropertyGrid} from "../Objects/PropertyGrid.jsx";
-import {DataGridHelper} from "../Objects/DataGridHelper.jsx";
+import DataGridHelper from "../Objects/DataGridHelper.jsx";
 import {extractMessageFromResponse} from "../FormQueryPanel.js";
 
 

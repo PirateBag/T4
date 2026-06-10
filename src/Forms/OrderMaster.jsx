@@ -7,7 +7,7 @@ import {
     modernRequestPayloadTemplate, newEmptyQueryConstant, orderLineItemCrudUrl, orderLineItemQueryUrl
 } from "../Globals.js";
 import {PropertyGrid} from "../Objects/PropertyGrid.jsx";
-import {DataGridHelper} from "../Objects/DataGridHelper.jsx";
+import DataGridHelper from "../Objects/DataGridHelper.jsx";
 import {
     OrderLineItemComponentResultsMetaData,
     OrderLineItemResultsEditableMetaData,
@@ -17,7 +17,7 @@ import {sourceAndOrderTypeMap} from "../enums/orderType.js";
 import {ORDER_STATE_OPEN} from "../enums/orderState.js";
 import FormQueryPanel, {extractMessageFromResponse} from "../FormQueryPanel.js";
 import {placeParametersInTemplate, postData} from "../HttpUtils.js";
-import {CRUD_ACTION_CHANGE, CRUD_ACTION_DELETE, CRUD_ACTION_INSERT, CRUD_ACTION_NONE} from "../enums/crudAction.js";
+import {CRUD_ACTION_CHANGE, CRUD_ACTION_DELETE, CRUD_ACTION_NONE} from "../enums/crudAction.js";
 
 
 
@@ -28,8 +28,6 @@ const OrderMaster = () => {
     const [orderParentQueryResults, setOrderParentQueryResults] = useState([]);
     const [queryParameters, setQueryParameters] = useState({});
     const [orderComponentQueryResults, setOrderComponentQueryResults ] = useState( [] );
-    const [selectedParentRow, setselectedParentRow] = useState( undefined );
-    const [selectedComponentRow, setSelectedComponentRow] = useState( undefined );
 
     const afterQueryPostedCallback = (response) => {
         console.log("afterQueryCallback received:", response.status);
@@ -37,14 +35,12 @@ const OrderMaster = () => {
             setMessage("Success, retrieved " + response.data.data.length + " rows");
             const results = response.data.data;
             let index = 0;
-            results.map( (row) => {
-                console.log("before delete :", row);
+            results.forEach((row, index) => {
                 row.delete = (index % 2 === 0);
-                console.log("Processing row:", row);
-                index++;
-            })
+                row.crudAction = CRUD_ACTION_NONE;
+            });
 
-            setOrderParentQueryResults(response.data.data);
+            setOrderParentQueryResults(results);
         } else {
             setMessage("Error");
         }
@@ -81,7 +77,9 @@ const OrderMaster = () => {
                         singleRowOfQueryParameters: queryParametersForOpeningScreen });
                     const allQueryResultsButShouldOnlyBeOne =  await Promise.all(  [postData( {'parameters' : objectToBeTransmitted, 'url' : orderLineItemQueryUrl}) ] );
 
-                    setOrderParentQueryResults( allQueryResultsButShouldOnlyBeOne[0].data.data )
+                    const results = allQueryResultsButShouldOnlyBeOne[0].data?.data || [];
+                    results.forEach(row => row.crudAction = CRUD_ACTION_NONE);
+                    setOrderParentQueryResults( results )
                 }
             }
         };
@@ -111,66 +109,10 @@ const OrderMaster = () => {
         setQueryParameters({})
         queryFormPanelService.clearFormValues(event);
     }
-    async function deleteSelectedParentOrder( ) {
-        if (selectedParentRow  === undefined ) {
-            setMessage("Please select an order to delete.");
-            return;
-        }
-
-        const objectToBeTransmitted = {
-            rows: [{...selectedParentRow, crudAction: CRUD_ACTION_DELETE}]
-        };
-
-        try {
-            const response  = await postData({
-                'parameters': objectToBeTransmitted,
-                'url': orderLineItemCrudUrl
-            });
-
-            const errorMessage = extractMessageFromResponse( response );
-            if ( errorMessage.length > 0 ) {
-                setMessage( errorMessage );
-            }
-            setselectedParentRow( undefined );            //  Remove the deleted item from the list of orders.
-            setOrderParentQueryResults(prev => prev.filter(row => row.id !== selectedParentRow.id));
-        } catch (error) {
-            setMessage("Unable to delete order:  " + error.message);
-        }
-    }
-
-    async function deleteSelectedChildOrder( ) {
-        if (selectedComponentRow  === undefined ) {
-            setMessage("Please select an order component to delete.");
-            return;
-        }
-
-        const objectToBeTransmitted = {
-            rows: [{...selectedComponentRow, crudAction: CRUD_ACTION_DELETE}]
-        };
-
-        try {
-            const response  = await postData({
-                'parameters': objectToBeTransmitted,
-                'url': orderLineItemCrudUrl
-            });
-
-            const errorMessage = extractMessageFromResponse( response );
-            if ( errorMessage.length > 0 ) {
-                setMessage( errorMessage );
-            }
-            setSelectedComponentRow( undefined );
-
-            //  Remove the deleted item from the list of orders.
-            setOrderComponentQueryResults(prev => prev.filter(row => row.id !== selectedComponentRow.id));
-        } catch (error) {
-            setMessage("Unable to delete order:  " + error.message);
-        }
-    }
 
     async function saveParentChanges( ) {
-        const objectToBeTransmitted = { rows: orderParentQueryResults.filter(
-            row => row.crudAction === CRUD_ACTION_DELETE || row.crudAction === CRUD_ACTION_CHANGE ) } ;
-
+        const ordersToBeChanged = orderParentQueryResults.filter( row => row.crudAction !== CRUD_ACTION_NONE );
+        const objectToBeTransmitted = { 'rows' : ordersToBeChanged };
         try {
             const response  = await postData({
                 'parameters': objectToBeTransmitted,
@@ -181,7 +123,6 @@ const OrderMaster = () => {
             if ( errorMessage.length > 0 ) {
                 setMessage( errorMessage );
             }
-            setselectedParentRow( undefined );
         } catch (error) {
             const errorMessage = extractMessageFromResponse( error );
             setMessage("Unusual error updating order: " +  errorMessage );
@@ -197,13 +138,14 @@ const OrderMaster = () => {
             console.log("Invalid row data provided for handleProcessRowUpdate");
             return oldRow;
         }
-        newRow.crudAction = CRUD_ACTION_CHANGE;
 
-        // setRowsOfQueryResults( rowsOfQueryResults.map( row => row.id === newRow.id ? newRow : row ) );
-        setOrderParentQueryResults( orderParentQueryResults.map( row => { if ( row.id === newRow.id ) {
-            console.log("Updated master");
-            return newRow;
-        } else { return row;} } ) );
+        if (newRow.crudAction === oldRow.crudAction || newRow.crudAction === undefined) {
+            if (newRow.crudAction !== CRUD_ACTION_DELETE && newRow.crudAction !== CRUD_ACTION_INSERT) {
+                newRow.crudAction = CRUD_ACTION_CHANGE;
+            }
+        }
+
+        setOrderParentQueryResults(prev => prev.map(row => row.id === newRow.id ? newRow : row));
         console.log("Row state updated for ID: " + newRow.id + " " + newRow.orderState );
         return newRow;
     }
@@ -215,11 +157,12 @@ const OrderMaster = () => {
                 return;
             }
             console.log("Parent " + selected.id + " selected in ordermaster.handleParentRowSelected");
-            setselectedParentRow( selected );
             const componentQueryParameters = { rows: [ {'parentOliId': selected.id } ] };
             const allQueryResultsFromPromiseButShouldOnlyBeOne = await Promise.all([postData( {'parameters' : componentQueryParameters,
                 'url' : orderLineItemQueryUrl })] );
-            setOrderComponentQueryResults( allQueryResultsFromPromiseButShouldOnlyBeOne[0].data.data )
+            const results = allQueryResultsFromPromiseButShouldOnlyBeOne[0].data?.data || [];
+            results.forEach(row => row.crudAction = CRUD_ACTION_NONE);
+            setOrderComponentQueryResults( results )
         }
 
     const handleComponentSelectionChange = ( row ) => {
@@ -229,28 +172,29 @@ const OrderMaster = () => {
             return;
         }
         console.log("Component " + selected.id + " selected");
-        setSelectedComponentRow( selected );
+
     }
 
     function handleComponentRowUpdate( newRow, oldRow ) {
         if ( newRow === undefined || oldRow === undefined ) {
-            console.log("Invalid row data provided for handleProcessRowUpdate");
+            console.log("Invalid row data provided for handleComponentRowUpdate");
             return oldRow;
         }
-        newRow.crudAction = CRUD_ACTION_CHANGE;
 
-        // setRowsOfQueryResults( rowsOfQueryResults.map( row => row.id === newRow.id ? newRow : row ) );
-        setOrderComponentQueryResults( orderComponentQueryResults.map( row => { if ( row.id === newRow.id ) {
-            console.log("Updated master");
-            return newRow;
-        } else { return row;} } ) );
-        console.log("Row state updated for ID: " + newRow.id + " " + newRow.orderState );
+        if (newRow.crudAction === oldRow.crudAction || newRow.crudAction === undefined) {
+            if (newRow.crudAction !== CRUD_ACTION_DELETE && newRow.crudAction !== CRUD_ACTION_INSERT) {
+                newRow.crudAction = CRUD_ACTION_CHANGE;
+            }
+        }
+
+        setOrderComponentQueryResults(prev => prev.map(row => row.id === newRow.id ? newRow : row));
+        console.log("Component row state updated for ID: " + newRow.id + " " + newRow.orderState );
         return newRow;
     }
 
 
     async function saveComponentChanges( ) {
-        const objectToBeTransmitted = { rows: orderComponentQueryResults.filter( row => row.crudAction === CRUD_ACTION_CHANGE ) };
+        const objectToBeTransmitted = { rows: orderComponentQueryResults.filter( row => row.crudAction !== CRUD_ACTION_NONE ) };
 
         try {
             const response  = await postData({
@@ -262,7 +206,6 @@ const OrderMaster = () => {
             if ( errorMessage.length > 0 ) {
                 setMessage( errorMessage );
             }
-            setSelectedComponentRow( undefined );
         } catch (error) {
             const errorMessage = extractMessageFromResponse( error );
             setMessage("Unusual error updating order: " +  errorMessage );
