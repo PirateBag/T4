@@ -17,9 +17,7 @@ import {sourceAndOrderTypeMap} from "../enums/orderType.js";
 import {ORDER_STATE_OPEN} from "../enums/orderState.js";
 import FormQueryPanel, {extractMessageFromResponse} from "../FormQueryPanel.js";
 import {placeParametersInTemplate, postData} from "../HttpUtils.js";
-import {CRUD_ACTION_CHANGE, CRUD_ACTION_DELETE, CRUD_ACTION_NONE} from "../enums/crudAction.js";
-
-
+import {CRUD_ACTION_CHANGE, CRUD_ACTION_DELETE, CRUD_ACTION_INSERT, CRUD_ACTION_NONE} from "../enums/crudAction.js";
 
 const OrderMaster = () => {
 
@@ -34,13 +32,13 @@ const OrderMaster = () => {
         if (response.status === 200) {
             setMessage("Success, retrieved " + response.data.data.length + " rows");
             const results = response.data.data;
-            let index = 0;
-            results.forEach((row, index) => {
-                row.delete = (index % 2 === 0);
-                row.crudAction = CRUD_ACTION_NONE;
-            });
+            const resultsWithMetadata = results.map((row) => ({
+                ...row,
+                delete: false,
+                crudAction: CRUD_ACTION_NONE,
+            }));
 
-            setOrderParentQueryResults(results);
+            setOrderParentQueryResults(resultsWithMetadata);
         } else {
             setMessage("Error");
         }
@@ -128,7 +126,7 @@ const OrderMaster = () => {
             setMessage("Unusual error updating order: " +  errorMessage );
         }
         const priorOrderQueryResults = orderComponentQueryResults;
-        priorOrderQueryResults.map( row => row.crudAction = CRUD_ACTION_NONE );
+        priorOrderQueryResults.forEach( row => row.crudAction = CRUD_ACTION_NONE );
         setOrderComponentQueryResults( priorOrderQueryResults )
     }
 
@@ -212,6 +210,16 @@ const OrderMaster = () => {
         }
     }
 
+    const saveChildThenParentResults =  async () => {
+        if (orderComponentQueryResults.some(row => row.crudAction !== CRUD_ACTION_NONE)) {
+            await saveComponentChanges();
+        }
+
+        if (orderParentQueryResults.some(row => row.crudAction !== CRUD_ACTION_NONE)) {
+            await saveParentChanges();
+        }
+    }
+
 
     return (
         <div>
@@ -269,7 +277,7 @@ const OrderMaster = () => {
                         />
                         <Grid container sx={{mt: 1}}>
                             <Grid container sx={{mt: 2}} size={{xs: 12}}>
-                                <Button variant="outlined" sx={{ mr: 1 }} onClick={saveComponentChanges}>Save Component Changes</Button>
+                                <Button variant="outlined" sx={{ mr: 1 }} onClick={saveChildThenParentResults}>Save Component Changes</Button>
                             </Grid>
                         </Grid>
 

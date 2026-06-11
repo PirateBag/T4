@@ -58,8 +58,6 @@ function DataGridHelper({
         }
 
         const validationRuleForField = columns.find(col => col.field === params.field);
-        if ( !validationRuleForField?.clickable ) return;
-
         if (validationRuleForField && validationRuleForField.type === 'checkbox') {
             const currentValue = params.value !== undefined ? params.value : params.row[params.field];
             const isCurrentlyChecked = currentValue === true || currentValue === 'x' || currentValue === 'X';
