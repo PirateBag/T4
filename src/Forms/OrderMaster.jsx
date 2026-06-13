@@ -19,6 +19,7 @@ import FormQueryPanel, {extractMessageFromResponse} from "../FormQueryPanel.js";
 import {placeParametersInTemplate, postData} from "../HttpUtils.js";
 import {CRUD_ACTION_CHANGE, CRUD_ACTION_DELETE, CRUD_ACTION_INSERT, CRUD_ACTION_NONE} from "../enums/crudAction.js";
 
+
 const OrderMaster = () => {
 
     //  const emptyResponse = { responseType: "MULTILINE", data: [], errors : []  };
@@ -84,52 +85,12 @@ const OrderMaster = () => {
         fetchData();
     }, []); // Dependency array ensures this runs only on mount
 
-    //
-    // async function ItemQueryRowChange(newValue, oldValue) {
-    //     if (isShallowEqual(newValue, oldValue)) {
-    //         console.log("Row " + oldValue.id + " unchanged, skipping update");
-    //         return;
-    //     }
-    //     newValue.crudAction = newValue.crudAction === CRUD_ACTION_INSERT ? CRUD_ACTION_INSERT : CRUD_ACTION_CHANGE;
-    //     const updatedRow = {...newValue};
-    //
-    //     const objectToBeTransmitted = queryFormService.singleRowToRequest(updatedRow);
-    //     updateFormService.postData(objectToBeTransmitted, itemUpdateUrl);
-    //     // Clear focus from the cell after successful update
-    //     setTimeout(() => {
-    //         apiRef.current.setCellFocus(0, '');
-    //     }, 0);
-    //     return updatedRow
-    // }
-    //
+
     function clearQueryParameters(event) {
         setOrderParentQueryResults([])
         setQueryParameters({})
         queryFormPanelService.clearFormValues(event);
     }
-
-    async function saveParentChanges( ) {
-        const ordersToBeChanged = orderParentQueryResults.filter( row => row.crudAction !== CRUD_ACTION_NONE );
-        const objectToBeTransmitted = { 'rows' : ordersToBeChanged };
-        try {
-            const response  = await postData({
-                'parameters': objectToBeTransmitted,
-                'url': orderLineItemCrudUrl
-            });
-
-            const errorMessage = extractMessageFromResponse( response );
-            if ( errorMessage.length > 0 ) {
-                setMessage( errorMessage );
-            }
-        } catch (error) {
-            const errorMessage = extractMessageFromResponse( error );
-            setMessage("Unusual error updating order: " +  errorMessage );
-        }
-        const priorOrderQueryResults = orderComponentQueryResults;
-        priorOrderQueryResults.forEach( row => row.crudAction = CRUD_ACTION_NONE );
-        setOrderComponentQueryResults( priorOrderQueryResults )
-    }
-
 
     function handleProcessRowUpdate( newRow, oldRow ) {
         if ( newRow === undefined || oldRow === undefined ) {
@@ -144,7 +105,7 @@ const OrderMaster = () => {
         }
 
         setOrderParentQueryResults(prev => prev.map(row => row.id === newRow.id ? newRow : row));
-        console.log("Row state updated for ID: " + newRow.id + " " + newRow.orderState );
+        console.log("Row state updated for ID: " + newRow.id + " " + newRow.delete + ' ' + newRow.crudAction );
         return newRow;
     }
 
@@ -191,32 +152,41 @@ const OrderMaster = () => {
     }
 
 
-    async function saveComponentChanges( ) {
-        const objectToBeTransmitted = { rows: orderComponentQueryResults.filter( row => row.crudAction !== CRUD_ACTION_NONE ) };
+
+    async function masterSaveChanges( objectToBeTransmitted, messageSetter, updatedRowsSetter ) {
+        const objectsWithActiveCrudAction = { rows: objectToBeTransmitted.filter( row => row.crudAction !== CRUD_ACTION_NONE ) };
 
         try {
             const response  = await postData({
-                'parameters': objectToBeTransmitted,
+                'parameters': objectsWithActiveCrudAction,
                 'url': orderLineItemCrudUrl
             });
 
-            const errorMessage = extractMessageFromResponse( response );
-            if ( errorMessage.length > 0 ) {
-                setMessage( errorMessage );
+            if ( response.status === 200 ) {
+                const afterRemovingDeletedRows = objectToBeTransmitted.filter( row => row.crudAction !== CRUD_ACTION_DELETE );
+                afterRemovingDeletedRows.forEach( row => row.crudAction = CRUD_ACTION_NONE );
+                updatedRowsSetter( afterRemovingDeletedRows );
             }
+            const errorMessage = extractMessageFromResponse( response );
+            messageSetter( errorMessage );
         } catch (error) {
             const errorMessage = extractMessageFromResponse( error );
-            setMessage("Unusual error updating order: " +  errorMessage );
+            messageSetter("Unusual error updating order: " +  errorMessage );
         }
+
     }
 
     const saveChildThenParentResults =  async () => {
-        if (orderComponentQueryResults.some(row => row.crudAction !== CRUD_ACTION_NONE)) {
-            await saveComponentChanges();
+        setMessage("");
+        if ( orderComponentQueryResults instanceof Array  && orderComponentQueryResults.some(row => row.crudAction !== CRUD_ACTION_NONE)) {
+            await masterSaveChanges( orderComponentQueryResults, setMessage, setOrderComponentQueryResults  );
+        }
+        if ( message.length > 0) {
+            return;
         }
 
-        if (orderParentQueryResults.some(row => row.crudAction !== CRUD_ACTION_NONE)) {
-            await saveParentChanges();
+         if (orderParentQueryResults.some(row => row.crudAction !== CRUD_ACTION_NONE)) {
+            await masterSaveChanges( orderParentQueryResults, setMessage, setOrderParentQueryResults );
         }
     }
 
@@ -224,6 +194,7 @@ const OrderMaster = () => {
     return (
         <div>
             <form onSubmit={queryFormPanelService.handleSubmit}>
+
                 <ErrorMessage message={message}/>
                 <br/>
 
@@ -244,7 +215,11 @@ const OrderMaster = () => {
             <hr style={{margin: "20px 0", borderTop: "1px solid #ccc"}}/>
 
             <Box sx={{height: 400, width: '100%', mb: 10}}>
-
+                <Grid container sx={{mt: 1}}>
+                    <Grid container sx={{mt: 2}} size={{xs: 12}}>
+                        <Button variant="outlined" sx={{ mr: 1 }} onClick={saveChildThenParentResults}>Save Changes</Button>
+                    </Grid>
+                </Grid>
 
                 <DataGridHelper label="Order Query Results"
                                 rows={orderParentQueryResults}
@@ -254,16 +229,8 @@ const OrderMaster = () => {
 
 
                 />
-
-                <Grid container sx={{mt: 1}}>
-                        <Grid container sx={{mt: 2}} size={{xs: 12}}>
-                            <Button variant="outlined" sx={{ mr: 1 }} onClick={saveParentChanges}>Save Changes</Button>
-                        </Grid>
-                </Grid>
-
-
-            </Box>
-            {  /*orderComponentQueryResults.length > 0 && (*/
+           </Box>
+            {
                 <>
                     <hr style={{margin: "20px 0", borderTop: "1px solid #ccc"}}/>
 
@@ -275,16 +242,9 @@ const OrderMaster = () => {
                                         onSelectionChange={handleComponentSelectionChange}
                                         handleRowChangeCallback={handleComponentRowUpdate}
                         />
-                        <Grid container sx={{mt: 1}}>
-                            <Grid container sx={{mt: 2}} size={{xs: 12}}>
-                                <Button variant="outlined" sx={{ mr: 1 }} onClick={saveChildThenParentResults}>Save Component Changes</Button>
-                            </Grid>
-                        </Grid>
-
                     </Box>
                 </>
             }
-
         </div>
     );
 };

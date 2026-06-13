@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useMemo, useState} from 'react';
 import FormService from "../FormService.js";
 import {Box, Button} from '@mui/material';
 import DataGridHelper from "../Objects/DataGridHelper.jsx";
@@ -8,12 +8,16 @@ import {ScreenStack} from "../Stack.js";
 import ErrorMessage from "../ErrorMessage.jsx";
 import {ItemQueryRequestEditableMetadata} from "./ItemQueryConfig.js";
 import TextField from "@mui/material/TextField";
-import {itemMasterReportUrl, itemQueryUrl, itemCrudRequestTemplate} from "../Globals.js";
+import {itemMasterReportUrl, itemQueryUrl, itemCrudRequestTemplate, olderEmptyQueryConstant} from "../Globals.js";
 
 const ItemMaster = () => {
 
     const [message, setMessage] = useState("");
     const [rowsOfQueryResults, setRowsOfQueryResults] = useState([]);
+
+    const columnsWithFlex = useMemo(() =>
+        textReportConfig.map(col => ({ ...col, flex: 1 })),
+    []);
 
     const afterQueryPostedCallback = (response) => {
         console.log("afterQueryCallback received:", response.status);
@@ -47,7 +51,7 @@ const ItemMaster = () => {
         const fetchData = async () => {
             if (rowsOfQueryResults.length === 0) {
                 // Trigger search with empty values
-                queryFormService.postData(olderEmptyQueryTemplate, itemMasterReportUrl);
+                queryFormService.postData(olderEmptyQueryConstant , itemMasterReportUrl);
             }
         };
         fetchData();
@@ -92,7 +96,7 @@ const ItemMaster = () => {
                 </Grid>
             </Grid>
             <Box sx={{height: 600, width: '100%', mb: 10}}>
-                <DataGridHelper columns={textReportConfig}
+                <DataGridHelper columns={columnsWithFlex}
                                 rows={safeRows}
                                 onCellClick={undefined}
                                 sx={{
@@ -100,8 +104,11 @@ const ItemMaster = () => {
                                         fontFamily: 'monospace',
                                     },
                                     '& .MuiDataGrid-cell': {
+                                        backgroundColor: '#f5f5f5',
                                         fontFamily: 'monospace',
-                                        whiteSpace: 'pre'
+                                        whiteSpace: 'pre',
+                                        overflow: 'visible',
+                                        textOverflow: 'clip'
                                     },
                                 }}
                                 initialState={{

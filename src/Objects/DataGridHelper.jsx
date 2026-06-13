@@ -91,7 +91,6 @@ function DataGridHelper({
         getRowId: (row) => row.id,
         onCellClick: handleInternalCellClick,
         sx: {
-            ...sx,
             '& .MuiDataGrid-cell': {
                 backgroundColor: '#f5f5f5',
             },
@@ -102,6 +101,7 @@ function DataGridHelper({
                 color: '#1976d2',
                 fontWeight: 'bold',
             },
+            ...sx,
         },
         initialState: {
             pagination: { paginationModel: { pageSize: 10 } },
