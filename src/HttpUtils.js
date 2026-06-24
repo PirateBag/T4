@@ -73,26 +73,3 @@ export function placeParametersInTemplate( {requestTemplate, singleRowOfQueryPar
     return finalRequestAsObject;
 }
 
-//
-// export function removeBlanksFromShallowObject(obj,validationRules) {
-//     let response = {};
-//
-//     validationRules.map( (validationRule) =>
-//     {
-//         const type = validationRule.type;
-//         const value = obj[validationRule.field];
-//
-//         if ( value === undefined || value === null  )
-//             return;
-//
-//         if (type === 'string' || type === 'selectSelect') {
-//             const effectiveValue = value.trimEnd();
-//             if (effectiveValue.isNotEmpty()) {
-//                 response[validationRule.field] = effectiveValue;
-//             }
-//         } else {
-//            response[validationRule.field] = value;
-//         }
-//     });
-//     return response;
-// }

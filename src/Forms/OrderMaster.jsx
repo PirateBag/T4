@@ -18,6 +18,7 @@ import {ORDER_STATE_OPEN} from "../enums/orderState.js";
 import FormQueryPanel, {extractMessageFromResponse} from "../FormQueryPanel.js";
 import {placeParametersInTemplate, postData} from "../HttpUtils.js";
 import {CRUD_ACTION_CHANGE, CRUD_ACTION_DELETE, CRUD_ACTION_INSERT, CRUD_ACTION_NONE} from "../enums/crudAction.js";
+import {loadItemPickListAll} from "../Objects/ItemPickListService.js";
 
 
 const OrderMaster = () => {
@@ -27,6 +28,7 @@ const OrderMaster = () => {
     const [orderParentQueryResults, setOrderParentQueryResults] = useState([]);
     const [queryParameters, setQueryParameters] = useState({});
     const [orderComponentQueryResults, setOrderComponentQueryResults ] = useState( [] );
+    const [itemPickList, setItemPickList] = useState([]);
 
     const afterQueryPostedCallback = (response) => {
         console.log("afterQueryCallback received:", response.status);
@@ -83,6 +85,11 @@ const OrderMaster = () => {
             }
         };
         fetchData();
+        loadItemPickListAll({
+            responseSetter: (data) => setItemPickList(data.map(item => ({ value: item.id, label: item.external }))),
+            errorMessageSetter: setMessage
+        });
+
     }, []); // Dependency array ensures this runs only on mount
 
 
@@ -202,6 +209,7 @@ const OrderMaster = () => {
                               objectToPresent={queryParameters}
                               handleInputChangeCallback={queryFormPanelService.handleInputChange}
                               validationRules={OrderQueryRequestEditableMetadata}
+                              pickListsForSelect={{ itemId: itemPickList }}
                 />
                 <hr style={{margin: "20px 0", borderTop: "1px solid #ccc"}}/>
                 <Grid size={{xs: 12}} container spacing={4}>
@@ -226,8 +234,7 @@ const OrderMaster = () => {
                                 columns={OrderLineItemResultsEditableMetaData}
                                 onSelectionChange={handleParentRowSelectionChange}
                                 handleRowChangeCallback={handleProcessRowUpdate}
-
-
+                                pickListsForSelect={{ itemId: itemPickList }}
                 />
            </Box>
             {
@@ -241,6 +248,7 @@ const OrderMaster = () => {
                                         columns={OrderLineItemComponentResultsMetaData}
                                         onSelectionChange={handleComponentSelectionChange}
                                         handleRowChangeCallback={handleComponentRowUpdate}
+                                        pickListsForSelect={{ itemId: itemPickList }}
                         />
                     </Box>
                 </>

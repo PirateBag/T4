@@ -18,6 +18,7 @@ import {BomComponentsDto, BomDtoToString, BomParentsDto, ItemDtoToString } from 
 import {generateDefaultFromRules} from "../Metadata/ValidateRule.js";
 import {useGridApiRef} from "@mui/x-data-grid";
 import DataGridHelper from "../Objects/DataGridHelper.jsx";
+import {loadItemPickListAll} from "../Objects/ItemPickListService";
 import {ScreenTransition} from "../ScreenTransition.js";
 import BomProperties from "./BomProperties.jsx";
 import {PropertyGrid} from "../Objects/PropertyGrid.jsx";
@@ -38,6 +39,7 @@ const ItemProperties = () => {
     const [components, setComponents] = useState();
     const [saveButtonMessage, setSaveButtonMessage] = useState("Save Changes");
     const [whereUsed, setWhereUsed] = useState([]);
+    const [itemOptions, setItemOptions] = useState([]);
     const [ , setItemMasterQueryResults] = useState([]);
 
     const afterUpdateCallback = (response) => {
@@ -123,6 +125,17 @@ const ItemProperties = () => {
 
                     const whereUsedResponse = await ItemPropertiesUpdateFormService.postData(objectToBeTransmitted, bomWhereUsed);
                     setWhereUsed(whereUsedResponse.data.data === undefined ? [] : whereUsedResponse.data.data);
+
+                    await loadItemPickListAll({
+                        responseSetter: (data) => {
+                            const formatted = data.map(item => ({
+                                value: item.id,
+                                label: item.external
+                            }));
+                            setItemOptions(formatted);
+                        },
+                        errorMessageSetter: setMessage
+                    });
 
                 } catch (error) {
                     console.error("Error fetching components:", error);
@@ -286,7 +299,8 @@ const ItemProperties = () => {
                     <PropertyGrid label="Create a new item with the following details:"
                                   objectToPresent={queryParameters}
                                   validationRules={ItemQueryRequestCrudInsertMetadata}
-                                  handleInputChangeCallback={handleInputChange}></PropertyGrid>
+                                  handleInputChangeCallback={handleInputChange}
+                                  pickListsForSelect={{ childId: itemOptions }} />
 
                     <Grid size={12} container spacing={2}>
                         <Grid size="auto">
@@ -312,7 +326,8 @@ const ItemProperties = () => {
                     <PropertyGrid label={queryParameters.description}
                                   objectToPresent={queryParameters}
                                   validationRules={ItemPropertiesUpdateFormService.validationRules}
-                                  handleInputChangeCallback={handleInputChange}></PropertyGrid>
+                                  handleInputChangeCallback={handleInputChange}
+                                  pickListsForSelect={{ childId: itemOptions }} />
 
                     <br/>
 
@@ -344,6 +359,7 @@ const ItemProperties = () => {
                                             handleRowChangeCallback={ComponentsUpdateRowHandler}
                                             onSelectionChange={(rows) => setSelectedRow( rows[ 0 ] )}
                                             onCellClick={undefined}
+                                            pickListsForSelect={{ childId: itemOptions }}
                             />
 
                             <Grid container sx={{mt: 2}} size={{xs: 12}}>

@@ -15,7 +15,7 @@ export const ItemDtoToStringWithOperation = (item) => "Updated: " + ItemDtoToStr
 
 export const BomComponentsDto = [
     ID_VALIDATION.appendGridFieldOptions({field: 'id', 'editable': false, 'headerName': 'Id'}),
-    ID_VALIDATION.appendGridFieldOptions({field: 'childId', 'editable': true, 'headerName': 'Child Id', width: 100}),
+    ID_VALIDATION.appendGridFieldOptions({field: 'childId', 'editable': true, 'headerName': 'Child Id', width: 300, useSelect: true}),
     DESCRIPTION_VALIDATION.appendGridFieldOptions({
         field: 'childDescription',
         'editable': false,

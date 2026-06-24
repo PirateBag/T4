@@ -5,21 +5,33 @@ import React from "react";
 import {CRUD_ACTION_DELETE, CRUD_ACTION_NONE} from "../enums/crudAction.js";
 
 function DataGridHelper({
-                                   apiRef,
-                                   label,
-                                   rows,
-                                   columns,
-                                   handleRowChangeCallback,
-                                   sx,
-                                   initialState,
-                                   onSelectionChange,
-                                   onProcessError
-                               }) {
+    apiRef,
+    label,
+    rows,
+    columns,
+    handleRowChangeCallback,
+    sx,
+    initialState,
+    onSelectionChange,
+    onProcessError,
+    pickListsForSelect = {} // New optional parameter
+}) {
 
     const safeRows = React.useMemo(() => rows || [], [rows]);
     const safeColumns = React.useMemo(() =>
         (columns || []).map(col => {
             let newCol = col.clickable ? { ...col, cellClassName: 'clickable-cell' } : col;
+
+            // Check if the column is configured for selection
+            if (newCol.useSelect) {
+                newCol = {
+                    ...newCol,
+                    type: 'singleSelect',
+                    // Look up the picklist by field name; default to empty array if not found
+                    valueOptions: pickListsForSelect[newCol.field] || [],
+                };
+            }
+
             if (newCol.type === 'checkbox') {
                 newCol = {
                     ...newCol,
@@ -49,7 +61,7 @@ function DataGridHelper({
                 };
             }
             return newCol;
-        }), [columns]);
+        }), [columns, pickListsForSelect]);
 
     const handleInternalCellClick = ( params ) => {
         console.log('DataGridHelper:handleInternalCellClick:', params);
