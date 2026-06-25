@@ -99,6 +99,33 @@ const OrderMaster = () => {
         queryFormPanelService.clearFormValues(event);
     }
 
+    const addOrder = () => {
+        const today = new Date();
+        const tomorrow = new Date();
+        tomorrow.setDate(today.getDate() + 1);
+
+        const formatDate = (date) => {
+            const [year, month, day] = date.toISOString().split('T')[0].split('-');
+            return `${year}-${month}${day}`;
+        };
+
+        const newOrder = {
+            id: Math.floor(Math.random() * 1000000) + 1000001,
+            delete: false,
+            itemId: queryParameters.itemId,
+            quantityOrdered: 0,
+            quantityAssigned: 0,
+            startDate: formatDate(today),
+            completeDate: formatDate(tomorrow),
+            parentOliId: 0,
+            orderState: ORDER_STATE_OPEN,
+            orderType: queryParameters.orderType,
+            crudAction: CRUD_ACTION_INSERT
+        };
+
+        setOrderParentQueryResults(prev => [newOrder, ...prev]);
+    };
+
     function handleProcessRowUpdate( newRow, oldRow ) {
         if ( newRow === undefined || oldRow === undefined ) {
             console.log("Invalid row data provided for handleProcessRowUpdate");
@@ -176,24 +203,41 @@ const OrderMaster = () => {
             }
             const errorMessage = extractMessageFromResponse( response );
             messageSetter( errorMessage );
+            return response;
         } catch (error) {
             const errorMessage = extractMessageFromResponse( error );
             messageSetter("Unusual error updating order: " +  errorMessage );
+            return error.response || { status: 500 };
         }
 
     }
 
     const saveChildThenParentResults =  async () => {
         setMessage("");
+        let success = true;
+
         if ( orderComponentQueryResults instanceof Array  && orderComponentQueryResults.some(row => row.crudAction !== CRUD_ACTION_NONE)) {
-            await masterSaveChanges( orderComponentQueryResults, setMessage, setOrderComponentQueryResults  );
-        }
-        if ( message.length > 0) {
-            return;
+            const response = await masterSaveChanges( orderComponentQueryResults, setMessage, setOrderComponentQueryResults  );
+            if (!response || response.status !== 200) {
+                success = false;
+            }
         }
 
-         if (orderParentQueryResults.some(row => row.crudAction !== CRUD_ACTION_NONE)) {
-            await masterSaveChanges( orderParentQueryResults, setMessage, setOrderParentQueryResults );
+        if (success && orderParentQueryResults.some(row => row.crudAction !== CRUD_ACTION_NONE)) {
+            const response = await masterSaveChanges( orderParentQueryResults, setMessage, setOrderParentQueryResults );
+            if (!response || response.status !== 200) {
+                success = false;
+            }
+        }
+
+        if (success) {
+            const objectToBeTransmitted = placeParametersInTemplate({
+                requestTemplate: modernRequestPayloadTemplate,
+                singleRowOfQueryParameters: queryParameters
+            });
+            const response = await postData({'parameters': objectToBeTransmitted, 'url': orderLineItemQueryUrl});
+            afterQueryPostedCallback(response);
+            setOrderComponentQueryResults([]);
         }
     }
 
@@ -215,6 +259,7 @@ const OrderMaster = () => {
                 <Grid size={{xs: 12}} container spacing={4}>
                     <Button type="submit" variant="contained" name={orderLineItemQueryUrl} >Search</Button>
                     <Button onClick={clearQueryParameters}>Clear</Button>
+                    <Button variant="outlined" onClick={addOrder}>Add Order</Button>
                     <Button variant="outlined" onClick={() => ScreenStack.pop()}>Return</Button>
                 </Grid>
             </form>

@@ -201,7 +201,7 @@ export const CRUD_VALIDATION = new ValidationRule({
 export const DATE_VALIDATION = new ValidationRule({
     domainName: 'date',
     type: 'text',
-    minLengthInChars: 10,
+    minLengthInChars: 9,
     maxLengthInChars: 10,
     caseConversion: CaseConversion.UPPERCASE,
     whenRequired: REQUIRED_NONE,
