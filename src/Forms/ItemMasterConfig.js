@@ -6,5 +6,5 @@ export const textReportConfig  = [
     ID_VALIDATION.appendGridFieldOptions(  { 'editable': false, 'headerName': 'Id'  } ),
     TEXT_VALIDATION.appendGridFieldOptions( {'headerName' : "Crud Action", 'field' : "crudAction",
     'width' : 120 }),
-    TEXT_VALIDATION.appendGridFieldOptions( {'headerName' : "Report", 'field' : "message" })
+    TEXT_VALIDATION.appendGridFieldOptions( {'headerName' : "Report", 'field' : "message", width: 1000 })
     ];

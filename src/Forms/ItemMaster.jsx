@@ -1,6 +1,6 @@
 import React, {useEffect, useMemo, useState} from 'react';
 import FormService from "../FormService.js";
-import {Box, Button} from '@mui/material';
+import {Box, Button, Typography} from '@mui/material';
 import DataGridHelper from "../Objects/DataGridHelper.jsx";
 import {textReportConfig} from "./ItemMasterConfig.js";
 import Grid from "@mui/material/Grid";
@@ -16,7 +16,11 @@ const ItemMaster = () => {
     const [rowsOfQueryResults, setRowsOfQueryResults] = useState([]);
 
     const columnsWithFlex = useMemo(() =>
-        textReportConfig.map(col => ({ ...col, flex: 1 })),
+        textReportConfig.map(col => ({
+            ...col,
+            flex: 1,
+            minWidth: col.width
+        })),
     []);
 
     const afterQueryPostedCallback = (response) => {
@@ -89,7 +93,9 @@ const ItemMaster = () => {
             </form>
 
 
-            Item Master Report.<br/>
+            <Typography variant="h5" gutterBottom sx={{ml: 2, mt: 2}} align={"center"}>
+                Item Master Report
+            </Typography>
             <Grid container sx={{ mt: 1 }}>
                 <Grid size="auto">
                     <Button variant="outlined" onClick={() => ScreenStack.pop()}>Return</Button>

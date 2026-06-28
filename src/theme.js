@@ -3,6 +3,9 @@ import { createTheme } from '@mui/material/styles';
 export const theme = createTheme({
     typography: {
         fontSize: 16,
+        h5: {
+            color: 'black',
+        },
     },
     components: {
         MuiTextField: {

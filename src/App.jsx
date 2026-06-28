@@ -25,7 +25,7 @@ function App() {
 
     return (
         <UserContext1 value={{ currentUser, setCurrentUser }}>
-        <Container>
+        <Container maxWidth={false}>
             <div>
                 <MenuBar currentUser={currentUser}/>
             </div>

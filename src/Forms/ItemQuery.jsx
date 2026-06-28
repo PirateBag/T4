@@ -9,18 +9,27 @@ import {CRUD_ACTION_CHANGE, CRUD_ACTION_INSERT, CRUD_ACTION_NONE} from "../enums
 import {ScreenTransition} from "../ScreenTransition.js";
 import ItemMaster from "./ItemMaster.jsx";
 import {ScreenStack} from "../Stack.js";
-import {itemCrudRequestTemplate, itemMasterReportUrl, olderEmptyQueryConstant, itemQueryUrl, itemUpdateUrl} from "../Globals.js";
+import {
+    itemCrudRequestTemplate,
+    itemMasterReportUrl,
+    olderEmptyQueryConstant,
+    itemQueryUrl,
+    itemUpdateUrl,
+    orderLineItemQueryUrl, genericSingleRequest, maxLevelUrl
+} from "../Globals.js";
 import ItemProperties from "./ItemProperties.jsx";
 import {ItemDtoToStringWithOperation} from "./ItemPropertiesConfig.js";
 import {PropertyGrid} from "../Objects/PropertyGrid.jsx";
 import DataGridHelper from "../Objects/DataGridHelper.jsx";
 import {extractMessageFromResponse} from "../FormQueryPanel.js";
+import {postData} from "../HttpUtils.js";
+import GenericText from "./GenericText.jsx";
 
 
 const ItemQuery = () => {
 
     const apiRef = useGridApiRef();
-    //  const emptyResponse = { responseType: "MULTILINE", data: [], errors : []  };
+
     const [message, setMessage] = useState("");
     const [rowsOfQueryResults, setRowsOfQueryResults] = useState([]);
     const [itemMasterQueryResults, setItemMasterQueryResults] = useState([]);
@@ -149,6 +158,15 @@ const ItemQuery = () => {
         ScreenStack.push(nextScreen);
     }
 
+    async function transitionToMaxDepth() {
+        const maxLevelLogs =  await Promise.all(  [postData( {'parameters' : genericSingleRequest
+            , 'url' : maxLevelUrl}) ] );
+        const dataAfterResponseFluff = maxLevelLogs[0].data?.data || [];
+        let nextScreen = new ScreenTransition("Max Level Logs", GenericText, CRUD_ACTION_NONE, dataAfterResponseFluff);
+        ScreenStack.push(nextScreen);
+    }
+
+
     function transitionToItemPropertiesAdd() {
         const nextScreen = new ScreenTransition("Add new item", ItemProperties, CRUD_ACTION_INSERT, []);
         ScreenStack.push(nextScreen);
@@ -185,6 +203,10 @@ const ItemQuery = () => {
                         <Grid size="auto">
                             <Button variant="outlined" onClick={transitionToItemMaster}>Item Master Report</Button>
                         </Grid>
+                    <Grid size="auto">
+                        <Button variant="outlined" onClick={transitionToMaxDepth}>Refresh Max Depth</Button>
+                    </Grid>
+
 
                     <Button variant="outlined" onClick={() => ScreenStack.pop()}>Return</Button>
 

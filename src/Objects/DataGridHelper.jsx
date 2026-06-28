@@ -14,7 +14,8 @@ function DataGridHelper({
     initialState,
     onSelectionChange,
     onProcessError,
-    pickListsForSelect = {} // New optional parameter
+    pickListsForSelect = {}, // New optional parameter
+    autoHeight = false
 }) {
 
     const safeRows = React.useMemo(() => rows || [], [rows]);
@@ -98,6 +99,7 @@ function DataGridHelper({
         apiRef,
         columns: safeColumns,
         rows: safeRows,
+        autoHeight,
         density: "compact",
         rowSelection: false, // Disable standard MUI selection; handled manually in onCellClick
         getRowId: (row) => row.id,

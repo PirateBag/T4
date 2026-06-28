@@ -28,7 +28,13 @@ const OrderMaster = () => {
     const [orderParentQueryResults, setOrderParentQueryResults] = useState([]);
     const [queryParameters, setQueryParameters] = useState({});
     const [orderComponentQueryResults, setOrderComponentQueryResults ] = useState( [] );
+    const [selectedParentOrder, setSelectedParentOrder] = useState(null);
     const [itemPickList, setItemPickList] = useState([]);
+
+    const formatDate = (date) => {
+        const [year, month, day] = date.toISOString().split('T')[0].split('-');
+        return `${year}-${month}${day}`;
+    };
 
     const afterQueryPostedCallback = (response) => {
         console.log("afterQueryCallback received:", response.status);
@@ -70,21 +76,26 @@ const OrderMaster = () => {
     // Fetch data on mount if empty
     useEffect(() => {
         const fetchData = async () => {
-            if (orderParentQueryResults.length === 0) {
-                if ( ScreenStack.stackTop().data !== undefined) {
-                    const queryParametersForOpeningScreen = mapItemQueryToOliQueryParameters( ScreenStack.stackTop().data );
-                    setQueryParameters( queryParametersForOpeningScreen );
-                    const objectToBeTransmitted = placeParametersInTemplate( { requestTemplate : modernRequestPayloadTemplate,
-                        singleRowOfQueryParameters: queryParametersForOpeningScreen });
-                    const allQueryResultsButShouldOnlyBeOne =  await Promise.all(  [postData( {'parameters' : objectToBeTransmitted, 'url' : orderLineItemQueryUrl}) ] );
+            try {
+                if (orderParentQueryResults.length === 0) {
+                    if ( ScreenStack.stackTop().data !== undefined) {
+                        const queryParametersForOpeningScreen = mapItemQueryToOliQueryParameters( ScreenStack.stackTop().data );
+                        setQueryParameters( queryParametersForOpeningScreen );
+                        const objectToBeTransmitted = placeParametersInTemplate( { requestTemplate : modernRequestPayloadTemplate,
+                            singleRowOfQueryParameters: queryParametersForOpeningScreen });
+                        const allQueryResultsButShouldOnlyBeOne =  await Promise.all(  [postData( {'parameters' : objectToBeTransmitted, 'url' : orderLineItemQueryUrl}) ] );
 
-                    const results = allQueryResultsButShouldOnlyBeOne[0].data?.data || [];
-                    results.forEach(row => row.crudAction = CRUD_ACTION_NONE);
-                    setOrderParentQueryResults( results )
+                        const results = allQueryResultsButShouldOnlyBeOne[0].data?.data || [];
+                        results.forEach(row => row.crudAction = CRUD_ACTION_NONE);
+                        setOrderParentQueryResults( results )
+                    }
                 }
+            } catch (error) {
+                console.error("Error fetching data in useEffect:", error);
+                setMessage("Error loading initial data");
             }
         };
-        fetchData();
+        fetchData().catch(error => setMessage("Promise rejection in fetchData:" + error));
         loadItemPickListAll({
             responseSetter: (data) => setItemPickList(data.map(item => ({ value: item.id, label: item.external }))),
             errorMessageSetter: setMessage
@@ -104,11 +115,6 @@ const OrderMaster = () => {
         const tomorrow = new Date();
         tomorrow.setDate(today.getDate() + 1);
 
-        const formatDate = (date) => {
-            const [year, month, day] = date.toISOString().split('T')[0].split('-');
-            return `${year}-${month}${day}`;
-        };
-
         const newOrder = {
             id: Math.floor(Math.random() * 1000000) + 1000001,
             delete: false,
@@ -124,6 +130,43 @@ const OrderMaster = () => {
         };
 
         setOrderParentQueryResults(prev => [newOrder, ...prev]);
+    };
+
+    const addComponent = () => {
+        if (!selectedParentOrder) return;
+
+        let completeDate = "";
+        if (selectedParentOrder.startDate) {
+            try {
+                const [year, monthDay] = selectedParentOrder.startDate.split('-');
+                const month = monthDay.substring(0, 2);
+                const day = monthDay.substring(2, 4);
+                const parentStartDate = new Date(`${year}-${month}-${day}`);
+                if (!isNaN(parentStartDate.getTime())) {
+                    const componentCompleteDate = new Date(parentStartDate);
+                    componentCompleteDate.setDate(parentStartDate.getDate() - 1);
+                    completeDate = formatDate(componentCompleteDate);
+                }
+            } catch (e) {
+                console.error("Error parsing parent start date", e);
+            }
+        }
+
+        const newComponent = {
+            id: Math.floor(Math.random() * 1000000) + 1000001,
+            delete: false,
+            itemId: "",
+            quantityOrdered: 0,
+            quantityAssigned: 0,
+            startDate: "",
+            completeDate: completeDate,
+            parentOliId: selectedParentOrder.id,
+            orderState: selectedParentOrder.orderState,
+            orderType: "MODET",
+            crudAction: CRUD_ACTION_INSERT
+        };
+
+        setOrderComponentQueryResults(prev => [newComponent, ...prev]);
     };
 
     function handleProcessRowUpdate( newRow, oldRow ) {
@@ -143,19 +186,24 @@ const OrderMaster = () => {
         return newRow;
     }
 
+    const refreshComponentList = async (parentOrder) => {
+        if (!parentOrder) {
+            setOrderComponentQueryResults([]);
+            return;
+        }
+        console.log("Refreshing components for Parent " + parentOrder.id);
+        const componentQueryParameters = { rows: [ {'parentOliId': parentOrder.id } ] };
+        const allQueryResultsFromPromiseButShouldOnlyBeOne = await Promise.all([postData( {'parameters' : componentQueryParameters,
+            'url' : orderLineItemQueryUrl })] );
+        const results = allQueryResultsFromPromiseButShouldOnlyBeOne[0].data?.data || [];
+        results.forEach(row => row.crudAction = CRUD_ACTION_NONE);
+        setOrderComponentQueryResults( results )
+    }
+
     const handleParentRowSelectionChange = async ( row ) => {
             const selected = row[0];
-            if (selected === undefined) {
-                setOrderComponentQueryResults([]);
-                return;
-            }
-            console.log("Parent " + selected.id + " selected in ordermaster.handleParentRowSelected");
-            const componentQueryParameters = { rows: [ {'parentOliId': selected.id } ] };
-            const allQueryResultsFromPromiseButShouldOnlyBeOne = await Promise.all([postData( {'parameters' : componentQueryParameters,
-                'url' : orderLineItemQueryUrl })] );
-            const results = allQueryResultsFromPromiseButShouldOnlyBeOne[0].data?.data || [];
-            results.forEach(row => row.crudAction = CRUD_ACTION_NONE);
-            setOrderComponentQueryResults( results )
+            setSelectedParentOrder(selected || null);
+            await refreshComponentList(selected);
         }
 
     const handleComponentSelectionChange = ( row ) => {
@@ -237,7 +285,11 @@ const OrderMaster = () => {
             });
             const response = await postData({'parameters': objectToBeTransmitted, 'url': orderLineItemQueryUrl});
             afterQueryPostedCallback(response);
-            setOrderComponentQueryResults([]);
+            if (selectedParentOrder) {
+                await refreshComponentList(selectedParentOrder);
+            } else {
+                setOrderComponentQueryResults([]);
+            }
         }
     }
 
@@ -267,7 +319,7 @@ const OrderMaster = () => {
 
             <hr style={{margin: "20px 0", borderTop: "1px solid #ccc"}}/>
 
-            <Box sx={{height: 400, width: '100%', mb: 10}}>
+            <Box sx={{minHeight: 400, width: '100%', mb: 10}}>
                 <Grid container sx={{mt: 1}}>
                     <Grid container sx={{mt: 2}} size={{xs: 12}}>
                         <Button variant="outlined" sx={{ mr: 1 }} onClick={saveChildThenParentResults}>Save Changes</Button>
@@ -280,20 +332,31 @@ const OrderMaster = () => {
                                 onSelectionChange={handleParentRowSelectionChange}
                                 handleRowChangeCallback={handleProcessRowUpdate}
                                 pickListsForSelect={{ itemId: itemPickList }}
+                                autoHeight={true}
                 />
            </Box>
             {
                 <>
                     <hr style={{margin: "20px 0", borderTop: "1px solid #ccc"}}/>
 
-                    <Box sx={{height: 400, width: '100%', mb: 10}}>
+                    <Grid container sx={{ mb: 2, ml: 2 }}>
+                        <Button
+                            variant="outlined"
+                            onClick={addComponent}
+                            disabled={!selectedParentOrder}
+                        >
+                            Add Component
+                        </Button>
+                    </Grid>
 
+                    <Box sx={{minHeight: 400, width: '100%', mb: 10}}>
                         <DataGridHelper label="Inputs to order:"
                                         rows={orderComponentQueryResults}
                                         columns={OrderLineItemComponentResultsMetaData}
                                         onSelectionChange={handleComponentSelectionChange}
                                         handleRowChangeCallback={handleComponentRowUpdate}
                                         pickListsForSelect={{ itemId: itemPickList }}
+                                        autoHeight={true}
                         />
                     </Box>
                 </>
