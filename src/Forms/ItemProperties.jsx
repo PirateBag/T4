@@ -12,7 +12,8 @@ import {
     itemCrudRequestTemplate, itemExplosionReportUrl,
     itemMaxLevelReportUrl,
     ItemQueryParameterConfig,
-    itemUpdateUrl, olderEmptyQueryConstant
+    itemUpdateUrl, olderEmptyQueryConstant,
+    genericSingleRequest, balanceProjectionUrl
 } from "../Globals.js";
 import {BomComponentsDto, BomDtoToString, BomParentsDto, ItemDtoToString } from "./ItemPropertiesConfig.js";
 import {generateDefaultFromRules} from "../Metadata/ValidateRule.js";
@@ -29,6 +30,8 @@ import {
 import {ItemExplosion} from "./ItemExplosion.jsx";
 import OrderMaster from "./OrderMaster.jsx";
 import {extractMessageFromResponse} from "../FormQueryPanel.js";
+import {postData} from "../HttpUtils.js";
+import GenericText from "./GenericText.jsx";
 
 const ItemProperties = () => {
 
@@ -281,6 +284,14 @@ const ItemProperties = () => {
         }
     }
 
+    async function transitionToBalanceProjection() {
+        const balanceLogs =  await Promise.all(  [postData( {'parameters' : {...genericSingleRequest, idToSearchFor: queryParameters.id}
+            , 'url' : balanceProjectionUrl}) ] );
+        const dataAfterResponseFluff = balanceLogs[0].data?.data || [];
+        let nextScreen = new ScreenTransition("balance projection", GenericText, CRUD_ACTION_NONE, dataAfterResponseFluff);
+        ScreenStack.push(nextScreen);
+    }
+
 
     if (queryParameters === undefined) return (<div>Loading...</div>)
     if (components === undefined) return (<div>Loading...</div>)
@@ -343,7 +354,8 @@ const ItemProperties = () => {
                         <br/>
                         <Grid size="auto">
                             <Button variant="outlined" sx={{ mr: 1 }} onClick={transitionToMaxLevelReport}>Max Level Report</Button>
-                            <Button variant="outlined" onClick={transitionToExplosion}>Item Explosion Report</Button>
+                            <Button variant="outlined" sx={{ mr: 1 }} onClick={transitionToExplosion}>Item Explosion Report</Button>
+                            <Button variant="outlined" sx={{ mr: 1 }} onClick={transitionToBalanceProjection}>Balance Projection</Button>
                             <Button variant="outlined" sx={{ mr: 1 }} onClick={() => ScreenStack.push(new ScreenTransition("Show Orders for" + queryParameters, OrderMaster, CRUD_ACTION_NONE, queryParameters))}>Show Orders</Button>
                         </Grid>
                     </Grid>

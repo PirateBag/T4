@@ -4,8 +4,6 @@ import DataGridHelper from "../Objects/DataGridHelper.jsx";
 import {textReportConfig} from "./ItemMasterConfig.js";
 import Grid from "@mui/material/Grid";
 import {ScreenStack} from "../Stack.js";
-import ErrorMessage from "../ErrorMessage.jsx";
-
 
 const GenericText = () => {
 
@@ -34,7 +32,7 @@ const GenericText = () => {
                     <Button variant="outlined" onClick={() => ScreenStack.pop()}>Return</Button>
                 </Grid>
             </Grid>
-            <Box sx={{height: 600, width: '100%', mb: 10}}>
+            <Box sx={{height: 800, width: '100%', mb: 10}}>
                 <DataGridHelper columns={columnsWithFlex}
                                 rows={dataToPresent}
                                 onCellClick={undefined}
@@ -60,11 +58,6 @@ const GenericText = () => {
                                 }}
                 />
             </Box>
-            <Grid container sx={{ mt: 1 }}>
-                <Grid size="auto">
-                    <Button variant="outlined" onClick={() => ScreenStack.pop()}>Return</Button>
-                </Grid>
-            </Grid>
             </form>
         </div>
     );

@@ -40,6 +40,8 @@ export const pickListRequestTemplate = '{ ${rowWithQuery} }';
 export const pickListUpdateUrl = 'http://localhost:8080/itemPick/crud';
 export const genericSingleRequest = { "idToSearchFor" : "1" };
 export const maxLevelUrl = 'http://localhost:8080/itemReport/calculateMaxDepth'
+export const planAllUrl = 'http://localhost:8080/ap/basic';
+export const balanceProjectionUrl = 'http://localhost:8080/ap/inventoryBalanceProjection';
 
 export const ItemQueryParameterConfig = [
     ID_VALIDATION.appendGridFieldOptions( { 'editable': false } ),

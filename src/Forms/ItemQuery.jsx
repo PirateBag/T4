@@ -15,7 +15,7 @@ import {
     olderEmptyQueryConstant,
     itemQueryUrl,
     itemUpdateUrl,
-    orderLineItemQueryUrl, genericSingleRequest, maxLevelUrl
+    orderLineItemQueryUrl, genericSingleRequest, maxLevelUrl, planAllUrl
 } from "../Globals.js";
 import ItemProperties from "./ItemProperties.jsx";
 import {ItemDtoToStringWithOperation} from "./ItemPropertiesConfig.js";
@@ -166,6 +166,14 @@ const ItemQuery = () => {
         ScreenStack.push(nextScreen);
     }
 
+    async function transitionToPlanning() {
+        const planningLogs =  await Promise.all(  [postData( {'parameters' : {...genericSingleRequest, idToSearchFor: '-1'}
+            , 'url' : planAllUrl}) ] );
+        const dataAfterResponseFluff = planningLogs[0].data?.data || [];
+        let nextScreen = new ScreenTransition("Inventory Planning", GenericText, CRUD_ACTION_NONE, dataAfterResponseFluff);
+        ScreenStack.push(nextScreen);
+    }
+
 
     function transitionToItemPropertiesAdd() {
         const nextScreen = new ScreenTransition("Add new item", ItemProperties, CRUD_ACTION_INSERT, []);
@@ -205,6 +213,9 @@ const ItemQuery = () => {
                         </Grid>
                     <Grid size="auto">
                         <Button variant="outlined" onClick={transitionToMaxDepth}>Refresh Max Depth</Button>
+                    </Grid>
+                    <Grid size="auto">
+                        <Button variant="outlined" onClick={transitionToPlanning}>Planning</Button>
                     </Grid>
 
 
