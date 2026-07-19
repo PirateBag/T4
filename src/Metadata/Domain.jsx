@@ -240,6 +240,18 @@ export const ORDER_TYPE_VALIDATION = new ValidationRule({
     defaultHeader: 'Order State'
 });
 
+export const ADJUSTMENT_TYPE_VALIDATION = new ValidationRule({
+    domainName: 'orderType',
+    type: 'singleSelect',
+    minLengthInChars: 4,
+    maxLengthInChars: 6,
+    caseConversion: CaseConversion.UPPER,
+    whenRequired: REQUIRED_ADD,
+    valueOptions: ['ITEM', 'XFER' ],
+    defaultHeader: 'Adjustment Type'
+});
+
+
 /**
  * Array of all validation rules
  */

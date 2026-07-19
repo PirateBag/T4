@@ -31,7 +31,7 @@ export function PropertyGrid({label, objectToPresent, validationRules, handleInp
                     const options = isSelect ? (pickListsForSelect[col.field] || col.valueOptions || []) : [];
 
                     return (
-                        <Grid key={col.field}>
+                        <Grid item key={col.field}>
                             {col.type === 'checkbox' ? (
                                 <FormControlLabel
                                     control={
@@ -43,7 +43,7 @@ export function PropertyGrid({label, objectToPresent, validationRules, handleInp
                                         />
                                     }
                                     label={col.headerName}
-                                    sx={{width: '240px', display: col.hidden ? 'none' : 'block', ml: 1}}
+                                    sx={{width: '240px', display: col.hidden ? 'none' : 'inline-flex', ml: 1}}
                                 />
                             ) : (
                                 <TextField
@@ -57,13 +57,14 @@ export function PropertyGrid({label, objectToPresent, validationRules, handleInp
                                     onChange={handleInputChangeCallback(col)}
                                     disabled={col.disabled === true}
                                     select={isSelect}
+                                    fullWidth
                                     slotProps={{
                                         input: {
                                             readOnly: col.editable === false,
                                             maxLength: col.maxLengthInChars > 0 ? col.maxLengthInChars : undefined
                                         },
                                     }}
-                                    sx={{width: '240px', display: col.hidden ? 'none' : 'block'}}
+                                    sx={{width: '240px', display: col.hidden ? 'none' : 'inline-flex'}}
                                 >
                                     {isSelect && options.map((option) => {
                                         const value = typeof option === 'object' ? option.value : option;

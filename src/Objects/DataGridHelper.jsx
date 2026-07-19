@@ -5,7 +5,6 @@ import React from "react";
 import {CRUD_ACTION_DELETE, CRUD_ACTION_NONE} from "../enums/crudAction.js";
 
 function DataGridHelper({
-    apiRef,
     label,
     rows,
     columns,
@@ -64,6 +63,8 @@ function DataGridHelper({
             return newCol;
         }), [columns, pickListsForSelect]);
 
+    const hasLineNo = React.useMemo(() => safeColumns.some(col => col.field === 'lineNo'), [safeColumns]);
+
     const handleInternalCellClick = ( params ) => {
         console.log('DataGridHelper:handleInternalCellClick:', params);
         if (params.field === safeColumns[0]?.field && onSelectionChange) {
@@ -96,14 +97,19 @@ function DataGridHelper({
 
     // Construct common DataGrid props
     const gridProps = {
-        apiRef,
         columns: safeColumns,
         rows: safeRows,
         autoHeight,
         density: "compact",
         rowSelection: false, // Disable standard MUI selection; handled manually in onCellClick
-        getRowId: (row) => row.id,
+        getRowId: (row) => {
+            if (hasLineNo && row.lineNo != null) {
+                return row.lineNo;
+            }
+            return row.id || row.Adjustment || row.AdjustmentId || row[safeColumns[0]?.field] || Math.random();
+        },
         onCellClick: handleInternalCellClick,
+        hideFooter: hasLineNo,
         sx: {
             '& .MuiDataGrid-cell': {
                 backgroundColor: '#f5f5f5',
@@ -128,7 +134,7 @@ function DataGridHelper({
         onProcessRowUpdateError: onProcessError || ((error) => console.error('DataGridHelper: Error in processRowUpdate:', error)),
         slotProps: {
             footer: {
-                sx: { display: 'flex' },
+                sx: { display: hasLineNo ? 'none' : 'flex' },
             },
             noRowsOverlay: {
                 sx: { display: 'none' }

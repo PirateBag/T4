@@ -24,6 +24,7 @@ import DataGridHelper from "../Objects/DataGridHelper.jsx";
 import {extractMessageFromResponse} from "../FormQueryPanel.js";
 import {postData} from "../HttpUtils.js";
 import GenericText from "./GenericText.jsx";
+import Adjustment from "./Adjustment.jsx";
 
 
 const ItemQuery = () => {
@@ -174,6 +175,11 @@ const ItemQuery = () => {
         ScreenStack.push(nextScreen);
     }
 
+    function transitionToAdjustment() {
+        let nextScreen = new ScreenTransition("Adjustment Report", Adjustment, CRUD_ACTION_NONE, []);
+        ScreenStack.push(nextScreen);
+    }
+
 
     function transitionToItemPropertiesAdd() {
         const nextScreen = new ScreenTransition("Add new item", ItemProperties, CRUD_ACTION_INSERT, []);
@@ -216,6 +222,9 @@ const ItemQuery = () => {
                     </Grid>
                     <Grid size="auto">
                         <Button variant="outlined" onClick={transitionToPlanning}>Planning</Button>
+                    </Grid>
+                    <Grid size="auto">
+                        <Button variant="outlined" onClick={transitionToAdjustment}>Adjustment</Button>
                     </Grid>
 
 

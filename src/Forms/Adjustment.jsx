@@ -1,40 +1,26 @@
-import React, {useEffect, useMemo, useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {Box, Button} from '@mui/material';
 import Grid from "@mui/material/Grid";
 import {ScreenStack} from "../Stack.js";
 import ErrorMessage from "../ErrorMessage.jsx";
 import DataGridHelper from "../Objects/DataGridHelper.jsx";
 import {PropertyGrid} from "../Objects/PropertyGrid.jsx";
-import {textReportConfig} from "./ItemMasterConfig.js";
-import {AdjustmentQueryMetadata} from "./Adjustment.js";
-import {adjustmentReportAllUrl} from "../Globals.js";
+import {AdjustmentQueryMetadata, AdjustmentRowMetadata} from "./Adjustment.js";
+import {adjustmentQueryUrl} from "../Globals.js";
 import {postData} from "../HttpUtils.js";
 import FormQueryPanel from "../FormQueryPanel.js";
-import {CRUD_ACTION_NONE} from "../enums/crudAction.js";
 
 const Adjustment = () => {
     const [message, setMessage] = useState("");
     const [rowsOfQueryResults, setRowsOfQueryResults] = useState([]);
-    const [queryParameters, setQueryParameters] = useState({});
-
-    const columnsWithFlex = useMemo(() =>
-        textReportConfig.map(col => ({
-            ...col,
-            flex: 1,
-            minWidth: col.width
-        })),
-    []);
+    const [queryParameters, setQueryParameters] = useState([{lineNo: 1}]);
+    const [selectedQueryRows, setSelectedQueryRows] = useState([]);
 
     const afterQueryPostedCallback = (response) => {
         if (response.status === 200) {
-            setMessage("Success, retrieved " + (response.data?.data?.length || 0) + " rows");
-            const data = response.data.data || [];
-            const rowsWithIds = data.map((row, index) => ({
-                ...row,
-                id: row.id || (index + 1),
-                crudAction: CRUD_ACTION_NONE
-            }));
-            setRowsOfQueryResults(rowsWithIds);
+            setMessage("Success, retrieved " + (response.data?.length || 0) + " rows");
+            const data = response.data || [];
+            setRowsOfQueryResults(data);
         } else {
             setMessage("Error retrieving report");
             setRowsOfQueryResults([]);
@@ -51,15 +37,35 @@ const Adjustment = () => {
     const handleSearch = async (event) => {
         if (event) event.preventDefault();
         try {
-            // According to requirements: The request parameter should be posted and is { 'idToSearchFor' : 1 }
             const response = await postData({
-                parameters: { idToSearchFor: 1 },
-                url: adjustmentReportAllUrl
+                parameters: { 'rows': queryParameters },
+                url: adjustmentQueryUrl
             });
             afterQueryPostedCallback(response);
         } catch (error) {
             setMessage("Error: " + error.message);
         }
+    };
+
+    const handleAddRow = () => {
+        setQueryParameters(prev => {
+            const nextLineNo = prev.length > 0
+                ? Math.max(...prev.map(r => r.lineNo || 0)) + 1
+                : 1;
+            return [...prev, { lineNo: nextLineNo }];
+        });
+    };
+
+    const handleDeleteRow = () => {
+        if (selectedQueryRows.length === 0) return;
+        const selectedLineNos = selectedQueryRows.map(row => row.lineNo);
+        setQueryParameters(prev => prev.filter(row => !selectedLineNos.includes(row.lineNo)));
+        setSelectedQueryRows([]);
+    };
+
+    const handleRowChange = (newRow) => {
+        setQueryParameters(prev => prev.map(row => row.lineNo === newRow.lineNo ? newRow : row));
+        return newRow;
     };
 
     useEffect(() => {
@@ -72,7 +78,7 @@ const Adjustment = () => {
     }, []);
 
     const clearQueryParameters = () => {
-        setQueryParameters({});
+        setQueryParameters([{lineNo: 1}]);
         setRowsOfQueryResults([]);
         setMessage("");
     };
@@ -83,12 +89,24 @@ const Adjustment = () => {
                 <ErrorMessage message={message}/>
                 <br/>
 
-                <PropertyGrid label={"Adjustment Query Parameters"}
-                              objectToPresent={queryParameters}
-                              handleInputChangeCallback={queryFormPanelService.handleInputChange}
-                              validationRules={AdjustmentQueryMetadata}
-                />
-                
+                <Grid container spacing={2} sx={{ mb: 1 }}>
+                    <Grid size="auto">
+                        <Button variant="contained" onClick={handleAddRow}>Add</Button>
+                    </Grid>
+                    <Grid size="auto">
+                        <Button variant="contained" color="error" onClick={handleDeleteRow} disabled={selectedQueryRows.length === 0}>Delete</Button>
+                    </Grid>
+                </Grid>
+
+                <Box sx={{height: '200px', width: '100%', mb: 10}}>
+                    <DataGridHelper label="Adjustment Query Parameters"
+                                    columns={AdjustmentQueryMetadata}
+                                    rows={queryParameters}
+                                    handleRowChangeCallback={handleRowChange}
+                                    onSelectionChange={setSelectedQueryRows}
+                    />
+                </Box>
+
                 <hr style={{margin: "20px 0", borderTop: "1px solid #ccc"}}/>
                 
                 <Grid container spacing={2} padding={2}>
@@ -106,28 +124,8 @@ const Adjustment = () => {
 
             <Box sx={{height: 600, width: '100%', mb: 10}}>
                 <DataGridHelper label="Adjustment Query Results"
-                                columns={columnsWithFlex}
+                                columns={AdjustmentRowMetadata}
                                 rows={rowsOfQueryResults}
-                                sx={{
-                                    '& .MuiDataGrid-columnHeaderTitle': {
-                                        fontFamily: 'monospace',
-                                    },
-                                    '& .MuiDataGrid-cell': {
-                                        backgroundColor: '#f5f5f5',
-                                        fontFamily: 'monospace',
-                                        whiteSpace: 'pre',
-                                        overflow: 'visible',
-                                        textOverflow: 'clip'
-                                    },
-                                }}
-                                initialState={{
-                                    columns: {
-                                        columnVisibilityModel: {
-                                            crudAction: false,
-                                            id: false
-                                        },
-                                    },
-                                }}
                 />
             </Box>
         </div>

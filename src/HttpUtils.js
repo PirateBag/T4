@@ -50,7 +50,7 @@ export async function postData( { parameters, url } ) {
     let response = {};
     try {
         response = await axios.post(url, parameters);
-        console.log( "PostData response: '" + JSON.stringify(response.data.data) + "'" );
+        console.log( "PostData response: '" + JSON.stringify(response.data) + "'" );
         return response;
     } catch (error) {
         console.error('Error thrown during post:', error);

@@ -4,6 +4,8 @@ import {Box, Button} from '@mui/material';
 import Grid from '@mui/material/Grid';
 import {ScreenStack} from "../Stack.js";
 import {
+    clearOrdersUrl,
+    genericSingleRequest,
     modernRequestPayloadTemplate, newEmptyQueryConstant, orderLineItemCrudUrl, orderLineItemQueryUrl
 } from "../Globals.js";
 import {PropertyGrid} from "../Objects/PropertyGrid.jsx";
@@ -19,6 +21,8 @@ import FormQueryPanel, {extractMessageFromResponse} from "../FormQueryPanel.js";
 import {placeParametersInTemplate, postData} from "../HttpUtils.js";
 import {CRUD_ACTION_CHANGE, CRUD_ACTION_DELETE, CRUD_ACTION_INSERT, CRUD_ACTION_NONE} from "../enums/crudAction.js";
 import {loadItemPickListAll} from "../Objects/ItemPickListService.js";
+import GenericText from "./GenericText.jsx";
+import {ScreenTransition} from "../ScreenTransition.js";
 
 
 const OrderMaster = () => {
@@ -293,6 +297,14 @@ const OrderMaster = () => {
         }
     }
 
+    async function transitionToClearOrders() {
+        const clearLogs =  await Promise.all(  [postData( {'parameters' : {...genericSingleRequest, idToSearchFor: '2'}
+            , 'url' : clearOrdersUrl}) ] );
+        const dataAfterResponseFluff = clearLogs[0].data?.data || [];
+        let nextScreen = new ScreenTransition("Order Clear Status", GenericText, CRUD_ACTION_NONE, dataAfterResponseFluff);
+        ScreenStack.push(nextScreen);
+    }
+
 
     return (
         <div>
@@ -312,6 +324,7 @@ const OrderMaster = () => {
                     <Button type="submit" variant="contained" name={orderLineItemQueryUrl} >Search</Button>
                     <Button onClick={clearQueryParameters}>Clear</Button>
                     <Button variant="outlined" onClick={addOrder}>Add Order</Button>
+                    <Button variant="outlined" onClick={transitionToClearOrders}>Clear Orders</Button>
                     <Button variant="outlined" onClick={() => ScreenStack.pop()}>Return</Button>
                 </Grid>
             </form>
