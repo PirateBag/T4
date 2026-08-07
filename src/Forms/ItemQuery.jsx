@@ -10,7 +10,6 @@ import {ScreenTransition} from "../ScreenTransition.js";
 import ItemMaster from "./ItemMaster.jsx";
 import {ScreenStack} from "../Stack.js";
 import {
-    itemCrudRequestTemplate,
     itemMasterReportUrl,
     itemQueryUrl,
     itemUpdateUrl,
@@ -35,18 +34,7 @@ const ItemQuery = () => {
     const [message, setMessage] = useState("");
     const [rowsOfQueryResults, setRowsOfQueryResults] = useState([]);
 
-    const handleInputChange = (rule) => {
-        return (event) => {
-            let value = rule.type === 'checkbox' ? event.target.checked : event.target.value;
-            if (rule.type === 'number') {
-                value = value === '' ? undefined : Number(value);
-            }
-            setQueryParameters({...queryParameters, [rule.field]: value});
-        }
-    }
-
-
-    const afterItemMasterQueryResults = (response) => {
+/*    const afterItemMasterQueryResults = (response) => {
         console.log("afterItemMasterQueryResults received:", response.status);
         if (response.status === 200) {
             setMessage("Success, retrieved " + response.data.data.length + " rows");
@@ -56,7 +44,7 @@ const ItemQuery = () => {
             setRowsOfQueryResults([]);
         }
     }
-
+*/
     const afterChangeCallback = (responseFromUpdate) => {
         if (responseFromUpdate.status !== 200) {
             setMessage("Error" + responseFromUpdate.message);
@@ -77,28 +65,13 @@ const ItemQuery = () => {
         console.log("Response " + JSON.stringify(rowsOfQueryResults));
     }
 
-    const updateFormService = new FormService({
-            messageFormSetter: setMessage,
-            messagesFromForm: message,
-            afterPostCallback: afterChangeCallback,
-            requestTemplate: itemCrudRequestTemplate
-        }
-    );
-
     const itemMasterFormService = new FormService({
             messageFormSetter: setMessage,
             messagesFromForm: message,
-            afterPostCallback: afterItemMasterQueryResults,
             requestTemplate: itemMasterReportUrl
         }
     );
 
-    const queryFormService = new FormService({
-            messageFormSetter: setMessage,
-            messagesFromForm: message,
-            requestTemplate: itemCrudRequestTemplate
-        }
-    );
 
 /*
     // Fetch data on mount if empty
@@ -121,8 +94,9 @@ const ItemQuery = () => {
         newValue.crudAction = newValue.crudAction === CRUD_ACTION_INSERT ? CRUD_ACTION_INSERT : CRUD_ACTION_CHANGE;
         const updatedRow = {...newValue};
 
-        const objectToBeTransmitted = queryFormService.singleRowToRequest(updatedRow);
-        updateFormService.postData(objectToBeTransmitted, itemUpdateUrl);
+        //  const objectToBeTransmitted = queryFormService.singleRowToRequest(updatedRow);
+        const objectToBeTransmitted = { rows: [updatedRow] };
+        await postData({"parameters": objectToBeTransmitted, "url": itemUpdateUrl})
         // Clear focus from the cell after successful update
         setTimeout(() => {
             apiRef.current.setCellFocus(0, '');
