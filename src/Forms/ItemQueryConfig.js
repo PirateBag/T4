@@ -7,6 +7,7 @@ import {
 import {REQUIRED_ADD, REQUIRED_NONE} from "../Metadata/ValidationRuleConstants.js";
 
 export const ItemQueryRequestEditableMetadata = [
+    ID_VALIDATION.appendGridFieldOptions( { 'editable': true, 'headerName' : 'Line', 'field' : 'lineNo' } ),
     ID_VALIDATION.appendGridFieldOptions( { 'editable': true } ),
     DESCRIPTION_VALIDATION.appendGridFieldOptions({ 'editable': true } ),
     COST_VALIDATION.appendGridFieldOptions({ 'editable': true, 'headerName': 'Unit Cost' } ),

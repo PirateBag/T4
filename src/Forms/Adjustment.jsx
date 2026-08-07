@@ -10,7 +10,6 @@ const Adjustment = () => {
     const [message, setMessage] = useState("");
     const [rowsOfQueryResults, setRowsOfQueryResults] = useState([]);
     const [queryParameters, setQueryParameters] = useState([{lineNo: 1}]);
-    const [selectedQueryRows, setSelectedQueryRows] = useState([]);
 
     return (
         <div>
@@ -22,8 +21,6 @@ const Adjustment = () => {
                 setMessage={setMessage}
                 queryParameters={queryParameters}
                 setQueryParameters={setQueryParameters}
-                selectedQueryRows={selectedQueryRows}
-                setSelectedQueryRows={setSelectedQueryRows}
                 columns={AdjustmentQueryMetadata}
                 label="Adjustment Query Parameters"
                 rowsOfQueryResults={rowsOfQueryResults}

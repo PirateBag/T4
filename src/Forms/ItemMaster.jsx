@@ -8,7 +8,13 @@ import {ScreenStack} from "../Stack.js";
 import ErrorMessage from "../ErrorMessage.jsx";
 import {ItemQueryRequestEditableMetadata} from "./ItemQueryConfig.js";
 import TextField from "@mui/material/TextField";
-import {itemMasterReportUrl, itemQueryUrl, itemCrudRequestTemplate, olderEmptyQueryConstant} from "../Globals.js";
+import {
+    itemMasterReportUrl,
+    itemQueryUrl,
+    itemCrudRequestTemplate,
+    olderEmptyQueryConstant
+    } from "../Globals.js";
+import {AdjustmentQueryMetadata} from "./Adjustment.js";
 
 const ItemMaster = () => {
 

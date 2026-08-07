@@ -1,4 +1,4 @@
-import React, {useEffect} from 'react';
+import React, {useEffect, useState} from 'react';
 import {Box, Button} from '@mui/material';
 import Grid from "@mui/material/Grid";
 import {ScreenStack} from "../Stack.js";
@@ -11,12 +11,12 @@ const SearchParametersForm = ({
     setMessage,
     queryParameters,
     setQueryParameters,
-    selectedQueryRows,
-    setSelectedQueryRows,
     columns,
     label,
     rowsOfQueryResults
 }) => {
+    const [selectedQueryRows, setSelectedQueryRows] = useState([]);
+
     const handleRowChange = (newRow) => {
         setQueryParameters(prev => prev.map(row => row.lineNo === newRow.lineNo ? newRow : row));
         return newRow;
@@ -52,8 +52,8 @@ const SearchParametersForm = ({
                 url: searchUrl
             });
             if (response.status === 200) {
-                setMessage("Success, retrieved " + (response.data?.length || 0) + " rows");
-                setRowsOfQueryResults(response.data || []);
+                setMessage("Success, retrieved " + (response.data?.data?.length || 0) + " rows");
+                setRowsOfQueryResults(response.data?.data || []);
             } else {
                 setMessage("Error retrieving with response " + response.status);
                 setRowsOfQueryResults([]);

@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useState} from 'react';
 import ErrorMessage from "../ErrorMessage.jsx";
 import FormService, {isShallowEqual} from "../FormService.js";
 import {Box, Button} from '@mui/material';
@@ -12,29 +12,28 @@ import {ScreenStack} from "../Stack.js";
 import {
     itemCrudRequestTemplate,
     itemMasterReportUrl,
-    olderEmptyQueryConstant,
     itemQueryUrl,
     itemUpdateUrl,
-    orderLineItemQueryUrl, genericSingleRequest, maxLevelUrl, planAllUrl
+    genericSingleRequest, maxLevelUrl, planAllUrl
 } from "../Globals.js";
 import ItemProperties from "./ItemProperties.jsx";
 import {ItemDtoToStringWithOperation} from "./ItemPropertiesConfig.js";
-import {PropertyGrid} from "../Objects/PropertyGrid.jsx";
 import DataGridHelper from "../Objects/DataGridHelper.jsx";
 import {extractMessageFromResponse} from "../FormQueryPanel.js";
 import {postData} from "../HttpUtils.js";
 import GenericText from "./GenericText.jsx";
 import Adjustment from "./Adjustment.jsx";
+import SearchParametersForm from "../Objects/SearchParametersForm.jsx";
 
 
 const ItemQuery = () => {
+
+    const [queryParameters, setQueryParameters] = useState([{lineNo: 1}]);
 
     const apiRef = useGridApiRef();
 
     const [message, setMessage] = useState("");
     const [rowsOfQueryResults, setRowsOfQueryResults] = useState([]);
-    const [itemMasterQueryResults, setItemMasterQueryResults] = useState([]);
-    const [queryParameters, setQueryParameters] = useState({});
 
     const handleInputChange = (rule) => {
         return (event) => {
@@ -51,23 +50,13 @@ const ItemQuery = () => {
         console.log("afterItemMasterQueryResults received:", response.status);
         if (response.status === 200) {
             setMessage("Success, retrieved " + response.data.data.length + " rows");
-            setItemMasterQueryResults(response.data.data);
-        } else {
-            setMessage("Error");
-            setRowsOfQueryResults([]);
-        }
-    }
-
-    const afterQueryPostedCallback = (response) => {
-        console.log("afterQueryCallback received:", response.status);
-        if (response.status === 200) {
-            setMessage("Success, retrieved " + response.data.data.length + " rows");
             setRowsOfQueryResults(response.data.data);
         } else {
             setMessage("Error");
             setRowsOfQueryResults([]);
         }
     }
+
     const afterChangeCallback = (responseFromUpdate) => {
         if (responseFromUpdate.status !== 200) {
             setMessage("Error" + responseFromUpdate.message);
@@ -88,16 +77,6 @@ const ItemQuery = () => {
         console.log("Response " + JSON.stringify(rowsOfQueryResults));
     }
 
-
-    const queryFormService = new FormService({
-            messageFormSetter: setMessage,
-            messagesFromForm: message,
-            afterPostCallback: afterQueryPostedCallback,
-            requestTemplate: itemCrudRequestTemplate
-        }
-    );
-
-
     const updateFormService = new FormService({
             messageFormSetter: setMessage,
             messagesFromForm: message,
@@ -114,7 +93,14 @@ const ItemQuery = () => {
         }
     );
 
+    const queryFormService = new FormService({
+            messageFormSetter: setMessage,
+            messagesFromForm: message,
+            requestTemplate: itemCrudRequestTemplate
+        }
+    );
 
+/*
     // Fetch data on mount if empty
     useEffect(() => {
         const fetchData = async () => {
@@ -126,7 +112,7 @@ const ItemQuery = () => {
         fetchData();
     }, []); // Dependency array ensures this runs only on mount
 
-
+*/
     async function ItemQueryRowChange(newValue, oldValue) {
         if (isShallowEqual(newValue, oldValue)) {
             console.log("Row " + oldValue.id + " unchanged, skipping update");
@@ -144,18 +130,11 @@ const ItemQuery = () => {
         return updatedRow
     }
 
-    function clearQueryParameters(event) {
-        setRowsOfQueryResults([])
-        setQueryParameters({})
-        queryFormService.clearFormValues(event);
-    }
-
-    function transitionToItemMaster(event) {
-        //  The queryFormService owns the form we want to extract from.
-        const objectToBeTransmitted = queryFormService.extractRequestAsObject(event)
+   function transitionToItemMaster() {
+        const objectToBeTransmitted = { updatedRows: queryParameters };
         itemMasterFormService.postData(objectToBeTransmitted, itemMasterReportUrl);
 
-        let nextScreen = new ScreenTransition("Item Master Report", ItemMaster, CRUD_ACTION_NONE, itemMasterQueryResults);
+        let nextScreen = new ScreenTransition("Item Master Report", ItemMaster, CRUD_ACTION_NONE, rowsOfQueryResults);
         ScreenStack.push(nextScreen);
     }
 
@@ -199,21 +178,27 @@ const ItemQuery = () => {
 
     return (
         <div>
-            <form onSubmit={queryFormService.handleSubmit}>
+
                 <ErrorMessage message={message}/>
                 <br/>
 
-                <PropertyGrid label={"Item Query Parameters"}
-                              objectToPresent={queryParameters}
-                              validationRules={ItemQueryRequestEditableMetadata}
-                              handleInputChangeCallback={handleInputChange}/>
-                <Grid size={{xs: 12}} container spacing={2}>
-                        <Grid size="auto">
-                            <Button type="submit" variant="contained" name={itemQueryUrl} >Search</Button>
-                        </Grid>
-                        <Grid size="auto">
-                            <Button onClick={clearQueryParameters}>Clear</Button>
-                        </Grid>
+                <SearchParametersForm
+                    searchUrl={itemQueryUrl}
+                    rowsOfQueryResults={rowsOfQueryResults}
+                    setRowsOfQueryResults={setRowsOfQueryResults}
+                    setMessage={setMessage}
+
+                    queryParameters={queryParameters}
+                    setQueryParameters={setQueryParameters}
+
+                    columns={ItemQueryRequestEditableMetadata}
+                    label="Item Query Parameters"
+
+                />
+
+            <hr style={{margin: "20px 0", borderTop: "1px solid #ccc"}}/>
+
+            <Grid size={{xs: 12}} container spacing={2}>
                         <Grid size="auto">
                             <Button variant="outlined" onClick={transitionToItemMaster}>Item Master Report</Button>
                         </Grid>
@@ -226,18 +211,11 @@ const ItemQuery = () => {
                     <Grid size="auto">
                         <Button variant="outlined" onClick={transitionToAdjustment}>Adjustment</Button>
                     </Grid>
-
-
-                    <Button variant="outlined" onClick={() => ScreenStack.pop()}>Return</Button>
-
                 </Grid>
-            </form>
 
-            <hr style={{margin: "20px 0", borderTop: "1px solid #ccc"}}/>
+
 
             <Box sx={{height: 400, width: '100%', mb: 10}}>
-
-
                 <DataGridHelper apiRef={apiRef}
                                 label="Item Query Results"
                                 rows={rowsOfQueryResults}
