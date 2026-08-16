@@ -1,7 +1,7 @@
 import React, {useEffect, useState} from 'react';
 import {Box, Button} from '@mui/material';
 import Grid from "@mui/material/Grid";
-import {ScreenStack} from "../Stack.js";
+import ReturnButton from "./ReturnButton.jsx";
 import DataGridHelper from "./DataGridHelper.jsx";
 import {postData} from "../HttpUtils.js";
 
@@ -100,7 +100,7 @@ const SearchParametersForm = ({
                     <Button type="button" variant="outlined" sx={{ ml: 1 }} onClick={clearQueryParameters}>Clear</Button>
                 </Grid>
                 <Grid size="auto">
-                    <Button type="button" variant="outlined" sx={{ ml: 1 }} onClick={() => ScreenStack.pop()}>Return</Button>
+                    <ReturnButton type="button" sx={{ ml: 1 }} noContainer />
                 </Grid>
             </Grid>
         </Box>

@@ -1,8 +1,8 @@
 import React, {useMemo} from 'react';
-import {Box, Button, Typography} from '@mui/material';
+import {Box, Typography} from '@mui/material';
 import DataGridHelper from "../Objects/DataGridHelper.jsx";
+import ReturnButton from "../Objects/ReturnButton.jsx";
 import {textReportConfig} from "./ItemMasterConfig.js";
-import Grid from "@mui/material/Grid";
 import {ScreenStack} from "../Stack.js";
 
 const GenericText = () => {
@@ -27,28 +27,31 @@ const GenericText = () => {
                 {  ScreenStack.stackTop().label  }
             </Typography>
             <br/>
-            <Grid container sx={{ mt: 1 }}>
-                <Grid size="auto">
-                    <Button variant="outlined" onClick={() => ScreenStack.pop()}>Return</Button>
-                </Grid>
-            </Grid>
-            <Box sx={{height: 800, width: '100%', mb: 10}}>
+            <ReturnButton />
+            <Box sx={{width: '100%', my: 2}}>
                 <DataGridHelper columns={columnsWithFlex}
                                 rows={dataToPresent}
+                                autoHeight={true}
                                 onCellClick={undefined}
                                 sx={{
+                                    fontSize: '12px',
                                     '& .MuiDataGrid-columnHeaderTitle': {
                                         fontFamily: 'monospace',
+                                        fontSize: '12px',
                                     },
                                     '& .MuiDataGrid-cell': {
                                         backgroundColor: '#f5f5f5',
                                         fontFamily: 'monospace',
+                                        fontSize: '12px',
                                         whiteSpace: 'pre',
                                         overflow: 'visible',
                                         textOverflow: 'clip'
                                     },
                                 }}
                                 initialState={{
+                                    pagination: {
+                                        paginationModel: { pageSize: 25 },
+                                    },
                                     columns: {
                                         columnVisibilityModel: {
                                             crudAction: false,
@@ -58,6 +61,7 @@ const GenericText = () => {
                                 }}
                 />
             </Box>
+            <ReturnButton containerSx={{ mb: 2 }} />
             </form>
         </div>
     );

@@ -2,11 +2,17 @@ import React, {useEffect, useState} from 'react';
 import ErrorMessage from "../ErrorMessage.jsx";
 import FormService from "../FormService.js";
 import {Button, MenuItem, Typography} from '@mui/material';
+import ReturnButton from "../Objects/ReturnButton.jsx";
 import Grid from '@mui/material/Grid';
 import TextField from "@mui/material/TextField";
 import {CRUD_ACTION_DELETE, CRUD_ACTION_INSERT} from "../enums/crudAction.js";
 import {ScreenStack} from "../Stack.js";
-import {bomCrudUrl, itemCrudRequestTemplate, itemPickAll, pickListRequestTemplate,} from "../Globals.js";
+import {
+    bomCrudUrl,
+    itemPickAll,
+    modernRequestPayloadTemplate,
+    pickListRequestTemplate,
+} from "../Globals.js";
 import {BomComponentsDto} from "./BomPropertiesConfig.js";
 import {extractMessageFromResponse} from "../FormQueryPanel.js";
 
@@ -55,7 +61,7 @@ const BomProperties = () => {
             messageFormSetter: setMessage,
             messagesFromForm: message,
             afterPostCallback: afterUpdateCallback,
-            requestTemplate: itemCrudRequestTemplate,
+            requestTemplate: modernRequestPayloadTemplate,
             validationRules: BomComponentsDto
         }
     );
@@ -181,8 +187,7 @@ const BomProperties = () => {
                 </Grid>
 
                 <Grid size={12} container spacing={2} justifyContent="center">
-                    <Button variant="outlined" tabIndex={workingTabIndex++} onClick={() => ScreenStack.pop()}>Return
-                        without Saving</Button>
+                    <ReturnButton label="Return without Saving" tabIndex={workingTabIndex++} noContainer />
 
                     <Button type="submit" variant="outlined" name={bomCrudUrl}   value={CRUD_ACTION_INSERT}
                                 tabIndex={workingTabIndex++}>Insert Component and Return</Button>

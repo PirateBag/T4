@@ -1,6 +1,7 @@
 import React, {useEffect, useState} from 'react';
 import ErrorMessage from "../ErrorMessage.jsx";
 import {Box, Button} from '@mui/material';
+import ReturnButton from "../Objects/ReturnButton.jsx";
 import Grid from '@mui/material/Grid';
 import {ScreenStack} from "../Stack.js";
 import {
@@ -325,7 +326,7 @@ const OrderMaster = () => {
                     <Button onClick={clearQueryParameters}>Clear</Button>
                     <Button variant="outlined" onClick={addOrder}>Add Order</Button>
                     <Button variant="outlined" onClick={transitionToClearOrders}>Clear Orders</Button>
-                    <Button variant="outlined" onClick={() => ScreenStack.pop()}>Return</Button>
+                    <ReturnButton noContainer />
                 </Grid>
             </form>
 

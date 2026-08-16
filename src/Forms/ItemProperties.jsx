@@ -2,6 +2,7 @@ import React, {useEffect, useState} from 'react';
 import ErrorMessage from "../ErrorMessage.jsx";
 import FormService, {isShallowEqual} from "../FormService.js";
 import {Box, Button, Typography} from '@mui/material';
+import ReturnButton from "../Objects/ReturnButton.jsx";
 import Grid from '@mui/material/Grid';
 import {CRUD_ACTION_CHANGE, CRUD_ACTION_DELETE, CRUD_ACTION_INSERT, CRUD_ACTION_NONE} from "../enums/crudAction.js";
 import {ScreenStack} from "../Stack.js";
@@ -9,11 +10,11 @@ import {
     bomComponents,
     bomCrudUrl,
     bomWhereUsed,
-    itemCrudRequestTemplate, itemExplosionReportUrl,
+    itemExplosionReportUrl,
     itemMaxLevelReportUrl,
     ItemQueryParameterConfig,
     itemUpdateUrl, olderEmptyQueryConstant,
-    genericSingleRequest, balanceProjectionUrl
+    genericSingleRequest, balanceProjectionUrl, modernRequestPayloadTemplate
 } from "../Globals.js";
 import {BomComponentsDto, BomDtoToString, BomParentsDto, ItemDtoToString } from "./ItemPropertiesConfig.js";
 import {generateDefaultFromRules} from "../Metadata/ValidateRule.js";
@@ -76,7 +77,7 @@ const ItemProperties = () => {
             validationRules: ItemQueryRequestCrudUpdateMetadata,
             messagesFromForm: message,
             afterPostCallback: afterUpdateCallback,
-            requestTemplate: itemCrudRequestTemplate
+            requestTemplate: modernRequestPayloadTemplate
         }
     );
     const ItemPropertiesInsertFormService = new FormService({
@@ -84,7 +85,7 @@ const ItemProperties = () => {
             validationRules: ItemQueryRequestCrudInsertMetadata,
             messagesFromForm: message,
             afterPostCallback: afterUpdateCallback,
-            requestTemplate: itemCrudRequestTemplate
+            requestTemplate: modernRequestPayloadTemplate
         }
     );
 
@@ -317,8 +318,7 @@ const ItemProperties = () => {
                         <Grid size="auto">
                             <Button type="submit" variant="contained" name={itemUpdateUrl} sx={{ mr: 1 }}
                                     tabIndex={workingTabIndex++}  value={queryParameters.crudAction} >{saveButtonMessage}</Button>
-                            <Button variant="outlined" tabIndex={workingTabIndex++} onClick={() => ScreenStack.pop()}>Return
-                                without Saving</Button>
+                            <ReturnButton label="Return without Saving" tabIndex={workingTabIndex++} noContainer />
                         </Grid>
                     </Grid>
                 </form>
@@ -346,8 +346,7 @@ const ItemProperties = () => {
                         <Grid size="auto">
                             <Button type="submit" variant="contained" name={itemUpdateUrl} sx={{ mr: 1 }}
                                     tabIndex={workingTabIndex++}  value={CRUD_ACTION_CHANGE} >{saveButtonMessage}</Button>
-                            <Button variant="outlined" tabIndex={workingTabIndex++} sx={{ mr: 1 }} onClick={() => ScreenStack.pop()}>Return
-                                without Saving</Button>
+                            <ReturnButton label="Return without Saving" tabIndex={workingTabIndex++} sx={{ mr: 1 }} noContainer />
                             <Button type="submit" variant="outlined" name={itemUpdateUrl} value={CRUD_ACTION_DELETE}
                                     tabIndex={workingTabIndex++} sx={{ mr: 1 }}>Delete this Item</Button>
                         </Grid>

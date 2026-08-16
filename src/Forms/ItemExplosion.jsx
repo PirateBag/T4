@@ -1,6 +1,7 @@
 import React from 'react';
-import {Box, Button, Typography} from '@mui/material';
+import {Box, Typography} from '@mui/material';
 import DataGridHelper from "../Objects/DataGridHelper.jsx";
+import ReturnButton from "../Objects/ReturnButton.jsx";
 import {textReportConfig} from "./ItemMasterConfig.js";
 import {ScreenStack} from "../Stack.js";
 
@@ -18,7 +19,7 @@ export const ItemExplosion = () => {
             <Typography variant="h5" gutterBottom sx={{ml: 2, mt: 2}} align={"center"}>{ScreenStack.stackTop().label }
             </Typography>
 
-            <Button variant="outlined" onClick={() => ScreenStack.pop()}>Return</Button>
+            <ReturnButton />
 
             <Box sx={{height: 600, width: '100%', mb: 10}}>
                 <DataGridHelper columns={textReportConfig}
