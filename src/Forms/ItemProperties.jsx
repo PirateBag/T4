@@ -1,6 +1,6 @@
-import React, {useEffect, useState} from 'react';
+import {useEffect, useState} from 'react';
 import ErrorMessage from "../ErrorMessage.jsx";
-import FormService, {isShallowEqual} from "../FormService.js";
+import {isShallowEqual} from "../FormService.js";
 import {Box, Button, Typography} from '@mui/material';
 import ReturnButton from "../Objects/ReturnButton.jsx";
 import Grid from '@mui/material/Grid';
@@ -26,7 +26,7 @@ import BomProperties from "./BomProperties.jsx";
 import {PropertyGrid} from "../Objects/PropertyGrid.jsx";
 import {
     ItemQueryRequestCrudInsertMetadata,
-    ItemQueryRequestCrudUpdateMetadata
+    ItemQueryRequestCrudUpdateMetadata, ItemQueryRequestEditableMetadata
 } from "./ItemQueryConfig.js";
 import {ItemExplosion} from "./ItemExplosion.jsx";
 import OrderMaster from "./OrderMaster.jsx";
@@ -39,12 +39,11 @@ const ItemProperties = () => {
     const [selectedRow, setSelectedRow] = useState( undefined );
     const apiRef = useGridApiRef();
     const [message, setMessage] = useState("");
-    const [queryParameters, setQueryParameters] = useState();
+    const [queryParameters, setQueryParameters] = useState( [] );
     const [components, setComponents] = useState();
     const [saveButtonMessage, setSaveButtonMessage] = useState("Save Changes");
     const [whereUsed, setWhereUsed] = useState([]);
     const [itemOptions, setItemOptions] = useState([]);
-    const [ , setItemMasterQueryResults] = useState([]);
 
     const afterUpdateCallback = (response) => {
         console.log("afterQueryCallback received:", response.status);
@@ -72,62 +71,32 @@ const ItemProperties = () => {
         return costAfterAddingNewRow;
     }
 
-    const ItemPropertiesUpdateFormService = new FormService({
-            messageFormSetter: setMessage,
-            validationRules: ItemQueryRequestCrudUpdateMetadata,
-            messagesFromForm: message,
-            afterPostCallback: afterUpdateCallback,
-            requestTemplate: modernRequestPayloadTemplate
-        }
-    );
-    const ItemPropertiesInsertFormService = new FormService({
-            messageFormSetter: setMessage,
-            validationRules: ItemQueryRequestCrudInsertMetadata,
-            messagesFromForm: message,
-            afterPostCallback: afterUpdateCallback,
-            requestTemplate: modernRequestPayloadTemplate
-        }
-    );
-
-    const ItemExplosionFormService = new FormService({
-            messageFormSetter: setItemMasterQueryResults,
-            validationRules: ItemQueryParameterConfig,
-            messagesFromForm: null,
-            afterPostCallback: null,
-            requestTemplate: null
-        }
-    );
-
     // Consolidate data initialization into a single useEffect
     useEffect(() => {
         const initializeData = async () => {
-            let currentParams;
-
             if (ScreenStack.stackTop().activityState === CRUD_ACTION_INSERT) {
                 setMessage("Insert New Item");
                 setSaveButtonMessage("Insert New Item");
                 let defaultParams = generateDefaultFromRules(ItemQueryParameterConfig);
                 defaultParams.crudAction = CRUD_ACTION_INSERT;
-                currentParams = {
+                const currentParams = {
                     ...defaultParams,
                     crudAction: ScreenStack.stackTop().activityState
                 };
-                setQueryParameters(currentParams);
+                setQueryParameters([currentParams]);
                 setComponents([]);
                 setWhereUsed([]);
             } else if (ScreenStack.stackTop().activityState === CRUD_ACTION_CHANGE) {
                 setSaveButtonMessage("Save Changes");
-                currentParams = ScreenStack.stackTop().data[0];
-                currentParams.crudAction = CRUD_ACTION_CHANGE;
-                setQueryParameters(currentParams);
+                const currentParentItems = ScreenStack.stackTop().data;
+                setQueryParameters( currentParentItems );
 
-                // Now that we have currentParams, fetch components immediately
                 try {
-                    const objectToBeTransmitted = {"idToSearchFor": currentParams.id};
-                    const componentResponse = await ItemPropertiesUpdateFormService.postData(objectToBeTransmitted, bomComponents);
+                    const objectToBeTransmitted = {"idToSearchFor": currentParentItems[ 0 ].id};
+                    const componentResponse = await postData({ parameters: objectToBeTransmitted, url: bomComponents });
                     setComponents(componentResponse.data.data);
 
-                    const whereUsedResponse = await ItemPropertiesUpdateFormService.postData(objectToBeTransmitted, bomWhereUsed);
+                    const whereUsedResponse = await postData({ parameters: objectToBeTransmitted, url: bomWhereUsed });
                     setWhereUsed(whereUsedResponse.data.data === undefined ? [] : whereUsedResponse.data.data);
 
                     await loadItemPickListAll({
@@ -142,9 +111,10 @@ const ItemProperties = () => {
                     });
 
                 } catch (error) {
-                    console.error("Error fetching components:", error);
+                    console.error("Error fetching components, whereUsed or picklists:", error);
                     setComponents([]);
                     setWhereUsed([]);
+                    setItemOptions([]);
                 }
             }
         };
@@ -156,13 +126,11 @@ const ItemProperties = () => {
         if (components && components.length > 0) {
             const total = components.reduce((sum, c) => sum + (c.quantityPer * c.unitCost || 0), 0);
             console.log("Total extended cost is " + total);
-            setQueryParameters(prev => {
-                // Only update if the value actually changed to avoid unnecessary re-renders
-                if (prev && prev.unitCost !== total) {
-                    return {...prev, unitCost: total};
-                }
-                return prev;
-            });
+            const oldParent = queryParameters[0];
+
+            if ( oldParent.unitCost !== total ) {
+                setQueryParameters([{...oldParent, unitCost: total}]);
+            }
         }
     }, [components]);
 
@@ -173,7 +141,7 @@ const ItemProperties = () => {
             if (rule.type === 'number') {
                 value = value === '' ? undefined : Number(value);
             }
-            setQueryParameters({...queryParameters, [rule.field]: value});
+            setQueryParameters([{...queryParameters, [rule.field]: value}]);
         }
     }
 
@@ -187,8 +155,8 @@ const ItemProperties = () => {
         const updatedRow = {...newValue};
         updatedRow.extendedCost = updatedRow.quantityPer * updatedRow.unitCost;
 
-        const objectToBeTransmitted = ItemPropertiesUpdateFormService.singleRowToRequest(updatedRow);
-        await ItemPropertiesUpdateFormService.postData(objectToBeTransmitted, bomCrudUrl);
+        const objectToBeTransmitted = { 'rows' : [updatedRow]};
+        await postData({ parameters: objectToBeTransmitted, url: bomCrudUrl });
         console.log("Response " + BomDtoToString(updatedRow));
 
         if (updatedRow.extendedCost !== oldValue.extendedCost) {
@@ -203,7 +171,7 @@ const ItemProperties = () => {
 
 
             const updatedQueryParameters = {...queryParameters, unitCost: proposedNewCostAfterAdjustments};
-            setQueryParameters(updatedQueryParameters);
+            setQueryParameters( [updatedQueryParameters]);
 
             const line2 = "Updated unit cost for parent: "
                 + ItemDtoToString(updatedQueryParameters);
@@ -211,8 +179,8 @@ const ItemProperties = () => {
             const finalMessage = (message ? message + "\n" : "") + line1 + "\n" + line2;
             setMessage(finalMessage);
 
-            const objectToBeTransmitted = ItemPropertiesUpdateFormService.singleRowToRequest(updatedQueryParameters);
-            await ItemPropertiesUpdateFormService.postData(objectToBeTransmitted, itemUpdateUrl);
+            const objectToBeTransmitted = { 'rows' : [updatedQueryParameters]  };
+            await postData({ parameters: objectToBeTransmitted, url: itemUpdateUrl });
 
             //  Return the updated Component Row...
             return updatedRow
@@ -230,7 +198,7 @@ const ItemProperties = () => {
         };
 
         try {
-            await ItemPropertiesUpdateFormService.postData(objectToBeTransmitted, bomCrudUrl);
+            await postData({ parameters: objectToBeTransmitted, url: bomCrudUrl });
             setComponents(prev => prev.filter(row => row.id !== selectedRow.id));
             setSelectedRow( undefined );
         } catch (error) {
@@ -247,7 +215,7 @@ const ItemProperties = () => {
 
     async function transitionToMaxLevelReport() {
         try {
-            const response = await ItemExplosionFormService.postData(olderEmptyQueryConstant, itemMaxLevelReportUrl);
+            const response = await postData({ parameters: olderEmptyQueryConstant, url: itemMaxLevelReportUrl });
 
             if (response && response.data && response.data.data) {
                 const data = response.data.data;
@@ -270,7 +238,7 @@ const ItemProperties = () => {
 
     async function transitionToExplosion() {
         const parametersForExplosionRequest = { "parentId" : queryParameters.id, "childId" : 0  };
-        const response = await ItemExplosionFormService.postData(parametersForExplosionRequest, itemExplosionReportUrl);
+        const response = await postData({ parameters: parametersForExplosionRequest, url: itemExplosionReportUrl });
 
         if (response && response.data && response.data.data) {
             const data = response.data.data;
@@ -294,8 +262,12 @@ const ItemProperties = () => {
     }
 
 
-    if (queryParameters === undefined) return (<div>Loading...</div>)
-    if (components === undefined) return (<div>Loading...</div>)
+    if (queryParameters === undefined) return (<div>
+        <Typography variant="h5" gutterBottom sx={{ml: 2, mt: 2}} align={"center"}>Loading Item Master</Typography>
+        </div>);
+    if (components === undefined ) return (<div>
+        <Typography variant="h5" gutterBottom sx={{ml: 2, mt: 2}} align={"center"}>Loading Components</Typography></div>);
+
 
     let workingTabIndex = 0;
 
@@ -330,17 +302,44 @@ const ItemProperties = () => {
             <div>
                 <br/>
 
-                <form onSubmit={ItemPropertiesUpdateFormService.handleSubmit}>
+                {/*<form >*/}
                     <ErrorMessage message={message}/>
                     <br/>
 
-                    <PropertyGrid label={queryParameters.description}
-                                  objectToPresent={queryParameters}
-                                  validationRules={ItemPropertiesUpdateFormService.validationRules}
-                                  handleInputChangeCallback={handleInputChange}
-                                  pickListsForSelect={{ childId: itemOptions }} />
+                    {/*<SearchParametersForm*/}
+                    {/*    searchUrl={itemQueryUrl}*/}
+                    {/*    rowsOfQueryResults={queryParameters}*/}
+                    {/*    setRowsOfQueryResults={setRowsOfQueryResults}*/}
+                    {/*    setMessage={setMessage}*/}
 
-                    <br/>
+                    {/*    queryParameters={queryParameters}*/}
+                    {/*    setQueryParameters={setQueryParameters}*/}
+
+                    {/*    columns={ItemQueryRequestEditableMetadata}*/}
+                    {/*    label="Item Query Parameters"*/}
+                    {/*/>*/}
+
+                    {/*<PropertyGrid label={queryParameters.description}*/}
+                    {/*              objectToPresent={queryParameters}*/}
+                    {/*              validationRules={ItemQueryRequestEditableMetadata}*/}
+                    {/*              handleInputChangeCallback={handleInputChange}*/}
+                    {/*              pickListsForSelect={{ childId: itemOptions }} />*/}
+
+                    <DataGridHelper
+                                    label={queryParameters[0].description }
+                                    rows={queryParameters}
+                                    columns={ItemQueryRequestCrudUpdateMetadata}
+                                    hideFooter={true}
+                                    // handleRowChangeCallback={ComponentsUpdateRowHandler}
+                                    // onSelectionChange={(rows) => setSelectedRow( rows[ 0 ] )}
+                                    // onCellClick={undefined}
+                                    // pickListsForSelect={{ childId: itemOptions }}
+                    />
+
+
+                    {/*<br/>*/}
+
+
 
                     <Grid size={12} container spacing={2}>
                         <Grid size="auto">
@@ -358,13 +357,13 @@ const ItemProperties = () => {
                             <Button variant="outlined" sx={{ mr: 1 }} onClick={() => ScreenStack.push(new ScreenTransition("Show Orders for" + queryParameters, OrderMaster, CRUD_ACTION_NONE, queryParameters))}>Show Orders</Button>
                         </Grid>
                     </Grid>
-                </form>
+                {/*</form>*/}
 
                 <Box sx={{height: 400, width: '100%', mb: 10}}>
                     {ScreenStack.stackTop().activityState === CRUD_ACTION_CHANGE && (
                         <>
                             <DataGridHelper apiRef={apiRef}
-                                            label={components.length === 0 ? "There are no components of " + queryParameters.description : "Components of " + queryParameters.description }
+                                            label={components.length === 0 ? "There are no components of " + queryParameters[0].description : "Components of " + queryParameters[0].description }
                                             rows={components}
                                             columns={BomComponentsDto}
                                             handleRowChangeCallback={ComponentsUpdateRowHandler}
@@ -382,7 +381,7 @@ const ItemProperties = () => {
                             </Grid>
 
                             <DataGridHelper
-                                label={whereUsed.length === 0 ? queryParameters.description + " is not a component of any item." : "Items where " + queryParameters.description + " is used."}
+                                label={whereUsed.length === 0 ? queryParameters[0].description + " is not a component of any item." : "Items where " + queryParameters[0].description + " is used."}
                                 rows={whereUsed}
                                 columns={BomParentsDto}
                                 onSelectionChange={undefined}

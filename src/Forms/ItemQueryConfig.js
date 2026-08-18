@@ -17,6 +17,7 @@ export const ItemQueryRequestEditableMetadata = [
     QUANTITY_VALIDATION.appendGridFieldOptions({ 'editable': true, 'headerName': 'On Hand'} )
 ];
 
+
 export const ItemQueryRequestCrudInsertMetadata = [
     //  ID not even allowed for Insert.
     //  ID_VALIDATION.appendGridFieldOptions( { 'editable': false, hidden: true, whenRequired: REQUIRED_NONE } ),

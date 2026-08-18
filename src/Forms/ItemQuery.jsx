@@ -33,32 +33,6 @@ const ItemQuery = () => {
 
     const [message, setMessage] = useState("");
     const [rowsOfQueryResults, setRowsOfQueryResults] = useState([]);
-
-    /*    const afterItemMasterQueryResults = (response) => {
-            console.log("afterItemMasterQueryResults received:", response.status);
-            if (response.status === 200) {
-                setMessage("Success, retrieved " + response.data.data.length + " rows");
-                setRowsOfQueryResults(response.data.data);
-            } else {
-                setMessage("Error");
-                setRowsOfQueryResults([]);
-            }
-        }
-    */
-
-    /*
-        // Fetch data on mount if empty
-        useEffect(() => {
-            const fetchData = async () => {
-                if (rowsOfQueryResults.length === 0) {
-                    // Trigger search with empty values
-                    queryFormService.postData(olderEmptyQueryConstant, itemQueryUrl);
-                }
-            };
-            fetchData();
-        }, []); // Dependency array ensures this runs only on mount
-
-    */
     async function ItemQueryRowChange(newValue, oldValue) {
         if (isShallowEqual(newValue, oldValue)) {
             console.log("Row " + oldValue.id + " unchanged, skipping update");
@@ -67,7 +41,6 @@ const ItemQuery = () => {
         newValue.crudAction = newValue.crudAction === CRUD_ACTION_INSERT ? CRUD_ACTION_INSERT : CRUD_ACTION_CHANGE;
         const updatedRow = {...newValue};
 
-        //  const objectToBeTransmitted = queryFormService.singleRowToRequest(updatedRow);
         const objectToBeTransmitted = {rows: [updatedRow]};
         await postData({"parameters": objectToBeTransmitted, "url": itemUpdateUrl})
         // Clear focus from the cell after successful update
@@ -151,7 +124,6 @@ const ItemQuery = () => {
 
                 columns={ItemQueryRequestEditableMetadata}
                 label="Item Query Parameters"
-
             />
 
             <hr style={{margin: "20px 0", borderTop: "1px solid #ccc"}}/>

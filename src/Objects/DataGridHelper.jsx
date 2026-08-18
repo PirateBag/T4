@@ -14,7 +14,8 @@ function DataGridHelper({
     onSelectionChange,
     onProcessError,
     pickListsForSelect = {}, // New optional parameter
-    autoHeight = false
+    autoHeight = false,
+    hideFooter = false
 }) {
 
     const safeRows = React.useMemo(() => rows || [], [rows]);
@@ -64,6 +65,7 @@ function DataGridHelper({
         }), [columns, pickListsForSelect]);
 
     const hasLineNo = React.useMemo(() => safeColumns.some(col => col.field === 'lineNo'), [safeColumns]);
+    const shouldHideFooter = hideFooter || hasLineNo;
 
     const handleInternalCellClick = ( params ) => {
         console.log('DataGridHelper:handleInternalCellClick:', params);
@@ -109,7 +111,7 @@ function DataGridHelper({
             return row.id || row.Adjustment || row.AdjustmentId || row[safeColumns[0]?.field] || Math.random();
         },
         onCellClick: handleInternalCellClick,
-        hideFooter: hasLineNo,
+        hideFooter: shouldHideFooter,
         sx: {
             '& .MuiDataGrid-cell': {
                 backgroundColor: '#f5f5f5',
@@ -134,7 +136,7 @@ function DataGridHelper({
         onProcessRowUpdateError: onProcessError || ((error) => console.error('DataGridHelper: Error in processRowUpdate:', error)),
         slotProps: {
             footer: {
-                sx: { display: hasLineNo ? 'none' : 'flex' },
+                sx: { display: shouldHideFooter ? 'none' : 'flex' },
             },
             noRowsOverlay: {
                 sx: { display: 'none' }
