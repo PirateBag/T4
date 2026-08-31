@@ -2,13 +2,15 @@
 import {DataGrid } from "@mui/x-data-grid";
 import {Typography, Checkbox} from "@mui/material";
 import React from "react";
-import {CRUD_ACTION_DELETE, CRUD_ACTION_NONE} from "../enums/crudAction.js";
+import {CRUD_ACTION_CHANGE, CRUD_ACTION_DELETE, CRUD_ACTION_INSERT, CRUD_ACTION_NONE} from "../enums/crudAction.js";
 
-function DataGridHelper({
+export function DataGridHelper({
     label,
     rows,
     columns,
     handleRowChangeCallback,
+    setRows,
+    rowsSetter,
     sx,
     initialState,
     onSelectionChange,
@@ -17,6 +19,8 @@ function DataGridHelper({
     autoHeight = false,
     hideFooter = false
 }) {
+
+    const effectiveSetRows = setRows || rowsSetter;
 
     const safeRows = React.useMemo(() => rows || [], [rows]);
     const safeColumns = React.useMemo(() =>
@@ -67,6 +71,62 @@ function DataGridHelper({
     const hasLineNo = React.useMemo(() => safeColumns.some(col => col.field === 'lineNo'), [safeColumns]);
     const shouldHideFooter = hideFooter || hasLineNo;
 
+    const getRowIdentifier = React.useCallback((row) => {
+        if (!row) return undefined;
+        if (hasLineNo && row.lineNo != null) {
+            return row.lineNo;
+        }
+        return row.id ?? row.Adjustment ?? row.AdjustmentId ?? (safeColumns[0]?.field ? row[safeColumns[0].field] : undefined);
+    }, [hasLineNo, safeColumns]);
+
+    const defaultHandleRowChange = (newRow, oldRow) => {
+        if (!effectiveSetRows) {
+            throw new Error("DataGridHelper: defaultHandleRowChange requires a rows setter function (e.g. setRows) when no custom handleRowChangeCallback is provided.");
+        }
+
+        if (!newRow) {
+            return oldRow;
+        }
+
+        const updatedRow = { ...newRow };
+
+        const changedColumns = (columns || []).filter(col => !oldRow || newRow[col.field] !== oldRow[col.field]);
+
+        for (const col of changedColumns) {
+            if (col && typeof col.validate === 'function') {
+                const errorMessage = col.validate(newRow[col.field]);
+                if (errorMessage) {
+                    throw new Error(errorMessage);
+                }
+            }
+            if (col && typeof col.reformatStringUsingRules === 'function' && typeof newRow[col.field] === 'string') {
+                updatedRow[col.field] = col.reformatStringUsingRules(newRow[col.field]);
+            }
+        }
+
+        updatedRow.crudAction = CRUD_ACTION_CHANGE;
+
+        if (typeof effectiveSetRows === 'function') {
+            effectiveSetRows(prevRows => {
+                if (Array.isArray(prevRows)) {
+                    const targetId = getRowIdentifier(updatedRow);
+                    if (targetId !== undefined) {
+                        return prevRows.map(row => (getRowIdentifier(row) === targetId ? updatedRow : row));
+                    }
+                    if (prevRows.length === 1) {
+                        return [updatedRow];
+                    }
+                    return prevRows.map(row => (row === oldRow ? updatedRow : row));
+                }
+                return updatedRow;
+            });
+        }
+
+        console.log('DataGridHelper:updateRow:', updatedRow);
+
+        return updatedRow;
+    };
+
     const handleInternalCellClick = ( params ) => {
         console.log('DataGridHelper:handleInternalCellClick:', params);
         if (params.field === safeColumns[0]?.field && onSelectionChange) {
@@ -93,6 +153,20 @@ function DataGridHelper({
 
             if (handleRowChangeCallback) {
                 handleRowChangeCallback(updatedRow, params.row);
+            } else if (effectiveSetRows && typeof effectiveSetRows === 'function') {
+                effectiveSetRows(prevRows => {
+                    if (Array.isArray(prevRows)) {
+                        const targetId = getRowIdentifier(updatedRow);
+                        if (targetId !== undefined) {
+                            return prevRows.map(row => (getRowIdentifier(row) === targetId ? updatedRow : row));
+                        }
+                        if (prevRows.length === 1) {
+                            return [updatedRow];
+                        }
+                        return prevRows.map(row => (row === params.row ? updatedRow : row));
+                    }
+                    return updatedRow;
+                });
             }
         }
     };
@@ -132,7 +206,7 @@ function DataGridHelper({
         pageSizeOptions: [10, 25, 50],
         sortingMode: "client",
         filterMode: "client",
-        processRowUpdate: handleRowChangeCallback,
+        processRowUpdate: handleRowChangeCallback || defaultHandleRowChange,
         onProcessRowUpdateError: onProcessError || ((error) => console.error('DataGridHelper: Error in processRowUpdate:', error)),
         slotProps: {
             footer: {

@@ -240,30 +240,30 @@ const OrderMaster = () => {
 
 
 
-    async function masterSaveChanges( objectToBeTransmitted, messageSetter, updatedRowsSetter ) {
-        const objectsWithActiveCrudAction = { rows: objectToBeTransmitted.filter( row => row.crudAction !== CRUD_ACTION_NONE ) };
-
-        try {
-            const response  = await postData({
-                'parameters': objectsWithActiveCrudAction,
-                'url': orderLineItemCrudUrl
-            });
-
-            if ( response.status === 200 ) {
-                const afterRemovingDeletedRows = objectToBeTransmitted.filter( row => row.crudAction !== CRUD_ACTION_DELETE );
-                afterRemovingDeletedRows.forEach( row => row.crudAction = CRUD_ACTION_NONE );
-                updatedRowsSetter( afterRemovingDeletedRows );
-            }
-            const errorMessage = extractMessageFromResponse( response );
-            messageSetter( errorMessage );
-            return response;
-        } catch (error) {
-            const errorMessage = extractMessageFromResponse( error );
-            messageSetter("Unusual error updating order: " +  errorMessage );
-            return error.response || { status: 500 };
-        }
-
-    }
+    // async function masterSaveChanges( objectToBeTransmitted, messageSetter, updatedRowsSetter ) {
+    //     const objectsWithActiveCrudAction = { rows: objectToBeTransmitted.filter( row => row.crudAction !== CRUD_ACTION_NONE ) };
+    //
+    //     try {
+    //         const response  = await postData({
+    //             'parameters': objectsWithActiveCrudAction,
+    //             'url': orderLineItemCrudUrl
+    //         });
+    //
+    //         if ( response.status === 200 ) {
+    //             const afterRemovingDeletedRows = objectToBeTransmitted.filter( row => row.crudAction !== CRUD_ACTION_DELETE );
+    //             afterRemovingDeletedRows.forEach( row => row.crudAction = CRUD_ACTION_NONE );
+    //             updatedRowsSetter( afterRemovingDeletedRows );
+    //         }
+    //         const errorMessage = extractMessageFromResponse( response );
+    //         messageSetter( errorMessage );
+    //         return response;
+    //     } catch (error) {
+    //         const errorMessage = extractMessageFromResponse( error );
+    //         messageSetter("Unusual error updating order: " +  errorMessage );
+    //         return error.response || { status: 500 };
+    //     }
+    //
+    // }
 
     const saveChildThenParentResults =  async () => {
         setMessage("");

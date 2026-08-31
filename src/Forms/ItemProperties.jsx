@@ -14,9 +14,14 @@ import {
     itemMaxLevelReportUrl,
     ItemQueryParameterConfig,
     itemUpdateUrl, olderEmptyQueryConstant,
-    genericSingleRequest, balanceProjectionUrl, modernRequestPayloadTemplate
-} from "../Globals.js";
-import {BomComponentsDto, BomDtoToString, BomParentsDto, ItemDtoToString } from "./ItemPropertiesConfig.js";
+    genericSingleRequest, balanceProjectionUrl} from "../Globals.js";
+import {
+    BomComponentsDto,
+    BomDtoToString,
+    BomParentsDto,
+    ItemDtoToString,
+    ParentItemRules
+} from "./ItemPropertiesConfig.js";
 import {generateDefaultFromRules} from "../Metadata/ValidateRule.js";
 import {useGridApiRef} from "@mui/x-data-grid";
 import DataGridHelper from "../Objects/DataGridHelper.jsx";
@@ -33,6 +38,7 @@ import OrderMaster from "./OrderMaster.jsx";
 import {extractMessageFromResponse} from "../FormQueryPanel.js";
 import {postData} from "../HttpUtils.js";
 import GenericText from "./GenericText.jsx";
+import {saveCrudObjects} from "../lib/masterSaveChanges.js";
 
 const ItemProperties = () => {
 
@@ -261,6 +267,9 @@ const ItemProperties = () => {
         ScreenStack.push(nextScreen);
     }
 
+    async function saveParentItemChanges() {
+        await saveCrudObjects({ objectToBeTransmitted: queryParameters, messageSetter: setMessage, updatedRowsSetter: setQueryParameters, updateUrl: itemUpdateUrl });
+    }
 
     if (queryParameters === undefined) return (<div>
         <Typography variant="h5" gutterBottom sx={{ml: 2, mt: 2}} align={"center"}>Loading Item Master</Typography>
@@ -328,9 +337,10 @@ const ItemProperties = () => {
                     <DataGridHelper
                                     label={queryParameters[0].description }
                                     rows={queryParameters}
-                                    columns={ItemQueryRequestCrudUpdateMetadata}
+                                    columns={ParentItemRules}
                                     hideFooter={true}
-                                    // handleRowChangeCallback={ComponentsUpdateRowHandler}
+                                    setRows={setQueryParameters}
+                                    // handleRowChangeCallback={defaultHandleComponentRowUpdate}
                                     // onSelectionChange={(rows) => setSelectedRow( rows[ 0 ] )}
                                     // onCellClick={undefined}
                                     // pickListsForSelect={{ childId: itemOptions }}
@@ -343,7 +353,7 @@ const ItemProperties = () => {
 
                     <Grid size={12} container spacing={2}>
                         <Grid size="auto">
-                            <Button type="submit" variant="contained" name={itemUpdateUrl} sx={{ mr: 1 }}
+                            <Button variant="contained" onClick={saveParentItemChanges} sx={{ mr: 1 }}
                                     tabIndex={workingTabIndex++}  value={CRUD_ACTION_CHANGE} >{saveButtonMessage}</Button>
                             <ReturnButton label="Return without Saving" tabIndex={workingTabIndex++} sx={{ mr: 1 }} noContainer />
                             <Button type="submit" variant="outlined" name={itemUpdateUrl} value={CRUD_ACTION_DELETE}

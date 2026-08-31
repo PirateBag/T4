@@ -8,10 +8,22 @@ import {
     QUANTITY_VALIDATION,
     SOURCING_VALIDATION
 } from "../Metadata/Domain.jsx";
+import {REQUIRED_ADD, REQUIRED_NONE} from "../Metadata/ValidationRuleConstants.js";
 
 
 export const ItemDtoToString = (item) => item.id + "," + item.description;
 export const ItemDtoToStringWithOperation = (item) => "Updated: " + ItemDtoToString(item);
+
+
+export const ParentItemRules = [
+    ID_VALIDATION.appendGridFieldOptions( { 'editable': false } ),
+    DESCRIPTION_VALIDATION.appendGridFieldOptions({ 'editable': true, 'headerName' : 'Description' } ),
+    COST_VALIDATION.appendGridFieldOptions({ 'editable': true,'headerName': 'Unit Cost', whenRequired: REQUIRED_ADD } ),
+    SOURCING_VALIDATION.appendGridFieldOptions({ 'editable': true, 'headerName' : 'Sourcing', whenRequired: REQUIRED_ADD } ),
+    LEAD_TIME_VALIDATION.appendGridFieldOptions({ 'editable': true, headerName : 'Lead Time', whenRequired: REQUIRED_ADD } ),
+    CRUD_VALIDATION.appendGridFieldOptions( { 'editable': false, 'hidden': 'true'} )
+];
+
 
 export const BomComponentsDto = [
     ID_VALIDATION.appendGridFieldOptions({field: 'id', 'editable': false, 'headerName': 'Id'}),
