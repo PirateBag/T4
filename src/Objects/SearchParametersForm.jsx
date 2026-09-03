@@ -4,6 +4,7 @@ import Grid from "@mui/material/Grid";
 import ReturnButton from "./ReturnButton.jsx";
 import DataGridHelper from "./DataGridHelper.jsx";
 import {postData} from "../HttpUtils.js";
+import {noop} from "../lib/noop.js";
 
 const SearchParametersForm = ({
     searchUrl,
@@ -13,35 +14,18 @@ const SearchParametersForm = ({
     setQueryParameters,
     columns,
     label,
-    rowsOfQueryResults
+    rowsOfQueryResults,
+    handleDelete,
+    handleClear,
+    handleReturn
 }) => {
     const [selectedQueryRows, setSelectedQueryRows] = useState([]);
 
     const handleRowChange = (newRow) => {
-        setQueryParameters(prev => prev.map(row => row.lineNo === newRow.lineNo ? newRow : row));
+        if (setQueryParameters) {
+            setQueryParameters(prev => prev.map(row => row.lineNo === newRow.lineNo ? newRow : row));
+        }
         return newRow;
-    };
-
-    const clearQueryParameters = () => {
-        setQueryParameters([{lineNo: 1}]);
-        setRowsOfQueryResults([]);
-        setMessage("");
-    };
-
-    const handleAddRow = () => {
-        setQueryParameters(prev => {
-            const nextLineNo = prev.length > 0
-                ? Math.max(...prev.map(r => r.lineNo || 0)) + 1
-                : 1;
-            return [...prev, { lineNo: nextLineNo }];
-        });
-    };
-
-    const handleDeleteRow = () => {
-        if (selectedQueryRows.length === 0) return;
-        const selectedLineNos = selectedQueryRows.map(row => row.lineNo);
-        setQueryParameters(prev => prev.filter(row => !selectedLineNos.includes(row.lineNo)));
-        setSelectedQueryRows([]);
     };
 
     const handleSearch = async (event) => {
@@ -52,24 +36,24 @@ const SearchParametersForm = ({
                 url: searchUrl
             });
             if (response.status === 200) {
-                setMessage("Success, retrieved " + (response.data?.data?.length || 0) + " rows");
-                setRowsOfQueryResults(response.data?.data || []);
+                if (setMessage) setMessage("Success, retrieved " + (response.data?.data?.length || 0) + " rows");
+                if (setRowsOfQueryResults) setRowsOfQueryResults(response.data?.data || []);
             } else {
-                setMessage("Error retrieving with response " + response.status);
-                setRowsOfQueryResults([]);
+                if (setMessage) setMessage("Error retrieving with response " + response.status);
+                if (setRowsOfQueryResults) setRowsOfQueryResults([]);
             }
         } catch (error) {
-            setMessage("Error: " + error.message);
+            if (setMessage) setMessage("Error: " + error.message);
         }
     };
 
     useEffect(() => {
         const fetchData = async () => {
-            if (rowsOfQueryResults.length === 0) {
+            if (rowsOfQueryResults && rowsOfQueryResults.length === 0) {
                 await handleSearch();
             }
         };
-        fetchData().catch(error => setMessage("Promise rejection in fetchData: " + error));
+        fetchData().catch(error => setMessage && setMessage("Promise rejection in fetchData: " + error));
     }, []);
     return (
         <Box component="form" onSubmit={handleSearch}>
@@ -85,23 +69,31 @@ const SearchParametersForm = ({
                 />
             </Box>
 
-            <Grid container spacing={2} padding={2}>
-                <Grid size="auto">
-                    <Button type="button" variant="contained" onClick={handleAddRow}>Add</Button>
-                </Grid>
-                <Grid size="auto">
-                    <Button type="button" variant="contained" color="error" onClick={handleDeleteRow} disabled={selectedQueryRows.length === 0}>Delete</Button>
-                </Grid>
+            <Grid container spacing={1} padding={2}>
+                {typeof handleAdd === 'function' && (
+                    <Grid size="auto">
+                        <Button type="button" variant="contained" onClick={noop}>Add</Button>
+                    </Grid>
+                )}
+                {typeof handleDelete === 'function' && (
+                    <Grid size="auto">
+                        <Button type="button" variant="contained" color="error" disabled={selectedQueryRows.length === 0}>Delete</Button>
+                    </Grid>
+                )}
 
                 <Grid size="auto">
-                    <Button type="submit" variant="contained" sx={{ ml: 10 }}>Search</Button>
+                    <Button type="submit" variant="contained" sx={{ ml: 1 }}>Search</Button>
                 </Grid>
-                <Grid size="auto">
-                    <Button type="button" variant="outlined" sx={{ ml: 1 }} onClick={clearQueryParameters}>Clear</Button>
-                </Grid>
-                <Grid size="auto">
-                    <ReturnButton type="button" sx={{ ml: 1 }} noContainer />
-                </Grid>
+                {typeof handleClear === 'function' && (
+                    <Grid size="auto">
+                        <Button type="button" variant="outlined" sx={{ ml: 1 }}>Clear</Button>
+                    </Grid>
+                )}
+                {typeof handleReturn === 'function' && (
+                    <Grid size="auto">
+                        <ReturnButton type="button" sx={{ ml: 1 }} noContainer />
+                    </Grid>
+                )}
             </Grid>
         </Box>
     );

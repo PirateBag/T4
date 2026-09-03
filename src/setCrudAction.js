@@ -1,5 +1,5 @@
 import {CRUD_ACTION_CHANGE, CRUD_ACTION_DELETE, CRUD_ACTION_INSERT} from "./enums/crudAction.js";
-import {isShallowEqual} from "./isShallowEqual.js";
+import {isShallowEqual} from "./lib/isShallowEqual.js";
 
 export function defaultHandleComponentRowUpdate( newRow, oldRow ) {
     if ( isShallowEqual(newRow, oldRow) )  return oldRow;

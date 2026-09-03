@@ -1,6 +1,5 @@
 import React, {useState} from 'react';
 import ErrorMessage from "../ErrorMessage.jsx";
-import {isShallowEqual} from "../FormService.js";
 import {Box, Button} from '@mui/material';
 import Grid from '@mui/material/Grid';
 import {ItemQueryRequestEditableMetadata, ItemQueryResultsMetadata} from "./ItemQueryConfig.js";
@@ -23,6 +22,8 @@ import {postData} from "../HttpUtils.js";
 import GenericText from "./GenericText.jsx";
 import Adjustment from "./Adjustment.jsx";
 import SearchParametersForm from "../Objects/SearchParametersForm.jsx";
+import {enableButton} from "../lib/noop.js";
+import {isShallowEqual} from "../lib/isShallowEqual.js";
 
 
 const ItemQuery = () => {
@@ -124,6 +125,9 @@ const ItemQuery = () => {
 
                 columns={ItemQueryRequestEditableMetadata}
                 label="Item Query Parameters"
+
+                handleClear={enableButton}
+                handleReturn={enableButton}
             />
 
             <hr style={{margin: "20px 0", borderTop: "1px solid #ccc"}}/>

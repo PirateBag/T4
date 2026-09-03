@@ -1,6 +1,5 @@
 import {useEffect, useState} from 'react';
 import ErrorMessage from "../ErrorMessage.jsx";
-import {isShallowEqual} from "../FormService.js";
 import {Box, Button, Typography} from '@mui/material';
 import ReturnButton from "../Objects/ReturnButton.jsx";
 import Grid from '@mui/material/Grid';
@@ -30,15 +29,14 @@ import {ScreenTransition} from "../ScreenTransition.js";
 import BomProperties from "./BomProperties.jsx";
 import {PropertyGrid} from "../Objects/PropertyGrid.jsx";
 import {
-    ItemQueryRequestCrudInsertMetadata,
-    ItemQueryRequestCrudUpdateMetadata, ItemQueryRequestEditableMetadata
+    ItemQueryRequestCrudInsertMetadata
 } from "./ItemQueryConfig.js";
 import {ItemExplosion} from "./ItemExplosion.jsx";
 import OrderMaster from "./OrderMaster.jsx";
-import {extractMessageFromResponse} from "../FormQueryPanel.js";
 import {postData} from "../HttpUtils.js";
 import GenericText from "./GenericText.jsx";
 import {saveCrudObjects} from "../lib/masterSaveChanges.js";
+import {isShallowEqual} from "../lib/isShallowEqual.js";
 
 const ItemProperties = () => {
 
@@ -47,21 +45,10 @@ const ItemProperties = () => {
     const [message, setMessage] = useState("");
     const [queryParameters, setQueryParameters] = useState( [] );
     const [components, setComponents] = useState();
-    const [saveButtonMessage, setSaveButtonMessage] = useState("Save Changes");
+    const [saveButtonMessage, setSaveButtonMessage] = useState("Save");
     const [whereUsed, setWhereUsed] = useState([]);
     const [itemOptions, setItemOptions] = useState([]);
 
-    const afterUpdateCallback = (response) => {
-        console.log("afterQueryCallback received:", response.status);
-        if (response.status === 200) {
-            const possibleErrorMessages = extractMessageFromResponse(response);
-            if (possibleErrorMessages.length > 0) {
-                setMessage(possibleErrorMessages);
-            }
-        } else {
-            setMessage("Unknown error code in itemProperties.afterUpdateCallback");
-        }
-    }
 
     // Calculate the total extended cost
     const totalExtendedCost = components?.reduce((sum, component) => {
@@ -93,7 +80,7 @@ const ItemProperties = () => {
                 setComponents([]);
                 setWhereUsed([]);
             } else if (ScreenStack.stackTop().activityState === CRUD_ACTION_CHANGE) {
-                setSaveButtonMessage("Save Changes");
+                setSaveButtonMessage("Save");
                 const currentParentItems = ScreenStack.stackTop().data;
                 setQueryParameters( currentParentItems );
 
@@ -140,6 +127,20 @@ const ItemProperties = () => {
         }
     }, [components]);
 
+
+    const handleSelectionChange = (rows) => {
+        const clickedRow = rows?.[0];
+        if (!clickedRow) {
+            setSelectedRow(undefined);
+            return;
+        }
+        setSelectedRow(prev => {
+            if (prev && (prev.id === clickedRow.id || prev === clickedRow || isShallowEqual(prev, clickedRow))) {
+                return undefined;
+            }
+            return clickedRow;
+        });
+    };
 
     const handleInputChange = (rule) => {
         return (event) => {
@@ -268,8 +269,23 @@ const ItemProperties = () => {
     }
 
     async function saveParentItemChanges() {
+        if (selectedRow) {
+            if (Array.isArray(selectedRow) && selectedRow.length === 1) {
+                selectedRow[0].crudAction = CRUD_ACTION_DELETE;
+            } else if (!Array.isArray(selectedRow)) {
+                selectedRow.crudAction = CRUD_ACTION_DELETE;
+            }
+        }
         await saveCrudObjects({ objectToBeTransmitted: queryParameters, messageSetter: setMessage, updatedRowsSetter: setQueryParameters, updateUrl: itemUpdateUrl });
     }
+
+    // function deleteParentItem() {
+    //     if (selectedRow?.length === 1) { selectedRow[ 0 ].crudAction = CRUD_ACTION_DELETE };
+    //     await saveCrudObjects({ objectToBeTransmitted: queryParameters, messageSetter: setMessage, updatedRowsSetter: setQueryParameters, updateUrl: itemUpdateUrl });
+    // }
+
+
+
 
     if (queryParameters === undefined) return (<div>
         <Typography variant="h5" gutterBottom sx={{ml: 2, mt: 2}} align={"center"}>Loading Item Master</Typography>
@@ -285,7 +301,6 @@ const ItemProperties = () => {
             <div>
                 <br/>
 
-                <form onSubmit={ItemPropertiesInsertFormService.handleSubmit}>
                     <ErrorMessage message={message}/>
                     <br/>
 
@@ -299,10 +314,9 @@ const ItemProperties = () => {
                         <Grid size="auto">
                             <Button type="submit" variant="contained" name={itemUpdateUrl} sx={{ mr: 1 }}
                                     tabIndex={workingTabIndex++}  value={queryParameters.crudAction} >{saveButtonMessage}</Button>
-                            <ReturnButton label="Return without Saving" tabIndex={workingTabIndex++} noContainer />
+                            <ReturnButton label="Return" tabIndex={workingTabIndex++} noContainer />
                         </Grid>
                     </Grid>
-                </form>
             </div>
         );
     }
@@ -310,64 +324,41 @@ const ItemProperties = () => {
         return (
             <div>
                 <br/>
-
-                {/*<form >*/}
                     <ErrorMessage message={message}/>
-                    <br/>
-
-                    {/*<SearchParametersForm*/}
-                    {/*    searchUrl={itemQueryUrl}*/}
-                    {/*    rowsOfQueryResults={queryParameters}*/}
-                    {/*    setRowsOfQueryResults={setRowsOfQueryResults}*/}
-                    {/*    setMessage={setMessage}*/}
-
-                    {/*    queryParameters={queryParameters}*/}
-                    {/*    setQueryParameters={setQueryParameters}*/}
-
-                    {/*    columns={ItemQueryRequestEditableMetadata}*/}
-                    {/*    label="Item Query Parameters"*/}
-                    {/*/>*/}
-
-                    {/*<PropertyGrid label={queryParameters.description}*/}
-                    {/*              objectToPresent={queryParameters}*/}
-                    {/*              validationRules={ItemQueryRequestEditableMetadata}*/}
-                    {/*              handleInputChangeCallback={handleInputChange}*/}
-                    {/*              pickListsForSelect={{ childId: itemOptions }} />*/}
-
-                    <DataGridHelper
-                                    label={queryParameters[0].description }
-                                    rows={queryParameters}
-                                    columns={ParentItemRules}
-                                    hideFooter={true}
-                                    setRows={setQueryParameters}
-                                    // handleRowChangeCallback={defaultHandleComponentRowUpdate}
-                                    // onSelectionChange={(rows) => setSelectedRow( rows[ 0 ] )}
-                                    // onCellClick={undefined}
-                                    // pickListsForSelect={{ childId: itemOptions }}
-                    />
+                <br/>
 
 
-                    {/*<br/>*/}
+                <DataGridHelper
+                    label={queryParameters[0].description }
+                    rows={queryParameters}
+                    columns={ParentItemRules}
+                    hideFooter={true}
+                    setRows={setQueryParameters}
+                    // handleRowChangeCallback={defaultHandleComponentRowUpdate}
+                    onSelectionChange={handleSelectionChange}
+                    // onCellClick={undefined}
+                    // pickListsForSelect={{ childId: itemOptions }}
+                />
 
 
 
-                    <Grid size={12} container spacing={2}>
-                        <Grid size="auto">
-                            <Button variant="contained" onClick={saveParentItemChanges} sx={{ mr: 1 }}
-                                    tabIndex={workingTabIndex++}  value={CRUD_ACTION_CHANGE} >{saveButtonMessage}</Button>
-                            <ReturnButton label="Return without Saving" tabIndex={workingTabIndex++} sx={{ mr: 1 }} noContainer />
-                            <Button type="submit" variant="outlined" name={itemUpdateUrl} value={CRUD_ACTION_DELETE}
-                                    tabIndex={workingTabIndex++} sx={{ mr: 1 }}>Delete this Item</Button>
-                        </Grid>
-                        <br/>
-                        <Grid size="auto">
-                            <Button variant="outlined" sx={{ mr: 1 }} onClick={transitionToMaxLevelReport}>Max Level Report</Button>
-                            <Button variant="outlined" sx={{ mr: 1 }} onClick={transitionToExplosion}>Item Explosion Report</Button>
-                            <Button variant="outlined" sx={{ mr: 1 }} onClick={transitionToBalanceProjection}>Balance Projection</Button>
-                            <Button variant="outlined" sx={{ mr: 1 }} onClick={() => ScreenStack.push(new ScreenTransition("Show Orders for" + queryParameters, OrderMaster, CRUD_ACTION_NONE, queryParameters))}>Show Orders</Button>
-                        </Grid>
+                <Grid size={12} container spacing={2}>
+                    <Grid size="auto">
+                        <Button variant="contained" onClick={saveParentItemChanges} sx={{ mr: 1 }}
+                                >{saveButtonMessage}</Button>
+                        <ReturnButton label="Return" tabIndex={workingTabIndex++} sx={{ mr: 1 }} noContainer />
+                        <Button variant="outlined" onClick={saveParentItemChanges}
+                                sx={{ mr: 1 }}
+                                disabled={!selectedRow || Object.keys(selectedRow).length === 0}>Delete</Button>
                     </Grid>
-                {/*</form>*/}
+                    <br/>
+                    <Grid size="auto">
+                        <Button variant="outlined" sx={{ mr: 1 }} onClick={transitionToMaxLevelReport}>Max Level Report</Button>
+                        <Button variant="outlined" sx={{ mr: 1 }} onClick={transitionToExplosion}>Item Explosion Report</Button>
+                        <Button variant="outlined" sx={{ mr: 1 }} onClick={transitionToBalanceProjection}>Balance Projection</Button>
+                        <Button variant="outlined" sx={{ mr: 1 }} onClick={() => ScreenStack.push(new ScreenTransition("Show Orders for" + queryParameters, OrderMaster, CRUD_ACTION_NONE, queryParameters))}>Show Orders</Button>
+                    </Grid>
+                </Grid>
 
                 <Box sx={{height: 400, width: '100%', mb: 10}}>
                     {ScreenStack.stackTop().activityState === CRUD_ACTION_CHANGE && (
@@ -377,7 +368,7 @@ const ItemProperties = () => {
                                             rows={components}
                                             columns={BomComponentsDto}
                                             handleRowChangeCallback={ComponentsUpdateRowHandler}
-                                            onSelectionChange={(rows) => setSelectedRow( rows[ 0 ] )}
+                                            onSelectionChange={handleSelectionChange}
                                             onCellClick={undefined}
                                             pickListsForSelect={{ childId: itemOptions }}
                             />
