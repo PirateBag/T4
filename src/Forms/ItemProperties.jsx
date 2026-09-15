@@ -142,13 +142,18 @@ const ItemProperties = () => {
         });
     };
 
-    const handleInputChange = (rule) => {
+    const handlePropertiesInputChange = (rule) => {
         return (event) => {
             let value = rule.type === 'checkbox' ? event.target.checked : event.target.value;
             if (rule.type === 'number') {
                 value = value === '' ? undefined : Number(value);
             }
-            setQueryParameters([{...queryParameters, [rule.field]: value}]);
+            if (Array.isArray(queryParameters)) {
+                const current = queryParameters[0] || {};
+                setQueryParameters([{...current, [rule.field]: value}]);
+            } else {
+                setQueryParameters({...queryParameters, [rule.field]: value});
+            }
         }
     }
 
@@ -305,18 +310,13 @@ const ItemProperties = () => {
                     <br/>
 
                     <PropertyGrid label="Create a new item with the following details:"
-                                  objectToPresent={queryParameters}
+                                  objectToPresent={queryParameters[0] || queryParameters}
                                   validationRules={ItemQueryRequestCrudInsertMetadata}
-                                  handleInputChangeCallback={handleInputChange}
-                                  pickListsForSelect={{ childId: itemOptions }} />
-
-                    <Grid size={12} container spacing={2}>
-                        <Grid size="auto">
-                            <Button type="submit" variant="contained" name={itemUpdateUrl} sx={{ mr: 1 }}
-                                    tabIndex={workingTabIndex++}  value={queryParameters.crudAction} >{saveButtonMessage}</Button>
-                            <ReturnButton label="Return" tabIndex={workingTabIndex++} noContainer />
-                        </Grid>
-                    </Grid>
+                                  handleInputChangeCallback={handlePropertiesInputChange}
+                                  pickListsForSelect={{ childId: itemOptions }}
+                                  actionLabel='Save'
+                                  messageFormSetter={setMessage}
+                                  url={itemUpdateUrl}/>
             </div>
         );
     }

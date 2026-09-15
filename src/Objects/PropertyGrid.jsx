@@ -1,17 +1,38 @@
 import React from "react";
 import Grid from "@mui/material/Grid";
 import TextField from "@mui/material/TextField";
-import {Checkbox, FormControlLabel, MenuItem, Typography} from "@mui/material";
+import {Button, Checkbox, FormControlLabel, MenuItem, Typography} from "@mui/material";
+import {validateFieldsOfObject} from "../Metadata/ValidateRule.js";
+import * as HttpUtils from "../HttpUtils.js";
+import ReturnButton from "./ReturnButton.jsx";
 
-export function PropertyGrid({label, objectToPresent, validationRules, handleInputChangeCallback, layout, pickListsForSelect = {}}) {
-    const handleInputChangeDefault = (field) => {
-        return () => {
-            console.error("No handleInputChangeCallback provided to PropertyGrid. Field update ignored for: " + field);
+export function PropertyGrid({label, objectToPresent, validationRules, handleInputChangeCallback, layout, pickListsForSelect = {},
+                             messageFormSetter, url, actionLabel }) {
+
+    const defaultSaveHandler = async (event) => {
+        event.preventDefault();
+        let messagesFromFormValidation = "";
+        messageFormSetter(messagesFromFormValidation);
+
+        if (messagesFromFormValidation.length > 0) return;
+
+        messagesFromFormValidation = validateFieldsOfObject(validationRules, objectToPresent)
+        if (messagesFromFormValidation.length > 0) {
+            messageFormSetter(messagesFromFormValidation);
+            return
         }
-    }
+        const requestMessage = {rows: [objectToPresent]};
+        const response = await HttpUtils.postData({'parameters': requestMessage, 'url': url});
+        console.log('Property Grid Response is ' + response);
 
-    if (handleInputChangeCallback === undefined) {
-        handleInputChangeCallback = handleInputChangeDefault;
+        if ( response.status === 200) {
+            const responseLine = response.data.data[ 0 ];
+            messageFormSetter("Saved " + responseLine.id + " " + responseLine.description + " " +
+                responseLine.unitCost + " " + responseLine.sourcing + " " + responseLine.leadTime
+                + "\nHit return or add another." );
+        } else {
+            messageFormSetter("Error saving with status code " + response.status );
+        }
     }
 
     const direction = layout || 'row';
@@ -19,6 +40,7 @@ export function PropertyGrid({label, objectToPresent, validationRules, handleInp
     if (objectToPresent === undefined) return (
         <div>Loading ...</div>
     )
+
 
     return (
         <div>
@@ -81,6 +103,17 @@ export function PropertyGrid({label, objectToPresent, validationRules, handleInp
                     );
                 })}
             </Grid>
+
+            <br/>
+
+            {actionLabel && (
+                <Grid size={12} container spacing={2}>
+                    <Button variant="contained" onClick={defaultSaveHandler} sx={{width: '240px', display: 'inline-flex'}}>
+                        {actionLabel}
+                    </Button>
+                    <ReturnButton label="Return"  sx={{ mr: 3 }} noContainer />
+                </Grid>
+            )}
         </div>
 
     )

@@ -21,8 +21,8 @@ export const ItemQueryRequestEditableMetadata = [
 export const ItemQueryRequestCrudInsertMetadata = [
     //  ID not even allowed for Insert.
     //  ID_VALIDATION.appendGridFieldOptions( { 'editable': false, hidden: true, whenRequired: REQUIRED_NONE } ),
-    DESCRIPTION_VALIDATION.appendGridFieldOptions({ 'editable': true, whenRequired: REQUIRED_ADD } ),
-    COST_VALIDATION.appendGridFieldOptions({ 'editable': true,'headerName': 'Unit Cost', whenRequired: REQUIRED_ADD } ),
+    DESCRIPTION_VALIDATION.appendGridFieldOptions({ 'editable': true }),
+    COST_VALIDATION.appendGridFieldOptions({ 'editable': true,'headerName': 'Unit Cost' } ),
     SOURCING_VALIDATION.appendGridFieldOptions({ 'editable': true, whenRequired: REQUIRED_ADD } ),
     //  Not allowed for Insert.
     //  MAX_DEPTH_VALIDATION.appendGridFieldOptions({ 'editable': false, whenRequired: REQUIRED_NONE } ),
@@ -30,8 +30,8 @@ export const ItemQueryRequestCrudInsertMetadata = [
     //  On Hand not allowed for Insert.
     //  QUANTITY_VALIDATION.appendGridFieldOptions({ 'editable': false, 'headerName': 'On Hand',whenRequired: REQUIRED_NONE} ),
     CRUD_VALIDATION.appendGridFieldOptions( { 'editable': false, 'hidden': 'true'} )
-
 ];
+
 export const ItemQueryRequestCrudUpdateMetadata = [
     ID_VALIDATION.appendGridFieldOptions( { 'editable': false } ),
     DESCRIPTION_VALIDATION.appendGridFieldOptions({ 'editable': true, } ),
