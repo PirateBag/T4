@@ -218,7 +218,6 @@ const ItemProperties = () => {
             setMessage("Error deleting component: " + error.message);
         }
     }
-
     function transitionToComponentAdd() {
         ScreenStack.push(new ScreenTransition("Add Component for" + queryParameters, BomProperties, CRUD_ACTION_INSERT,
             queryParameters));

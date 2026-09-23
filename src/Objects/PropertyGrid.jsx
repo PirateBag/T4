@@ -5,9 +5,10 @@ import {Button, Checkbox, FormControlLabel, MenuItem, Typography} from "@mui/mat
 import {validateFieldsOfObject} from "../Metadata/ValidateRule.js";
 import * as HttpUtils from "../HttpUtils.js";
 import ReturnButton from "./ReturnButton.jsx";
+import {non200ErrorMessage} from "../lib/extractMessageFromResponse.js";
 
-export function PropertyGrid({label, objectToPresent, validationRules, handleInputChangeCallback, layout, pickListsForSelect = {},
-                             messageFormSetter, url, actionLabel }) {
+export function PropertyGrid({label, objectToPresent, objectSetter, validationRules, handleInputChangeCallback, layout, pickListsForSelect = {},
+                             messageFormSetter, url, actionLabel, objectToStringFormatter }) {
 
     const defaultSaveHandler = async (event) => {
         event.preventDefault();
@@ -27,13 +28,30 @@ export function PropertyGrid({label, objectToPresent, validationRules, handleInp
 
         if ( response.status === 200) {
             const responseLine = response.data.data[ 0 ];
-            messageFormSetter("Saved " + responseLine.id + " " + responseLine.description + " " +
-                responseLine.unitCost + " " + responseLine.sourcing + " " + responseLine.leadTime
-                + "\nHit return or add another." );
+
+            messageFormSetter("Saved " + objectToStringFormatter( responseLine )   + "\nInsert Another or Return." );
         } else {
-            messageFormSetter("Error saving with status code " + response.status );
+            messageFormSetter(non200ErrorMessage( response ) );
         }
     }
+
+
+    const handlePropertiesInputChange = (rule) => {
+        return (event) => {
+            let value = rule.type === 'checkbox' ? event.target.checked : event.target.value;
+            if (rule.type === 'number') {
+                value = value === '' ? undefined : Number(value);
+            }
+            if (Array.isArray( objectToPresent)) {
+                const current = objectToPresent[0] || {};
+                objectSetter([{...current, [rule.field]: value}]);
+            } else {
+                objectSetter({...objectToPresent, [rule.field]: value});
+            }
+        }
+    }
+
+    const handleInputChange = handleInputChangeCallback ?? handlePropertiesInputChange;
 
     const direction = layout || 'row';
 
@@ -59,7 +77,7 @@ export function PropertyGrid({label, objectToPresent, validationRules, handleInp
                                     control={
                                         <Checkbox
                                             checked={!!objectToPresent[col.field]}
-                                            onChange={handleInputChangeCallback(col)}
+                                            onChange={handleInputChange(col)}
                                             name={col.domainName}
                                             disabled={col.editable === false || col.disabled === true}
                                         />
@@ -76,7 +94,7 @@ export function PropertyGrid({label, objectToPresent, validationRules, handleInp
                                     label={col.headerName}
                                     placeholder={col.headerName}
                                     value={objectToPresent[col.field] ?? ''}
-                                    onChange={handleInputChangeCallback(col)}
+                                    onChange={handleInputChange(col)}
                                     disabled={col.disabled === true}
                                     select={isSelect}
                                     fullWidth
