@@ -1,10 +1,10 @@
 import {ScreenTransition} from "./ScreenTransition.js";
-import Login from "./Forms/Login.jsx";
 import {CRUD_ACTION_NONE} from "./enums/crudAction.js";
+import Login2 from "./Forms/Login2.jsx";
 
 export class Stack {
     constructor() {
-        this.items = [ new ScreenTransition( "Login", Login, CRUD_ACTION_NONE, [] ) ];
+        this.items = [ new ScreenTransition( "Login", Login2, CRUD_ACTION_NONE, [] ) ];
         this.onStackChangeCallback = null;
     }
 

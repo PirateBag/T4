@@ -11,7 +11,8 @@ export const ApplicationName = "INMAN T4";
 /** Constants for creating requests and their URLs.  */
 
 /*  Login  */
-export const VerifyCredentialsUrl = 'http://localhost:8080/verifyCredentials';
+export const VerifyCredentialsUrlV1 = 'http://localhost:8080/verifyCredentials';
+export const VerifyCredentialsUrlV2 = 'http://localhost:8080/credentials';
 
 
 /*  Item related.  */
@@ -35,8 +36,6 @@ export const modernRequestPayloadTemplate =  '{ "rows" : [ ${rowWithQuery} ] }';
 //  Uses GenericSingleIdDto
 export const itemPickAll = 'itemPick/all';
 export const itemPickForBom = 'itemPick/itemsForBom';
-export const pickListRequestTemplate = '{ ${rowWithQuery} }';
-export const pickListUpdateUrl = 'http://localhost:8080/itemPick/crud';
 export const genericSingleRequest = { "idToSearchFor" : "1" };
 export const maxLevelUrl = 'http://localhost:8080/itemReport/calculateMaxDepth'
 export const planAllUrl = 'http://localhost:8080/ap/basic';

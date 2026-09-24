@@ -1,27 +1,23 @@
 import React, {useEffect, useState} from 'react';
 import ErrorMessage from "../ErrorMessage.jsx";
-import FormService from "../FormService.js";
 import {Typography} from '@mui/material';
 import { CRUD_ACTION_INSERT} from "../enums/crudAction.js";
 import {ScreenStack} from "../Stack.js";
 import {
     bomCrudUrl,
-    itemPickAll,
-    pickListRequestTemplate,
+    itemPickAll
 } from "../Globals.js";
 import {BomComponentsDto} from "./BomPropertiesConfig.js";
 import {extractMessageFromResponse} from "../FormQueryPanel.js";
 import {PropertyGrid} from "../Objects/PropertyGrid.jsx";
 import * as objectToString from "../lib/ObjectToString.js";
+import * as HttpUtils from "../HttpUtils.js";
 
 const BomProperties = () => {
 
     const [message, setMessage] = useState("");
     const [queryParameters, setQueryParameters] = useState();
-    const[ childSelections, setChildSelections] = useState([         {value: '0', label: 'None'},
-        {value: '9', label: 'Nut'},
-        {value: '10', label: '8 In Wheel'},
-        {value: '11', label: 'Front Wheel Bracket'},])
+    const[ childSelections, setChildSelections] = useState([ ] );
 
     const afterItemPickCallback = (response) => {
         console.log("afterItemPickCallback received:", response.status);
@@ -39,21 +35,10 @@ const BomProperties = () => {
         }
     }
 
-
-    const ItemPickListFormService = new FormService({
-            messageFormSetter: setMessage,
-            messagesFromForm: message,
-            afterPostCallback: afterItemPickCallback,
-            requestTemplate: pickListRequestTemplate,
-            validationRules: BomComponentsDto
-        }
-    );
-
-
     const screenTitle = () => {
         return (
-            <i>Create a new component of {ScreenStack.stackTop().data.description }</i>
-        )
+            'Insert a new component of ' + objectToString.itemIdDescription( ScreenStack.stackTop().data[0] )
+        );
     }
 
     // Consolidate data initialization into a single useEffect
@@ -61,7 +46,8 @@ const BomProperties = () => {
 
         async function loadItemPickList() {
             const GenericRequest = {idToSearchFor: ScreenStack.stackTop().data.id};
-            await ItemPickListFormService.postData(GenericRequest, 'http://localhost:8080/' + itemPickAll);
+            const itemPickListResponse = await HttpUtils.postData( {parameters: GenericRequest, url: 'http://localhost:8080/' + itemPickAll});
+            afterItemPickCallback( itemPickListResponse );
 
         }
         const initializeData =  () => {
@@ -87,6 +73,7 @@ const BomProperties = () => {
 
         initializeData();
         loadItemPickList()
+
     }, []); // Runs once on mount
 
     if (queryParameters === undefined) return (<div>Loading ...</div>)
@@ -97,12 +84,8 @@ const BomProperties = () => {
                 <ErrorMessage message={message}/>
                 <br/>
 
-                <Typography variant="h5" gutterBottom sx={{ml: 2, mt: 2}} align={"center"}>
-                    {screenTitle()}
-                </Typography>
-
                 <PropertyGrid
-                    label='Add a component'
+                    label={screenTitle()}
                     objectToPresent={queryParameters}
                     objectSetter={setQueryParameters}
                     validationRules={BomComponentsDto}

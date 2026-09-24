@@ -39,18 +39,6 @@ class FormQueryPanel {
         }
     }
 
-    handleBlurOnTextField(event, validationRule) {
-        const valueToValidate = event.target.value.trim();
-        if (validationRule.required && valueToValidate === '') {
-            this.messageFormSetter("${validationRule.field} is a required field.");
-            return;
-        }
-        const message = validationRule.validate(valueToValidate);
-        this.messageFormSetter(message);
-    }
-
-
-
     handleSubmit = async (event) => {
         event.preventDefault();
 

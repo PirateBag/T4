@@ -8,7 +8,7 @@ import ReturnButton from "./ReturnButton.jsx";
 import {non200ErrorMessage} from "../lib/extractMessageFromResponse.js";
 
 export function PropertyGrid({label, objectToPresent, objectSetter, validationRules, handleInputChangeCallback, layout, pickListsForSelect = {},
-                             messageFormSetter, url, actionLabel, objectToStringFormatter }) {
+                             messageFormSetter, url, actionLabel, objectToStringFormatter, postResponseSaveHandler }) {
 
     const defaultSaveHandler = async (event) => {
         event.preventDefault();
@@ -27,9 +27,17 @@ export function PropertyGrid({label, objectToPresent, objectSetter, validationRu
         console.log('Property Grid Response is ' + response);
 
         if ( response.status === 200) {
-            const responseLine = response.data.data[ 0 ];
-
-            messageFormSetter("Saved " + objectToStringFormatter( responseLine )   + "\nInsert Another or Return." );
+            //  Backward compatibility for old verifyCredentialsUrlV1
+            let responseLine = null;
+            if (!Array.isArray(response.data) && typeof response.data === 'object' && response.data !== null && 'userName' in response.data && 'token' in response.data && 'status' in response.data) {
+                responseLine = response.data;
+            } else {
+                responseLine = response.data.data[ 0 ];
+            }
+            messageFormSetter( (objectToPresent.crudAction ?? "") + objectToStringFormatter( responseLine ) );
+            if (postResponseSaveHandler !== undefined) {
+                postResponseSaveHandler(response);
+            }
         } else {
             messageFormSetter(non200ErrorMessage( response ) );
         }
