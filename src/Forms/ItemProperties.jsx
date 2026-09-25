@@ -235,7 +235,7 @@ const ItemProperties = () => {
                     id: row.id || (index + 1)
                 }));
 
-                let nextScreen = new ScreenTransition("Max Level Report", ItemExplosion, CRUD_ACTION_NONE, rowsWithIds);
+                let nextScreen = new ScreenTransition("Max Level Report", GenericText, CRUD_ACTION_NONE, rowsWithIds);
                 ScreenStack.push(nextScreen);
             } else {
                 setMessage("Failed to fetch Max Level report data.");
@@ -248,7 +248,7 @@ const ItemProperties = () => {
 
 
     async function transitionToExplosion() {
-        const parametersForExplosionRequest = { "parentId" : queryParameters.id, "childId" : 0  };
+        const parametersForExplosionRequest = { "parentId" : queryParameters[0].id  };
         const response = await postData({ parameters: parametersForExplosionRequest, url: itemExplosionReportUrl });
 
         if (response && response.data && response.data.data) {
@@ -265,7 +265,8 @@ const ItemProperties = () => {
     }
 
     async function transitionToBalanceProjection() {
-        const balanceLogs =  await Promise.all(  [postData( {'parameters' : {...genericSingleRequest, idToSearchFor: queryParameters.id}
+        const balanceLogs =  await Promise.all(
+            [postData( {'parameters' : {...genericSingleRequest }
             , 'url' : balanceProjectionUrl}) ] );
         const dataAfterResponseFluff = balanceLogs[0].data?.data || [];
         let nextScreen = new ScreenTransition("balance projection", GenericText, CRUD_ACTION_NONE, dataAfterResponseFluff);

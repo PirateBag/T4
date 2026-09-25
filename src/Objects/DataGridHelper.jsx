@@ -10,17 +10,17 @@ export function DataGridHelper({
     columns,
     handleRowChangeCallback,
     setRows,
-    rowsSetter,
     sx,
     initialState,
     onSelectionChange,
     onProcessError,
     pickListsForSelect = {}, // New optional parameter
     autoHeight = false,
+    autoPageSize = false,
     hideFooter = false
 }) {
 
-    const effectiveSetRows = setRows || rowsSetter;
+
 
     const safeRows = React.useMemo(() => rows || [], [rows]);
     const safeColumns = React.useMemo(() =>
@@ -80,7 +80,7 @@ export function DataGridHelper({
     }, [hasLineNo, safeColumns]);
 
     const defaultHandleRowChange = (newRow, oldRow) => {
-        if (!effectiveSetRows) {
+        if (!setRows) {
             throw new Error("DataGridHelper: defaultHandleRowChange requires a rows setter function (e.g. setRows) when no custom handleRowChangeCallback is provided.");
         }
 
@@ -106,8 +106,8 @@ export function DataGridHelper({
 
         updatedRow.crudAction = CRUD_ACTION_CHANGE;
 
-        if (typeof effectiveSetRows === 'function') {
-            effectiveSetRows(prevRows => {
+        if (typeof setRows === 'function') {
+            setRows(prevRows => {
                 if (Array.isArray(prevRows)) {
                     const targetId = getRowIdentifier(updatedRow);
                     if (targetId !== undefined) {
@@ -153,8 +153,8 @@ export function DataGridHelper({
 
             if (handleRowChangeCallback) {
                 handleRowChangeCallback(updatedRow, params.row);
-            } else if (effectiveSetRows && typeof effectiveSetRows === 'function') {
-                effectiveSetRows(prevRows => {
+            } else if (setRows && typeof setRows === 'function') {
+                setRows(prevRows => {
                     if (Array.isArray(prevRows)) {
                         const targetId = getRowIdentifier(updatedRow);
                         if (targetId !== undefined) {
@@ -175,7 +175,8 @@ export function DataGridHelper({
     const gridProps = {
         columns: safeColumns,
         rows: safeRows,
-        autoHeight,
+        autoHeight: autoPageSize ? false : autoHeight,
+        autoPageSize,
         density: "compact",
         rowSelection: false, // Disable standard MUI selection; handled manually in onCellClick
         getRowId: (row) => {

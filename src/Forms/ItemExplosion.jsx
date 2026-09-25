@@ -2,7 +2,7 @@ import React from 'react';
 import {Box, Typography} from '@mui/material';
 import DataGridHelper from "../Objects/DataGridHelper.jsx";
 import ReturnButton from "../Objects/ReturnButton.jsx";
-import {textReportConfig} from "./ItemMasterConfig.js";
+import {textReportConfig} from "./GenericText.js";
 import {ScreenStack} from "../Stack.js";
 
 export const ItemExplosion = () => {
