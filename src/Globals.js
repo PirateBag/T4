@@ -11,11 +11,8 @@ export const ApplicationName = "INMAN T4";
 /** Constants for creating requests and their URLs.  */
 
 /*  Login  */
-export const VerifyCredentialsUrlV1 = 'http://localhost:8080/verifyCredentials';
 export const VerifyCredentialsUrlV2 = 'http://localhost:8080/credentials';
 
-
-/*  Item related.  */
 export const itemQueryUrl = 'http://localhost:8080/item/crudQuery'
 export const itemUpdateUrl = 'http://localhost:8080/item/crud'
 export const itemMasterReportUrl = 'http://localhost:8080/itemReport/showAllItems'
@@ -37,7 +34,6 @@ export const modernRequestPayloadTemplate =  '{ "rows" : [ ${rowWithQuery} ] }';
 export const itemPickAll = 'itemPick/all';
 export const itemPickForBom = 'itemPick/itemsForBom';
 export const genericSingleRequest = { "idToSearchFor" : "1" };
-export const maxLevelUrl = 'http://localhost:8080/itemReport/calculateMaxDepth'
 export const planAllUrl = 'http://localhost:8080/ap/basic';
 export const balanceProjectionUrl = 'http://localhost:8080/ap/inventoryBalanceProjection';
 export const clearOrdersUrl = 'http://localhost:8080/clearAllData';

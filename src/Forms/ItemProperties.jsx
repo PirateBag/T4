@@ -9,11 +9,8 @@ import {
     bomComponents,
     bomCrudUrl,
     bomWhereUsed,
-    itemExplosionReportUrl,
-    itemMaxLevelReportUrl,
     ItemQueryParameterConfig,
-    itemUpdateUrl, olderEmptyQueryConstant,
-    genericSingleRequest, balanceProjectionUrl} from "../Globals.js";
+    itemUpdateUrl} from "../Globals.js";
 import {
     BomComponentsDto,
     BomDtoToString,
@@ -31,12 +28,13 @@ import {PropertyGrid} from "../Objects/PropertyGrid.jsx";
 import {
     ItemQueryRequestCrudInsertMetadata
 } from "./ItemQueryConfig.js";
-import {ItemExplosion} from "./ItemExplosion.jsx";
 import OrderMaster from "./OrderMaster.jsx";
 import {postData} from "../HttpUtils.js";
-import GenericText from "./GenericText.jsx";
 import {saveCrudObjects} from "../lib/masterSaveChanges.js";
 import {isShallowEqual} from "../lib/isShallowEqual.js";
+import {MaxLevelButton} from "../Objects/MaxLevelButton.jsx";
+import {ItemExplosionButton} from "../Objects/ItemExplosionButton.jsx";
+import {BalanceProjectionButton} from "../Objects/BalanceProjectionButton.jsx";
 
 const ItemProperties = () => {
 
@@ -224,54 +222,6 @@ const ItemProperties = () => {
         setSelectedRow( undefined );
     }
 
-    async function transitionToMaxLevelReport() {
-        try {
-            const response = await postData({ parameters: olderEmptyQueryConstant, url: itemMaxLevelReportUrl });
-
-            if (response && response.data && response.data.data) {
-                const data = response.data.data;
-                const rowsWithIds = data.map((row, index) => ({
-                    ...row,
-                    id: row.id || (index + 1)
-                }));
-
-                let nextScreen = new ScreenTransition("Max Level Report", GenericText, CRUD_ACTION_NONE, rowsWithIds);
-                ScreenStack.push(nextScreen);
-            } else {
-                setMessage("Failed to fetch Max Level report data.");
-            }
-        } catch (error) {
-            console.error("Error fetching Max Level report:", error);
-            setMessage("Error loading Max Level report.");
-        }
-    }
-
-
-    async function transitionToExplosion() {
-        const parametersForExplosionRequest = { "parentId" : queryParameters[0].id  };
-        const response = await postData({ parameters: parametersForExplosionRequest, url: itemExplosionReportUrl });
-
-        if (response && response.data && response.data.data) {
-            const data = response.data.data;
-            const rowsWithIds = data.map((row, index) => ({
-                ...row,
-                id: row.id || (index + 1)
-            }));
-            let nextScreen = new ScreenTransition("ItemExplosion Master Report", ItemExplosion, CRUD_ACTION_NONE, rowsWithIds);
-            ScreenStack.push(nextScreen);
-        } else {
-            setMessage("Failed to fetch explosion report data.");
-        }
-    }
-
-    async function transitionToBalanceProjection() {
-        const balanceLogs =  await Promise.all(
-            [postData( {'parameters' : {...genericSingleRequest }
-            , 'url' : balanceProjectionUrl}) ] );
-        const dataAfterResponseFluff = balanceLogs[0].data?.data || [];
-        let nextScreen = new ScreenTransition("balance projection", GenericText, CRUD_ACTION_NONE, dataAfterResponseFluff);
-        ScreenStack.push(nextScreen);
-    }
 
     async function saveParentItemChanges() {
         if (selectedRow) {
@@ -319,14 +269,16 @@ const ItemProperties = () => {
                                   url={itemUpdateUrl}/>
             </div>
         );
+
+
     }
     function renderUpdateOrDeleteForm() {
+        // if ( selectedRow?.id === undefined) return "";
         return (
             <div>
                 <br/>
                     <ErrorMessage message={message}/>
                 <br/>
-
 
                 <DataGridHelper
                     label={queryParameters[0].description }
@@ -341,7 +293,6 @@ const ItemProperties = () => {
                 />
 
 
-
                 <Grid size={12} container spacing={2}>
                     <Grid size="auto">
                         <Button variant="contained" onClick={saveParentItemChanges} sx={{ mr: 1 }}
@@ -353,9 +304,9 @@ const ItemProperties = () => {
                     </Grid>
                     <br/>
                     <Grid size="auto">
-                        <Button variant="outlined" sx={{ mr: 1 }} onClick={transitionToMaxLevelReport}>Max Level Report</Button>
-                        <Button variant="outlined" sx={{ mr: 1 }} onClick={transitionToExplosion}>Item Explosion Report</Button>
-                        <Button variant="outlined" sx={{ mr: 1 }} onClick={transitionToBalanceProjection}>Balance Projection</Button>
+                        <MaxLevelButton messageSetter={setMessage}/>
+                        <ItemExplosionButton parentItemId={0} messageSetter={setMessage}/>
+                        <BalanceProjectionButton />
                         <Button variant="outlined" sx={{ mr: 1 }} onClick={() => ScreenStack.push(new ScreenTransition("Show Orders for" + queryParameters, OrderMaster, CRUD_ACTION_NONE, queryParameters))}>Show Orders</Button>
                     </Grid>
                 </Grid>
