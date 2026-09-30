@@ -17,7 +17,10 @@ export function DataGridHelper({
     pickListsForSelect = {}, // New optional parameter
     autoHeight = false,
     autoPageSize = false,
-    hideFooter = false
+    hideFooter = false,
+    showCellVerticalBorder = false,
+    showColumnVerticalBorder = false,
+    ...rest
 }) {
 
 
@@ -35,6 +38,10 @@ export function DataGridHelper({
                     // Look up the picklist by field name; default to empty array if not found
                     valueOptions: pickListsForSelect[newCol.field] || [],
                 };
+
+                if ( newCol.valueOptions.length == 0 ) {
+                    console.log(`No picklist options found for field: ${newCol.field}`);
+                }
             }
 
             if (newCol.type === 'checkbox') {
@@ -129,7 +136,7 @@ export function DataGridHelper({
 
     const handleInternalCellClick = ( params ) => {
         console.log('DataGridHelper:handleInternalCellClick:', params);
-        if (params.field === safeColumns[0]?.field && onSelectionChange) {
+        if (onSelectionChange) {
             onSelectionChange([params.row]);
         }
 
@@ -178,6 +185,8 @@ export function DataGridHelper({
         autoHeight: autoPageSize ? false : autoHeight,
         autoPageSize,
         density: "compact",
+        showCellVerticalBorder,
+        showColumnVerticalBorder,
         rowSelection: false, // Disable standard MUI selection; handled manually in onCellClick
         getRowId: (row) => {
             if (hasLineNo && row.lineNo != null) {
@@ -216,7 +225,8 @@ export function DataGridHelper({
             noRowsOverlay: {
                 sx: { display: 'none' }
             }
-        }
+        },
+        ...rest
     };
 
     return (

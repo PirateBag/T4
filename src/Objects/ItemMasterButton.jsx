@@ -16,7 +16,7 @@ export function ItemMasterButton( parameters, messageSetter ) {
         });
 
         if (response.status === 200) {
-            const nextScreen = new ScreenTransition("Item Master Report", GenericText, CRUD_ACTION_NONE, response.data.data);
+            const nextScreen = new ScreenTransition("Item Master", GenericText, CRUD_ACTION_NONE, response.data.data);
             ScreenStack.push(nextScreen);
         } else {
             messageSetter("Error retrieving with response " + response.status);

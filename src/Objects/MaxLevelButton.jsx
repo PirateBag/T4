@@ -29,6 +29,6 @@ export function MaxLevelButton( messageSetter ) {
         }
     }
     return (
-        <Button variant="outlined" sx={{mr: 1}} onClick={buttonHandler}>Calculate Max Level</Button>
+        <Button variant="outlined" sx={{mr: 1}} onClick={buttonHandler}>Calc Max Level</Button>
     );
 }

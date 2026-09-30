@@ -30,23 +30,6 @@ const ItemQuery = () => {
     const [message, setMessage] = useState("");
     const [rowsOfQueryResults, setRowsOfQueryResults] = useState([]);
 
-    // async function ItemQueryRowChange(newValue, oldValue) {
-    //     if (isShallowEqual(newValue, oldValue)) {
-    //         console.log("Row " + oldValue.id + " unchanged, skipping update");
-    //         return;
-    //     }
-    //     newValue.crudAction = newValue.crudAction === CRUD_ACTION_INSERT ? CRUD_ACTION_INSERT : CRUD_ACTION_CHANGE;
-    //     const updatedRow = {...newValue};
-    //
-    //     const objectToBeTransmitted = {rows: [updatedRow]};
-    //     await postData({"parameters": objectToBeTransmitted, "url": itemUpdateUrl})
-    //     // Clear focus from the cell after successful update
-    //     setTimeout(() => {
-    //         apiRef.current.setCellFocus(0, '');
-    //     }, 0);
-    //     return updatedRow
-    // }
-
     function transitionToAdjustment() {
         let nextScreen = new ScreenTransition("Adjustment Report", Adjustment, CRUD_ACTION_NONE, []);
         ScreenStack.push(nextScreen);
@@ -84,6 +67,8 @@ const ItemQuery = () => {
                 columns={ItemQueryRequestEditableMetadata}
                 label="Item Query Parameters"
 
+                handleAdd={enableButton}
+                handleDelete={enableButton}
                 handleClear={enableButton}
                 handleReturn={enableButton}
             />

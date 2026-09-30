@@ -27,6 +27,6 @@ export function ItemExplosionButton( parentItemId, messageSetter ) {
     }
 
     return (
-        <Button variant="outlined" sx={{mr: 1}} onClick={buttonHandler}>Item Explosion Report</Button>
+        <Button variant="outlined" sx={{mr: 1}} onClick={buttonHandler}>Item Explosion</Button>
     );
 }

@@ -20,6 +20,6 @@ export function BalanceProjectionButton(  ) {
 
 
     return (
-        <Button variant="outlined" sx={{mr: 1}} onClick={transitionToBalanceProjection}>Balance Projection Report</Button>
+        <Button variant="outlined" sx={{mr: 1}} onClick={transitionToBalanceProjection}>Balance Projection</Button>
     );
 }
