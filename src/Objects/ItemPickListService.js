@@ -1,14 +1,14 @@
-import * as HttpUtils from "../HttpUtils.js";
-import {itemPickAllUrl} from "../Globals.js";
+import {itemPickAllUrl, orderLineItemQueryUrl} from "../Globals.js";
+import {postData} from "../HttpUtils.js";
 
 export async function loadItemPickListAll({responseSetter, errorMessageSetter} = {}) {
-    const [response] = await Promise.all([
-        HttpUtils.postData({
-            parameters: {'idToSearchFor': 0},
-            url: 'http://localhost:8080/' + itemPickAllUrl
-        })
-    ]);
-    console.log(itemPickAllUrl + "received:", response?.status);
+
+    const objectToBeTransmitted = {'idToSearchFor': 0};
+    const allQueryResultsButShouldOnlyBeOne =
+        await Promise.all(  [postData( {'parameters' : objectToBeTransmitted, 'url' : itemPickAllUrl}) ] );
+    const response = allQueryResultsButShouldOnlyBeOne[0].data?.data || [];
+
+    console.log(itemPickAllUrl + " received:", response?.status);
     if (response && response.status === 200) {
         console.log(itemPickAllUrl + "retrieved " + (response.data?.data?.length ?? 0) + " rows");
         if (typeof responseSetter === 'function') {
