@@ -3,8 +3,7 @@ import ErrorMessage from "../ErrorMessage.jsx";
 import { CRUD_ACTION_INSERT} from "../enums/crudAction.js";
 import {ScreenStack} from "../Stack.js";
 import {
-    bomCrudUrl,
-    itemPickAll
+    bomCrudUrl,  itemPickAllUrl
 } from "../Globals.js";
 import {BomComponentsDto} from "./BomPropertiesConfig.js";
 import {extractMessageFromResponse} from "../FormQueryPanel.js";
@@ -45,7 +44,7 @@ const BomProperties = () => {
 
         async function loadItemPickList() {
             const GenericRequest = {idToSearchFor: ScreenStack.stackTop().data.id};
-            const itemPickListResponse = await HttpUtils.postData( {parameters: GenericRequest, url: 'http://localhost:8080/' + itemPickAll});
+            const itemPickListResponse = await HttpUtils.postData( {parameters: GenericRequest, url: 'http://localhost:8080/' + itemPickAllUrl});
             afterItemPickCallback( itemPickListResponse );
 
         }

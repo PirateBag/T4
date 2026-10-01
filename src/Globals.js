@@ -31,7 +31,7 @@ export const modernRequestPayloadTemplate =  '{ "rows" : [ ${rowWithQuery} ] }';
 
 
 //  Uses GenericSingleIdDto
-export const itemPickAll = 'itemPick/all';
+export const itemPickAllUrl = 'itemPick/all';
 export const itemPickForBom = 'itemPick/itemsForBom';
 export const genericSingleRequest = { "idToSearchFor" : "1" };
 export const planAllUrl = 'http://localhost:8080/ap/basic';

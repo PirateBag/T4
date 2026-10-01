@@ -119,6 +119,20 @@ const OrderMaster = () => {
         setOrderParentQueryResults(prev => [newOrder, ...prev]);
     };
 
+    const deleteOrder = async () => {
+        if (!selectedParentOrder) return;
+
+        const updatedOrders = orderParentQueryResults.map(row =>
+            row.id === selectedParentOrder.id ? { ...row, crudAction: CRUD_ACTION_DELETE } : row
+        );
+        console.log( "Identified order for deletion:", selectedParentOrder);
+        const response = await masterSaveChanges(updatedOrders, setMessage, setOrderParentQueryResults);
+        if (response && response.status === 200) {
+            setSelectedParentOrder(null);
+            setOrderComponentQueryResults([]);
+        }
+    };
+
     const addComponent = () => {
         if (!selectedParentOrder) return;
 
@@ -318,7 +332,9 @@ const OrderMaster = () => {
 
                 <Grid container sx={{mt: 1}}>
                     <Grid container sx={{mt: 2}} size={{xs: 12}}>
+                        <Button variant="outlined" sx={{ mr: 1 }} onClick={addOrder}>Add New</Button>
                         <Button variant="outlined" sx={{ mr: 1 }} onClick={saveChildThenParentResults}>Save Changes</Button>
+                        <Button variant="outlined" sx={{ mr: 1 }} onClick={deleteOrder} disabled={!selectedParentOrder}>Delete</Button>
                     </Grid>
                 </Grid>
 
