@@ -76,7 +76,7 @@ export function DataGridHelper({
         }), [columns, pickListsForSelect]);
 
     const hasLineNo = React.useMemo(() => safeColumns.some(col => col.field === 'lineNo'), [safeColumns]);
-    const shouldHideFooter = hideFooter || hasLineNo;
+    const shouldHideFooter = hideFooter;
 
     const getRowIdentifier = React.useCallback((row) => {
         if (!row) return undefined;

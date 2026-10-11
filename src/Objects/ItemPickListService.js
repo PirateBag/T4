@@ -1,4 +1,4 @@
-import {itemPickAllUrl, orderLineItemQueryUrl} from "../Globals.js";
+import {itemPickAllUrl} from "../Globals.js";
 import {postData} from "../HttpUtils.js";
 
 export async function loadItemPickListAll({responseSetter, errorMessageSetter} = {}) {
@@ -6,23 +6,25 @@ export async function loadItemPickListAll({responseSetter, errorMessageSetter} =
     const objectToBeTransmitted = {'idToSearchFor': 0};
     const allQueryResultsButShouldOnlyBeOne =
         await Promise.all(  [postData( {'parameters' : objectToBeTransmitted, 'url' : itemPickAllUrl}) ] );
-    const response = allQueryResultsButShouldOnlyBeOne[0].data?.data || [];
+    const response = allQueryResultsButShouldOnlyBeOne[0].data?.data;
+    const errorResponse = allQueryResultsButShouldOnlyBeOne;
+    if ( Array.isArray( response ) ){
+        console.log(itemPickAllUrl + "retrieved " + response.length + " rows");
 
-    console.log(itemPickAllUrl + " received:", response?.status);
-    if (response && response.status === 200) {
-        console.log(itemPickAllUrl + "retrieved " + (response.data?.data?.length ?? 0) + " rows");
         if (typeof responseSetter === 'function') {
-            responseSetter(response.data?.data);
+            responseSetter( response );
         }
-        return response.data?.data;
+        return 'Provide response Setter';
     } else {
-        const status = response?.status;
-        console.log(itemPickAllUrl + "error " + status);
+        const errorResponse = allQueryResultsButShouldOnlyBeOne;
+
+        const status = errorResponse?.status;
+        console.log(itemPickAllUrl + " request failed " + errorResponse);
         if (typeof errorMessageSetter === 'function') {
-            errorMessageSetter(itemPickAllUrl + "request returned " + status);
+            errorMessageSetter(itemPickAllUrl + " request failed  " + status);
         }
     }
-    return response?.data?.data;
+    return errorResponse
 }
 
 export { loadItemPickListAll as loadItemPickList };

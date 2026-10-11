@@ -108,6 +108,7 @@ const SearchParametersForm = ({
                                 columns={columns}
                                 rows={queryParameters}
                                 autoHeight={true}
+                                hideFooter={true}
                                 handleRowChangeCallback={handleRowChange}
                                 onSelectionChange={setSelectedQueryRows}
                                 showCellVerticalBorder={true}
