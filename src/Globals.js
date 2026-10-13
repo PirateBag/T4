@@ -38,6 +38,7 @@ export const planAllUrl = 'http://localhost:8080/ap/basic';
 export const balanceProjectionUrl = 'http://localhost:8080/ap/inventoryBalanceProjection';
 export const clearOrdersUrl = 'http://localhost:8080/clearAllData';
 export const adjustmentQueryUrl = 'http://localhost:8080/adjustment/query';
+export const adjustmentCrudUrl = 'http://localhost:8080/adjustment/crud';
 
 export const ItemQueryParameterConfig = [
     ID_VALIDATION.appendGridFieldOptions( { 'editable': false } ),

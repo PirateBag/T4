@@ -1,8 +1,9 @@
 
 import {DataGrid } from "@mui/x-data-grid";
-import {Typography, Checkbox} from "@mui/material";
+import {Typography, Checkbox, Button} from "@mui/material";
 import React from "react";
-import {CRUD_ACTION_CHANGE, CRUD_ACTION_DELETE, CRUD_ACTION_INSERT, CRUD_ACTION_NONE} from "../enums/crudAction.js";
+import {CRUD_ACTION_CHANGE, CRUD_ACTION_DELETE, CRUD_ACTION_NONE} from "../enums/crudAction.js";
+import {postData} from "../HttpUtils.js";
 
 export function DataGridHelper({
     label,
@@ -20,6 +21,7 @@ export function DataGridHelper({
     hideFooter = false,
     showCellVerticalBorder = false,
     showColumnVerticalBorder = false,
+    submitButton = undefined,
     ...rest
 }) {
 
@@ -39,7 +41,7 @@ export function DataGridHelper({
                     valueOptions: pickListsForSelect[newCol.field] || [],
                 };
 
-                if ( newCol.valueOptions.length == 0 ) {
+                if ( newCol.valueOptions.length === 0 ) {
                     console.log(`No picklist options found for field: ${newCol.field}`);
                 }
             }
@@ -77,6 +79,26 @@ export function DataGridHelper({
 
     const hasLineNo = React.useMemo(() => safeColumns.some(col => col.field === 'lineNo'), [safeColumns]);
     const shouldHideFooter = hideFooter;
+
+    const handleSubmit = async (event) => {
+        if (event) event.preventDefault();
+        if ( setRows ) setRows([]);
+        try {
+            const response = await postData({
+                parameters: { 'rows': rows },
+                url: submitButton.url
+            });
+            if (response.status === 200) {
+                if ( submitButton.setMessage) submitButton.setMessage("Success, retrieved " + (response.data?.data?.length || 0) + " rows");
+                if ( setRows) setRows(response.data?.data || []);
+            } else {
+                if ( submitButton.setMessage) submitButton.setMessage("Error retrieving with response " + response.status);
+            }
+        } catch (error) {
+            if (submitButton?.setMessage) submitButton.setMessage("Error: " + error.message);
+        }
+    };
+
 
     const getRowIdentifier = React.useCallback((row) => {
         if (!row) return undefined;
@@ -229,6 +251,8 @@ export function DataGridHelper({
         ...rest
     };
 
+    console.log("submitButton: ", submitButton);
+
     return (
         <div>
             {label && (
@@ -238,7 +262,17 @@ export function DataGridHelper({
             )}
 
             <DataGrid {...gridProps} />
-        </div>
+            { submitButton && (
+                <Button 
+                    variant="contained" 
+                    type="button" 
+                    onClick={handleSubmit} 
+                    sx={{ mt: 1, mr: 1 }}
+                >
+                    {submitButton.label}
+                </Button>
+            )}
+            </div>
     );
 }
 
