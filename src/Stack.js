@@ -6,6 +6,7 @@ export class Stack {
     constructor() {
         this.items = [ new ScreenTransition( "Login", Login2, CRUD_ACTION_NONE, [] ) ];
         this.onStackChangeCallback = null;
+        this.isHandlingPopState = false;
     }
 
     // Set callback to be invoked when the stack changes
@@ -13,15 +14,40 @@ export class Stack {
         this.onStackChangeCallback = callback;
     }
 
+    pushStateToHistory(item) {
+        if (typeof window !== 'undefined' && window.history && typeof window.history.pushState === 'function') {
+            window.history.pushState({ stackIndex: this.items.length - 1 }, item.label);
+        }
+    }
+
     // Method to add an item to the stack
     push(item) {
         this.items.push(item);
-        this.onStackChangeCallback(this.items.length );
+        this.pushStateToHistory(item);
+        if (this.onStackChangeCallback) {
+            this.onStackChangeCallback(this.items.length);
+        }
+    }
+
+    popInternal() {
+        if (this.items.length <= 1) {
+            return;
+        }
+        this.items.pop();
+        if (this.onStackChangeCallback) {
+            this.onStackChangeCallback(this.items.length);
+        }
     }
 
     pop() {
-        this.items.pop();
-        this.onStackChangeCallback(this.items.length );
+        if (this.items.length <= 1) {
+            return;
+        }
+        if (typeof window !== 'undefined' && window.history && typeof window.history.back === 'function') {
+            window.history.back();
+        } else {
+            this.popInternal();
+        }
     }
 
     stackTop() {

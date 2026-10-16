@@ -13,9 +13,31 @@ function App() {
 
     // Set up the callback when a component mounts
     useEffect(() => {
+        if (typeof window !== 'undefined' && window.history && typeof window.history.replaceState === 'function') {
+            window.history.replaceState({ stackIndex: 0 }, 'Initial');
+        }
+
         ScreenStack.setOnStackChange((length ) => {
             setStackLength(length);
         });
+
+        const handlePopState = () => {
+            ScreenStack.isHandlingPopState = true;
+            if (ScreenStack.length() > 1) {
+                ScreenStack.popInternal();
+            }
+            ScreenStack.isHandlingPopState = false;
+        };
+
+        if (typeof window !== 'undefined' && typeof window.addEventListener === 'function') {
+            window.addEventListener('popstate', handlePopState);
+        }
+
+        return () => {
+            if (typeof window !== 'undefined' && typeof window.removeEventListener === 'function') {
+                window.removeEventListener('popstate', handlePopState);
+            }
+        };
     }, []);
 
 
