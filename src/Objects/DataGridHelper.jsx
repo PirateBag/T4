@@ -1,6 +1,6 @@
 
 import {DataGrid } from "@mui/x-data-grid";
-import {Typography, Checkbox, Button} from "@mui/material";
+import {Typography, Checkbox, Button, Box} from "@mui/material";
 import React from "react";
 import {CRUD_ACTION_CHANGE, CRUD_ACTION_DELETE, CRUD_ACTION_NONE} from "../enums/crudAction.js";
 import {postData} from "../HttpUtils.js";
@@ -22,6 +22,7 @@ export function DataGridHelper({
     showCellVerticalBorder = false,
     showColumnVerticalBorder = false,
     submitButton = undefined,
+    extraButtons = null,
     ...rest
 }) {
 
@@ -251,8 +252,6 @@ export function DataGridHelper({
         ...rest
     };
 
-    console.log("submitButton: ", submitButton);
-
     return (
         <div>
             {label && (
@@ -262,17 +261,17 @@ export function DataGridHelper({
             )}
 
             <DataGrid {...gridProps} />
-            { submitButton && (
-                <Button 
-                    variant="contained" 
-                    type="button" 
-                    onClick={handleSubmit} 
-                    sx={{ mt: 1, mr: 1 }}
-                >
-                    {submitButton.label}
-                </Button>
+            {(submitButton || extraButtons) && (
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 1, flexWrap: 'wrap' }}>
+                    {submitButton && (
+                        <Button variant="contained" type="button" onClick={handleSubmit}>
+                            {submitButton.label}
+                        </Button>
+                    )}
+                    {extraButtons}
+                </Box>
             )}
-            </div>
+        </div>
     );
 }
 

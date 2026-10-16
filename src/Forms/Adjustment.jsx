@@ -1,6 +1,5 @@
 import React, {useEffect, useState} from 'react';
 import {Box, Button} from '@mui/material';
-import Grid from '@mui/material/Grid';
 import DataGridHelper from "../Objects/DataGridHelper.jsx";
 import SearchParametersForm from "../Objects/SearchParametersForm.jsx";
 import ErrorMessage from "../ErrorMessage.jsx";
@@ -106,14 +105,13 @@ const Adjustment = () => {
                                 showCellVerticalBorder={true}
                                 showColumnVerticalBorder={true}
                                 submitButton={{ label: "Save", url: adjustmentCrudUrl, setMessage }}
-
+                                extraButtons={
+                                    <>
+                                        <Button variant="outlined" onClick={handleAddAdjustment}>New Selected</Button>
+                                        <Button variant="outlined" onClick={handleReversalAdjustment}>New Reversal</Button>
+                                    </>
+                                }
                 />
-                <Grid container sx={{mt: 1}}>
-                    <Grid size="auto">
-                        <Button variant="outlined" onClick={handleAddAdjustment}>New Selected</Button>
-                        <Button variant="outlined" onClick={handleReversalAdjustment}>New Reversal</Button>
-                    </Grid>
-                </Grid>
             </Box>
         </div>
     );

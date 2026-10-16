@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import ErrorMessage from "../ErrorMessage.jsx";
 import {Box, Button} from '@mui/material';
 import Grid from '@mui/material/Grid';
@@ -40,8 +40,19 @@ const ItemQuery = () => {
         ScreenStack.push(nextScreen);
     }
 
-    const handleRowSelectionChange = (row) => {
-        const selectedRow = row[0];
+    const [selectedRow, setSelectedRow] = useState(null);
+
+    // Clear the selection whenever a new query replaces the results
+    useEffect(() => {
+        setSelectedRow(null);
+    }, [rowsOfQueryResults]);
+
+    const handleRowSelectionChange = (rows) => {
+        setSelectedRow(rows?.[0] ?? null);
+    }
+
+    const transitionToItemPropertiesChange = () => {
+        if (!selectedRow) return;
         const transitionLabel = "Change Item Properties" + ItemDtoToStringWithOperation(selectedRow);
 
         const nextScreen = new ScreenTransition(transitionLabel,
@@ -97,11 +108,18 @@ const ItemQuery = () => {
                                 rows={rowsOfQueryResults}
                                 columns={ItemQueryResultsMetadata}
                                 onSelectionChange={handleRowSelectionChange}
+                                getRowClassName={(params) => params.row === selectedRow ? 'selected-row' : ''}
+                                sx={{'& .selected-row .MuiDataGrid-cell': {backgroundColor: '#e3f2fd'}}}
                 />
 
-                <Grid container sx={{mt: 1}}>
+                <Grid container spacing={1} sx={{mt: 1}}>
                     <Grid size="auto">
                         <Button variant="outlined" onClick={transitionToItemPropertiesAdd}>Add</Button>
+                    </Grid>
+                    <Grid size="auto">
+                        <Button variant="outlined" onClick={transitionToItemPropertiesChange} disabled={!selectedRow}>
+                            Show Item Properties
+                        </Button>
                     </Grid>
                 </Grid>
 
