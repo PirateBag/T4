@@ -6,10 +6,10 @@ import {
     bomCrudUrl,  itemPickAllUrl
 } from "../Globals.js";
 import {BomComponentsDto} from "./BomPropertiesConfig.js";
-import {extractMessageFromResponse} from "../FormQueryPanel.js";
 import {PropertyGrid} from "../Objects/PropertyGrid.jsx";
 import * as objectToString from "../lib/ObjectToString.js";
 import * as HttpUtils from "../HttpUtils.js";
+import {extractMessageFromResponse} from "../lib/extractMessageFromResponse.js";
 
 const BomProperties = () => {
 

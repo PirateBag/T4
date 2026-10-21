@@ -19,9 +19,9 @@ import {
     ParentItemRules
 } from "./ItemPropertiesConfig.js";
 import {generateDefaultFromRules} from "../Metadata/ValidateRule.js";
-import {useGridApiRef} from "@mui/x-data-grid";
+
 import DataGridHelper from "../Objects/DataGridHelper.jsx";
-import {loadItemPickListAll} from "../Objects/ItemPickListService";
+import {descriptionFromId, loadItemPickListAll} from "../Objects/ItemPickListService";
 import {ScreenTransition} from "../ScreenTransition.js";
 import BomProperties from "./BomProperties.jsx";
 import {PropertyGrid} from "../Objects/PropertyGrid.jsx";
@@ -30,7 +30,7 @@ import {
 } from "./ItemQueryConfig.js";
 import OrderMaster from "./OrderMaster.jsx";
 import {postData} from "../HttpUtils.js";
-import {saveCrudObjects} from "../lib/masterSaveChanges.js";
+import {saveCrudObjects} from "../lib/saveCrudObjects.js";
 import {isShallowEqual} from "../lib/isShallowEqual.js";
 import {MaxLevelButton} from "../Objects/MaxLevelButton.jsx";
 import {ItemExplosionButton} from "../Objects/ItemExplosionButton.jsx";
@@ -39,7 +39,6 @@ import {BalanceProjectionButton} from "../Objects/BalanceProjectionButton.jsx";
 const ItemProperties = () => {
 
     const [selectedRow, setSelectedRow] = useState( undefined );
-    const apiRef = useGridApiRef();
     const [message, setMessage] = useState("");
     const [queryParameters, setQueryParameters] = useState( [] );
     const [components, setComponents] = useState();
@@ -222,7 +221,6 @@ const ItemProperties = () => {
         setSelectedRow( undefined );
     }
 
-
     async function saveParentItemChanges() {
         if (selectedRow) {
             if (Array.isArray(selectedRow) && selectedRow.length === 1) {
@@ -234,13 +232,6 @@ const ItemProperties = () => {
         await saveCrudObjects({ objectToBeTransmitted: queryParameters, messageSetter: setMessage, updatedRowsSetter: setQueryParameters, updateUrl: itemUpdateUrl });
     }
 
-    // function deleteParentItem() {
-    //     if (selectedRow?.length === 1) { selectedRow[ 0 ].crudAction = CRUD_ACTION_DELETE };
-    //     await saveCrudObjects({ objectToBeTransmitted: queryParameters, messageSetter: setMessage, updatedRowsSetter: setQueryParameters, updateUrl: itemUpdateUrl });
-    // }
-
-
-
 
     if (queryParameters === undefined) return (<div>
         <Typography variant="h5" gutterBottom sx={{ml: 2, mt: 2}} align={"center"}>Loading Item Master</Typography>
@@ -248,17 +239,12 @@ const ItemProperties = () => {
     if (components === undefined ) return (<div>
         <Typography variant="h5" gutterBottom sx={{ml: 2, mt: 2}} align={"center"}>Loading Components</Typography></div>);
 
-
-    let workingTabIndex = 0;
-
     function renderInsertForm() {
         return (
             <div>
                 <br/>
-
                     <ErrorMessage message={message}/>
                     <br/>
-
                     <PropertyGrid label="Create a new item with the following details:"
                                   objectToPresent={queryParameters[0] || queryParameters}
                                   validationRules={ItemQueryRequestCrudInsertMetadata}
@@ -269,19 +255,15 @@ const ItemProperties = () => {
                                   url={itemUpdateUrl}/>
             </div>
         );
-
-
     }
     function renderUpdateOrDeleteForm() {
-        // if ( selectedRow?.id === undefined) return "";
+
         return (
             <div>
-                <br/>
-                    <ErrorMessage message={message}/>
-                <br/>
+                <ErrorMessage message={message}/>
 
                 <DataGridHelper
-                    label={queryParameters[0].description }
+                    label={descriptionFromId( { pickList: itemOptions, id: queryParameters[0].id }) }
                     rows={queryParameters}
                     columns={ParentItemRules}
                     hideFooter={true}
@@ -297,10 +279,10 @@ const ItemProperties = () => {
                     <Grid size="auto">
                         <Button variant="contained" onClick={saveParentItemChanges} sx={{ mr: 1 }}
                                 >{saveButtonMessage}</Button>
-                        <ReturnButton label="Return" tabIndex={workingTabIndex++} sx={{ mr: 1 }} noContainer />
+                        <ReturnButton label="Return" sx={{ mr: 1 }} noContainer />
                         <Button variant="outlined" onClick={saveParentItemChanges}
                                 sx={{ mr: 1 }}
-                                disabled={!selectedRow || Object.keys(selectedRow).length === 0}>Delete</Button>
+                                disabled={!selectedRow || Object.keys(selectedRow).length === 0}>Delete Item</Button>
                     </Grid>
                     <br/>
                     <Grid size="auto">
@@ -314,8 +296,7 @@ const ItemProperties = () => {
                 <Box sx={{height: 400, width: '100%', mb: 10}}>
                     {ScreenStack.stackTop().activityState === CRUD_ACTION_CHANGE && (
                         <>
-                            <DataGridHelper apiRef={apiRef}
-                                            label={components.length === 0 ? "There are no components of " + queryParameters[0].description : "Components of " + queryParameters[0].description }
+                            <DataGridHelper label={components.length === 0 ? "There are no components of " + queryParameters[0].description : "Components of " + queryParameters[0].description }
                                             rows={components}
                                             columns={BomComponentsDto}
                                             handleRowChangeCallback={ComponentsUpdateRowHandler}
@@ -345,7 +326,9 @@ const ItemProperties = () => {
         );
     }
 
+    if ( itemOptions === undefined || itemOptions.length === 0) return "";
     switch (ScreenStack.stackTop().activityState) {
+
         case CRUD_ACTION_INSERT:
             return renderInsertForm();
         case CRUD_ACTION_CHANGE:

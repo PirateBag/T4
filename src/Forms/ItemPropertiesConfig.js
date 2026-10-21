@@ -26,16 +26,9 @@ export const ParentItemRules = [
 
 
 export const BomComponentsDto = [
-    ID_VALIDATION.appendGridFieldOptions({field: 'id', 'editable': false, 'headerName': 'Id'}),
-    ID_VALIDATION.appendGridFieldOptions({field: 'childId', 'editable': true, 'headerName': 'Child Id', width: 300, useSelect: true}),
-    DESCRIPTION_VALIDATION.appendGridFieldOptions({
-        field: 'childDescription',
-        'editable': false,
-        'headerName': 'Description',
-        width: 300,
-        focusable: false
-    }),
-    QUANTITY_VALIDATION.appendGridFieldOptions({field: 'quantityPer', 'editable': true, width: 135}),
+    //  ID_VALIDATION.appendGridFieldOptions({field: 'id', 'editable': false, 'headerName': 'Id'}),
+    ID_VALIDATION.appendGridFieldOptions({field: 'childId', 'editable': true, 'headerName': 'Child', width: 300, useSelect: true}),
+    QUANTITY_VALIDATION.appendGridFieldOptions({field: 'quantityPer', 'editable': true, 'headerName' : 'Quantiy Per', width: 145}),
     COST_VALIDATION.appendGridFieldOptions({field: 'unitCost', editable: false, 'headerName': 'Unit Cost', width: 115}),
     COST_VALIDATION.appendGridFieldOptions({
         field: 'extendedCost',
@@ -46,16 +39,15 @@ export const BomComponentsDto = [
 ]
 
 export const BomParentsDto = [
-    ID_VALIDATION.appendGridFieldOptions({field: 'id', 'editable': false, 'headerName': 'Id'}),
-    ID_VALIDATION.appendGridFieldOptions({field: 'parentId', 'editable': true, 'headerName': 'Parent Id', width: 100}),
+    //  ID_VALIDATION.appendGridFieldOptions({field: 'id', 'editable': false, 'headerName': 'Id'}),
     DESCRIPTION_VALIDATION.appendGridFieldOptions({
         field: 'parentDescription',
         'editable': false,
-        'headerName': 'Description',
+        'headerName': 'Parent',
         width: 300,
         focusable: false
     }),
-    QUANTITY_VALIDATION.appendGridFieldOptions({field: 'quantityPer', 'editable': true, width: 135}),
+    QUANTITY_VALIDATION.appendGridFieldOptions({field: 'quantityPer', 'editable': true, 'headerName' : 'Quantiy Per', width: 145}),
     COST_VALIDATION.appendGridFieldOptions({field: 'unitCost', editable: false, 'headerName': 'Unit Cost', width: 115}),
     COST_VALIDATION.appendGridFieldOptions({
         field: 'extendedCost',

@@ -11,18 +11,17 @@ import {
     OrderLineItemResultsEditableMetaData,
     OrderQueryRequestEditableMetadata
 } from "./OrderMasterConfig.js";
-import {sourceAndOrderTypeMap} from "../enums/orderType.js";
+import {ORDER_TYPE_NA, sourceAndOrderTypeMap} from "../enums/orderType.js";
 import {ORDER_STATE_OPEN} from "../enums/orderState.js";
 import {placeParametersInTemplate, postData} from "../HttpUtils.js";
 import {CRUD_ACTION_CHANGE, CRUD_ACTION_DELETE, CRUD_ACTION_INSERT, CRUD_ACTION_NONE} from "../enums/crudAction.js";
 import {loadItemPickListAll} from "../Objects/ItemPickListService.js";
 import SearchParametersForm from "../Objects/SearchParametersForm.jsx";
 import {noop} from "../lib/noop.js";
-import {extractMessageFromResponse} from "../FormQueryPanel.js";
 import {formatDate} from "../lib/dates.js";
 import ErrorMessage from "../ErrorMessage.jsx";
 import {ClearOrdersButton} from "../Objects/ClearOrdersButton.jsx";
-
+import {extractMessageFromResponse} from "../lib/extractMessageFromResponse.js";
 
 const OrderMaster = () => {
 
@@ -33,8 +32,6 @@ const OrderMaster = () => {
     const [orderComponentQueryResults, setOrderComponentQueryResults ] = useState( [] );
     const [selectedParentOrder, setSelectedParentOrder] = useState(null);
     const [itemPickList, setItemPickList] = useState([]);
-
-
 
     const afterQueryPostedCallback = (response) => {
         console.log("afterQueryCallback received:", response.status);
@@ -71,7 +68,7 @@ const OrderMaster = () => {
             try {
                 if (orderParentQueryResults.length === 0) {
                     if ( ScreenStack.stackTop().data !== undefined) {
-                        const queryParametersForOpeningScreen = mapItemQueryToOliQueryParameters( ScreenStack.stackTop().data );
+                        const queryParametersForOpeningScreen = mapItemQueryToOliQueryParameters( ScreenStack.stackTop().data[0] );
                         setQueryParameters( [ { lineNo: 1, ...queryParametersForOpeningScreen } ] );
                         const objectToBeTransmitted = placeParametersInTemplate( { requestTemplate : modernRequestPayloadTemplate,
                             singleRowOfQueryParameters: queryParametersForOpeningScreen });
@@ -87,6 +84,7 @@ const OrderMaster = () => {
                 setMessage("Error loading initial data");
             }
         };
+
         fetchData().catch(error => setMessage("Promise rejection in fetchData:" + error));
         loadItemPickListAll({
             responseSetter: (data) => setItemPickList(data.map(item => ({ value: item.id, label: item.external }))),
@@ -108,11 +106,11 @@ const OrderMaster = () => {
             itemId: firstQueryParam?.itemId,
             quantityOrdered: 0,
             quantityAssigned: 0,
-            startDate: formatDate(today),
-            completeDate: formatDate(tomorrow),
+            startDate: '',
+            completeDate: formatDate(today),
             parentOliId: 0,
             orderState: ORDER_STATE_OPEN,
-            orderType: firstQueryParam?.orderType,
+            orderType: ORDER_TYPE_NA,
             crudAction: CRUD_ACTION_INSERT
         };
 
@@ -339,11 +337,8 @@ const OrderMaster = () => {
                 </Grid>
 
             </Box>
-            {
-                <>
-                    <hr style={{margin: "20px 0", borderTop: "1px solid #ccc"}}/>
 
-
+                    <hr style={{margin: "10px 0", borderTop: "1px solid #ccc"}}/>
                     <Box sx={{minHeight: 400, width: '100%', mb: 10}}>
                         <DataGridHelper label="Inputs to order:"
                                         rows={orderComponentQueryResults}
@@ -363,9 +358,6 @@ const OrderMaster = () => {
                             Add Component
                         </Button>
                     </Grid>
-
-                </>
-            }
         </div>
     );
 };

@@ -19,6 +19,7 @@ import {enableButton} from "../lib/noop.js";
 import {ItemMasterButton} from "../Objects/ItemMasterButton.jsx";
 import {MaxLevelButton} from "../Objects/MaxLevelButton.jsx";
 import {PlanningButton} from "../Objects/PlanningButton.jsx";
+import OrderMaster from "./OrderMaster.jsx";
 
 
 const ItemQuery = () => {
@@ -31,7 +32,8 @@ const ItemQuery = () => {
     const [rowsOfQueryResults, setRowsOfQueryResults] = useState([]);
 
     function transitionToAdjustment() {
-        let nextScreen = new ScreenTransition("Adjustment Report", Adjustment, CRUD_ACTION_NONE, []);
+        let nextScreen = new ScreenTransition("Adjustment Report", Adjustment, CRUD_ACTION_NONE,
+            selectedRow ? [selectedRow] : [] );
         ScreenStack.push(nextScreen);
     }
 
@@ -60,6 +62,17 @@ const ItemQuery = () => {
 
         ScreenStack.push(nextScreen);
     }
+
+    const transitionToOrders = () => {
+        if (!selectedRow) return;
+        const transitionLabel = "Item Orders" + ItemDtoToStringWithOperation(selectedRow);
+
+        const nextScreen = new ScreenTransition(transitionLabel,
+            OrderMaster, CRUD_ACTION_CHANGE, [selectedRow]);
+
+        ScreenStack.push(nextScreen);
+    }
+
 
     return (
         <div>
@@ -96,9 +109,6 @@ const ItemQuery = () => {
                 <Grid size="auto">
                     <PlanningButton/>
                 </Grid>
-                <Grid size="auto">
-                    <Button variant="outlined" onClick={transitionToAdjustment}>Adjustment</Button>
-                </Grid>
             </Grid>
 
 
@@ -118,8 +128,15 @@ const ItemQuery = () => {
                     </Grid>
                     <Grid size="auto">
                         <Button variant="outlined" onClick={transitionToItemPropertiesChange} disabled={!selectedRow}>
-                            Show Item Properties
+                            Properties
                         </Button>
+                        <Button variant="outlined" onClick={transitionToOrders} disabled={!selectedRow}>
+                            Orders
+                        </Button>
+                        <Button variant="outlined" onClick={transitionToAdjustment} disabled={!selectedRow}>
+                            Adjustment
+                        </Button>
+
                     </Grid>
                 </Grid>
 

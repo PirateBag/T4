@@ -4,10 +4,17 @@ import DataGridHelper from "../Objects/DataGridHelper.jsx";
 import SearchParametersForm from "../Objects/SearchParametersForm.jsx";
 import ErrorMessage from "../ErrorMessage.jsx";
 import {AdjustmentAddMetadata, AdjustmentQueryMetadata, AdjustmentRowMetadata} from "./Adjustment.js";
-import {adjustmentCrudUrl, adjustmentQueryUrl} from "../Globals.js";
+import {
+    adjustmentCrudUrl,
+    adjustmentQueryUrl,
+    modernRequestPayloadTemplate
+} from "../Globals.js";
 import {loadItemPickListAll} from "../Objects/ItemPickListService.js";
-import {CRUD_ACTION_INSERT} from "../enums/crudAction.js";
+import {CRUD_ACTION_INSERT, CRUD_ACTION_NONE} from "../enums/crudAction.js";
 import {formatDate} from "../lib/dates.js";
+import {ScreenStack} from "../Stack.js";
+import {placeParametersInTemplate, postData} from "../HttpUtils.js";
+import {noop} from "../lib/noop.js";
 
 const Adjustment = () => {
 
@@ -50,15 +57,56 @@ const Adjustment = () => {
         setAdjustmentsToAdd([{ ...defaultValues, amount: -(defaultValues.amount ?? 0) || 0 }]);
     };
 
+    function mapItemQueryToAdustmentQueryParameters( rowOfItem ) {
+        if ( rowOfItem.id === undefined ) { return getDefaultAdjustmentValues();   }
 
+        let adjustmentQueryParameters;
+        adjustmentQueryParameters = {
+            lineNo: 1,
+            amount: 0,
+            itemId: rowOfItem.id,
+            orderType: 'NA',
+            crudAction: CRUD_ACTION_NONE
+        };
+
+        return adjustmentQueryParameters;
+    }
+
+
+
+    // Fetch data on mount if empty
     useEffect(() => {
+        const fetchData = async () => {
+            try {
+                if (rowsOfQueryResults.length === 0) {
+                    if ( ScreenStack.stackTop().data !== undefined) {
+                        const queryParametersForOpeningScreen = mapItemQueryToAdustmentQueryParameters( ScreenStack.stackTop().data[0] );
+                        setQueryParameters( [ { lineNo: 1, ...queryParametersForOpeningScreen } ] );
+                        const objectToBeTransmitted = placeParametersInTemplate( { requestTemplate : modernRequestPayloadTemplate,
+                            singleRowOfQueryParameters: queryParametersForOpeningScreen });
+                        const allQueryResultsButShouldOnlyBeOne =
+                            await Promise.all(  [postData( {'parameters' : objectToBeTransmitted, 'url' : adjustmentQueryUrl}) ] );
 
+                        const results = allQueryResultsButShouldOnlyBeOne[0].data?.data || [];
+                        results.forEach(row => row.crudAction = CRUD_ACTION_NONE);
+                        setRowsOfQueryResults( results )
+                    }
+                }
+            } catch (error) {
+                console.error("Error fetching data in useEffect:", error);
+                setMessage("Error loading initial data");
+            }
+        };
+
+        fetchData().catch(error => setMessage("Promise rejection in fetchData:" + error));
         loadItemPickListAll({
             responseSetter: (data) => setItemPickList(data.map(item => ({ value: item.id, label: item.external }))),
             errorMessageSetter: setMessage
         });
 
-    }, []); // Runs once on mount
+    }, []); // Dependency array ensures this runs only on mount
+
+
 
     return (
         <div>
@@ -74,7 +122,7 @@ const Adjustment = () => {
                 label="Adjustment Query Parameters"
                 rowsOfQueryResults={rowsOfQueryResults}
                 pickListsForSelect = {{ 'itemId' : itemPickList}}
-
+                handleClear={noop}
 
             />
 
@@ -89,6 +137,7 @@ const Adjustment = () => {
                                 autoHeight={true}
                                 showCellVerticalBorder={true}
                                 showColumnVerticalBorder={true}
+                                handleClearButton={noop()}
                 />
             </Box>
 
@@ -109,6 +158,7 @@ const Adjustment = () => {
                                     <>
                                         <Button variant="outlined" onClick={handleAddAdjustment}>New Selected</Button>
                                         <Button variant="outlined" onClick={handleReversalAdjustment}>New Reversal</Button>
+
                                     </>
                                 }
                 />

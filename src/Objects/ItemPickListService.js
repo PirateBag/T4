@@ -27,4 +27,9 @@ export async function loadItemPickListAll({responseSetter, errorMessageSetter} =
     return errorResponse
 }
 
+export function descriptionFromId( { pickList, id } ) {
+    const description = pickList.find( itemPick => itemPick.value === id)?.label;
+    return description || "No Item";
+}
+
 export { loadItemPickListAll as loadItemPickList };
