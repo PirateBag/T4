@@ -20,7 +20,7 @@ import SearchParametersForm from "../Objects/SearchParametersForm.jsx";
 import {noop} from "../lib/noop.js";
 import {formatDate} from "../lib/dates.js";
 import ErrorMessage from "../ErrorMessage.jsx";
-import {ClearOrdersButton} from "../Objects/ClearOrdersButton.jsx";
+import {ClearOrdersButton} from "../Buttons/ClearOrdersButton.jsx";
 import {extractMessageFromResponse} from "../lib/extractMessageFromResponse.js";
 
 const OrderMaster = () => {
