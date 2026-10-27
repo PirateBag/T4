@@ -4,7 +4,7 @@ import TextField from "@mui/material/TextField";
 import {Button, Checkbox, FormControlLabel, MenuItem, Typography} from "@mui/material";
 import {validateFieldsOfObject} from "../Metadata/ValidateRule.js";
 import * as HttpUtils from "../HttpUtils.js";
-import ReturnButton from "./ReturnButton.jsx";
+import ReturnButton from "../Buttons/ReturnButton.jsx";
 import {non200ErrorMessage} from "../lib/extractMessageFromResponse.js";
 
 export function PropertyGrid({label, objectToPresent, objectSetter, validationRules, handleInputChangeCallback, layout, pickListsForSelect = {},

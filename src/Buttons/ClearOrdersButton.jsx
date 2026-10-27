@@ -1,7 +1,7 @@
 import {ScreenStack} from "../Stack.js";
 import {postData} from "../HttpUtils.js";
 import {clearOrdersUrl, clearItemBalances, genericSingleRequest } from "../Globals.js";
-import {Button} from "@mui/material";
+import {FitTextButton} from "./FitTextButton.jsx";
 import {ScreenTransition} from "../ScreenTransition.js";
 import GenericText from "../Forms/GenericText.jsx";
 import {CRUD_ACTION_NONE} from "../enums/crudAction.js";
@@ -32,7 +32,7 @@ export function ClearOrdersButton(  ) {
     }
 
     return (
-        <Button variant="outlined" sx={{mr: 1}} onClick={transitionToClearOrders}>Clear Orders</Button>
+        <FitTextButton variant="outlined" sx={{mr: 1}} onClick={transitionToClearOrders}>Clear Orders</FitTextButton>
     );
 }
 

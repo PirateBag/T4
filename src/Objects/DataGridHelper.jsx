@@ -1,9 +1,10 @@
 
 import {DataGrid } from "@mui/x-data-grid";
-import {Typography, Checkbox, Button, Box} from "@mui/material";
+import {Typography, Checkbox, Button, Box, FormControlLabel} from "@mui/material";
 import React from "react";
 import {CRUD_ACTION_CHANGE, CRUD_ACTION_DELETE, CRUD_ACTION_NONE} from "../enums/crudAction.js";
 import {postData} from "../HttpUtils.js";
+import {noop} from "../lib/noop.js";
 
 export function DataGridHelper({
     label,
@@ -23,6 +24,8 @@ export function DataGridHelper({
     showColumnVerticalBorder = false,
     submitButton = undefined,
     extraButtons = null,
+    showDataGrid = true,
+    setShowDataGrid = noop,
     ...rest
 }) {
 
@@ -201,6 +204,13 @@ export function DataGridHelper({
         }
     };
 
+    const handleCheckBoxClick = ( event ) => {
+        console.log("Checkbox clicked when checkbox: " + showDataGrid );
+        setShowDataGrid && setShowDataGrid(!showDataGrid);
+        console.log("Checkbox after clicking: " + showDataGrid );
+    }
+
+
     // Construct common DataGrid props
     const gridProps = {
         columns: safeColumns,
@@ -255,13 +265,16 @@ export function DataGridHelper({
     return (
         <div>
             {label && (
-                <Typography variant="h5" gutterBottom sx={{ml: 2, mt: 2}} align={"center"}>
+                <Typography variant="h5" gutterBottom sx={{ml: 2, mt: 2}} align={"center"} onClick={handleCheckBoxClick}>
                     {label}
                 </Typography>
             )}
 
-            <DataGrid {...gridProps} />
-            {(submitButton || extraButtons) && (
+            {showDataGrid && (
+                <DataGrid {...gridProps} />
+            )}
+
+            {(showDataGrid &&(submitButton || extraButtons)) && (
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 1, flexWrap: 'wrap' }}>
                     {submitButton && (
                         <Button variant="contained" type="button" onClick={handleSubmit}>

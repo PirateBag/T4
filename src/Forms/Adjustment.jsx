@@ -6,14 +6,13 @@ import ErrorMessage from "../ErrorMessage.jsx";
 import {AdjustmentAddMetadata, AdjustmentQueryMetadata, AdjustmentRowMetadata} from "./Adjustment.js";
 import {
     adjustmentCrudUrl,
-    adjustmentQueryUrl,
-    modernRequestPayloadTemplate
+    adjustmentQueryUrl
 } from "../Globals.js";
 import {loadItemPickListAll} from "../Objects/ItemPickListService.js";
 import {CRUD_ACTION_INSERT, CRUD_ACTION_NONE} from "../enums/crudAction.js";
 import {formatDate} from "../lib/dates.js";
 import {ScreenStack} from "../Stack.js";
-import {placeParametersInTemplate, postData} from "../HttpUtils.js";
+import {postData} from "../HttpUtils.js";
 import {noop} from "../lib/noop.js";
 
 const Adjustment = () => {
@@ -80,10 +79,9 @@ const Adjustment = () => {
             try {
                 if (rowsOfQueryResults.length === 0) {
                     if ( ScreenStack.stackTop().data !== undefined) {
-                        const queryParametersForOpeningScreen = mapItemQueryToAdustmentQueryParameters( ScreenStack.stackTop().data[0] );
+                        const queryParametersForOpeningScreen = mapItemQueryToAdustmentQueryParameters( ScreenStack.stackTop().data );
                         setQueryParameters( [ { lineNo: 1, ...queryParametersForOpeningScreen } ] );
-                        const objectToBeTransmitted = placeParametersInTemplate( { requestTemplate : modernRequestPayloadTemplate,
-                            singleRowOfQueryParameters: queryParametersForOpeningScreen });
+                        const objectToBeTransmitted = { 'rows' : queryParametersForOpeningScreen }
                         const allQueryResultsButShouldOnlyBeOne =
                             await Promise.all(  [postData( {'parameters' : objectToBeTransmitted, 'url' : adjustmentQueryUrl}) ] );
 

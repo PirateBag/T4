@@ -16,9 +16,9 @@ import DataGridHelper from "../Objects/DataGridHelper.jsx";
 import Adjustment from "./Adjustment.jsx";
 import SearchParametersForm from "../Objects/SearchParametersForm.jsx";
 import {enableButton} from "../lib/noop.js";
-import {ItemMasterButton} from "../Objects/ItemMasterButton.jsx";
-import {MaxLevelButton} from "../Objects/MaxLevelButton.jsx";
-import {PlanningButton} from "../Objects/PlanningButton.jsx";
+import {ItemMasterButton} from "../Buttons/ItemMasterButton.jsx";
+import {MaxLevelButton} from "../Buttons/MaxLevelButton.jsx";
+import {PlanningButton} from "../Buttons/PlanningButton.jsx";
 import OrderMaster from "./OrderMaster.jsx";
 
 

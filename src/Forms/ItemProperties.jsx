@@ -1,7 +1,7 @@
 import {useEffect, useState} from 'react';
 import ErrorMessage from "../ErrorMessage.jsx";
 import {Box, Button, Typography} from '@mui/material';
-import ReturnButton from "../Objects/ReturnButton.jsx";
+import ReturnButton from "../Buttons/ReturnButton.jsx";
 import Grid from '@mui/material/Grid';
 import {CRUD_ACTION_CHANGE, CRUD_ACTION_DELETE, CRUD_ACTION_INSERT, CRUD_ACTION_NONE} from "../enums/crudAction.js";
 import {ScreenStack} from "../Stack.js";
@@ -32,9 +32,9 @@ import OrderMaster from "./OrderMaster.jsx";
 import {postData} from "../HttpUtils.js";
 import {saveCrudObjects} from "../lib/saveCrudObjects.js";
 import {isShallowEqual} from "../lib/isShallowEqual.js";
-import {MaxLevelButton} from "../Objects/MaxLevelButton.jsx";
+import {MaxLevelButton} from "../Buttons/MaxLevelButton.jsx";
 import {ItemExplosionButton} from "../Objects/ItemExplosionButton.jsx";
-import {BalanceProjectionButton} from "../Objects/BalanceProjectionButton.jsx";
+import {BalanceProjectionButton} from "../Buttons/BalanceProjectionButton.jsx";
 
 const ItemProperties = () => {
 

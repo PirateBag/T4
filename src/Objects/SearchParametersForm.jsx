@@ -1,7 +1,7 @@
 import React, {useEffect, useState} from 'react';
 import {Box, Button} from '@mui/material';
 import Grid from "@mui/material/Grid";
-import ReturnButton from "./ReturnButton.jsx";
+import ReturnButton from "../Buttons/ReturnButton.jsx";
 import DataGridHelper from "./DataGridHelper.jsx";
 import {postData} from "../HttpUtils.js";
 

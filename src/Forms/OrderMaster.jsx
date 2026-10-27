@@ -3,7 +3,7 @@ import {Box, Button} from '@mui/material';
 import Grid from '@mui/material/Grid';
 import {ScreenStack} from "../Stack.js";
 import {
-    modernRequestPayloadTemplate, newEmptyQueryConstant, orderLineItemCrudUrl, orderLineItemQueryUrl
+     newEmptyQueryConstant, orderLineItemCrudUrl, orderLineItemQueryUrl
 } from "../Globals.js";
 import DataGridHelper from "../Objects/DataGridHelper.jsx";
 import {
@@ -13,7 +13,7 @@ import {
 } from "./OrderMasterConfig.js";
 import {ORDER_TYPE_NA, sourceAndOrderTypeMap} from "../enums/orderType.js";
 import {ORDER_STATE_OPEN} from "../enums/orderState.js";
-import {placeParametersInTemplate, postData} from "../HttpUtils.js";
+import {postData} from "../HttpUtils.js";
 import {CRUD_ACTION_CHANGE, CRUD_ACTION_DELETE, CRUD_ACTION_INSERT, CRUD_ACTION_NONE} from "../enums/crudAction.js";
 import {loadItemPickListAll} from "../Objects/ItemPickListService.js";
 import SearchParametersForm from "../Objects/SearchParametersForm.jsx";
@@ -22,16 +22,17 @@ import {formatDate} from "../lib/dates.js";
 import ErrorMessage from "../ErrorMessage.jsx";
 import {ClearOrdersButton} from "../Buttons/ClearOrdersButton.jsx";
 import {extractMessageFromResponse} from "../lib/extractMessageFromResponse.js";
+import {randomId} from "../lib/randomId.js";
 
 const OrderMaster = () => {
 
-    //  const emptyResponse = { responseType: "MULTILINE", data: [], errors : []  };
     const [message, setMessage] = useState("");
     const [orderParentQueryResults, setOrderParentQueryResults] = useState([]);
     const [queryParameters, setQueryParameters] = useState(    [{lineNo: 1}]);
     const [orderComponentQueryResults, setOrderComponentQueryResults ] = useState( [] );
     const [selectedParentOrder, setSelectedParentOrder] = useState(null);
     const [itemPickList, setItemPickList] = useState([]);
+    const [showInputsToOrder, setShowInputsToOrder] = useState(true);
 
     const afterQueryPostedCallback = (response) => {
         console.log("afterQueryCallback received:", response.status);
@@ -70,8 +71,8 @@ const OrderMaster = () => {
                     if ( ScreenStack.stackTop().data !== undefined) {
                         const queryParametersForOpeningScreen = mapItemQueryToOliQueryParameters( ScreenStack.stackTop().data[0] );
                         setQueryParameters( [ { lineNo: 1, ...queryParametersForOpeningScreen } ] );
-                        const objectToBeTransmitted = placeParametersInTemplate( { requestTemplate : modernRequestPayloadTemplate,
-                            singleRowOfQueryParameters: queryParametersForOpeningScreen });
+                        const objectToBeTransmitted =
+                            { 'rows' : queryParameters }
                         const allQueryResultsButShouldOnlyBeOne =  await Promise.all(  [postData( {'parameters' : objectToBeTransmitted, 'url' : orderLineItemQueryUrl}) ] );
 
                         const results = allQueryResultsButShouldOnlyBeOne[0].data?.data || [];
@@ -101,7 +102,7 @@ const OrderMaster = () => {
 
         const firstQueryParam = Array.isArray(queryParameters) ? queryParameters[0] : queryParameters;
         const newOrder = {
-            id: Math.floor(Math.random() * 1000000) + 1000001,
+            id: randomId(),
             delete: false,
             itemId: firstQueryParam?.itemId,
             quantityOrdered: 0,
@@ -278,12 +279,7 @@ const OrderMaster = () => {
         }
 
         if (success) {
-            const objectToBeTransmitted = Array.isArray(queryParameters)
-                ? { 'rows': queryParameters }
-                : placeParametersInTemplate({
-                    requestTemplate: modernRequestPayloadTemplate,
-                    singleRowOfQueryParameters: queryParameters
-                });
+            const objectToBeTransmitted  =  { 'rows': queryParameters }
             const response = await postData({'parameters': objectToBeTransmitted, 'url': orderLineItemQueryUrl});
             afterQueryPostedCallback(response);
             if (selectedParentOrder) {
@@ -338,6 +334,8 @@ const OrderMaster = () => {
 
             </Box>
 
+
+
                     <hr style={{margin: "10px 0", borderTop: "1px solid #ccc"}}/>
                     <Box sx={{minHeight: 400, width: '100%', mb: 10}}>
                         <DataGridHelper label="Inputs to order:"
@@ -347,6 +345,8 @@ const OrderMaster = () => {
                                         handleRowChangeCallback={handleComponentRowUpdate}
                                         pickListsForSelect={{ itemId: itemPickList }}
                                         autoHeight={true}
+                                        showDataGrid={showInputsToOrder}
+                                        setShowDataGrid={setShowInputsToOrder}
                         />
                     </Box>
                     <Grid container sx={{ mb: 2, ml: 2 }}>
@@ -358,6 +358,7 @@ const OrderMaster = () => {
                             Add Component
                         </Button>
                     </Grid>
+
         </div>
     );
 };
