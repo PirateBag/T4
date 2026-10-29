@@ -14,6 +14,7 @@ import {formatDate} from "../lib/dates.js";
 import {ScreenStack} from "../Stack.js";
 import {postData} from "../HttpUtils.js";
 import {noop} from "../lib/noop.js";
+import {SPF_NONE, SPF_ORDER_LINE} from '../enums/screenParameterFormats.js';
 
 const Adjustment = () => {
 
@@ -56,22 +57,39 @@ const Adjustment = () => {
         setAdjustmentsToAdd([{ ...defaultValues, amount: -(defaultValues.amount ?? 0) || 0 }]);
     };
 
-    function mapItemQueryToAdustmentQueryParameters( rowOfItem ) {
-        if ( rowOfItem.id === undefined ) { return getDefaultAdjustmentValues();   }
+    function mapItemQueryToAdustmentQueryParameters( rowsOfItems ) {
+        if (!Array.isArray(rowsOfItems)) {
+            return [];
+        }
 
-        let adjustmentQueryParameters;
-        adjustmentQueryParameters = {
-            lineNo: 1,
+        return rowsOfItems.map((rowOfItem, index) => ({
+            lineNo: index + 1,
             amount: 0,
-            itemId: rowOfItem.id,
+            itemId: rowOfItem?.id,
             orderType: 'NA',
             crudAction: CRUD_ACTION_NONE
-        };
-
-        return adjustmentQueryParameters;
+        }));
     }
 
+    /**
+     *
+     * @param param0.parameters an array of parameter objects.
+     * @param param0.format one of the screenTransitionParameterFormat enum values.
+     *
+     * @returns an adjustment/query compatible parameter object array.
+     */
+    function queryParametersFromStack( { parameters, format } ) {
+        if ( format === SPF_NONE ) {
+            return mapItemQueryToAdustmentQueryParameters( parameters );
+        }
 
+        // if ( format === SPF_ORDER_LINE ) {
+        //     return null;
+        //  return mapOrderLineQueryToAdustmentQueryParameters( parameter );
+        // }
+        console.log( "queryParametersFromStack: format not recognized: " + format );
+        return [];
+    }
 
     // Fetch data on mount if empty
     useEffect(() => {
@@ -79,8 +97,11 @@ const Adjustment = () => {
             try {
                 if (rowsOfQueryResults.length === 0) {
                     if ( ScreenStack.stackTop().data !== undefined) {
-                        const queryParametersForOpeningScreen = mapItemQueryToAdustmentQueryParameters( ScreenStack.stackTop().data );
-                        setQueryParameters( [ { lineNo: 1, ...queryParametersForOpeningScreen } ] );
+                        const queryParametersForOpeningScreen = queryParametersFromStack(
+                            { parameters : ScreenStack.stackTop().data,
+                                format: ScreenStack.stackTop().parameterFormat  } );
+
+                        setQueryParameters( queryParametersForOpeningScreen );
                         const objectToBeTransmitted = { 'rows' : queryParametersForOpeningScreen }
                         const allQueryResultsButShouldOnlyBeOne =
                             await Promise.all(  [postData( {'parameters' : objectToBeTransmitted, 'url' : adjustmentQueryUrl}) ] );

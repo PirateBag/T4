@@ -10,36 +10,33 @@ export const ApplicationName = "INMAN T4";
 
 /** Constants for creating requests and their URLs.  */
 
-/*  Login  */
-export const VerifyCredentialsUrlV2 = 'http://localhost:8080/credentials';
-
+export const adjustmentCrudUrl = 'http://localhost:8080/adjustment/crud';
+export const adjustmentQueryUrl = 'http://localhost:8080/adjustment/query';
+export const balanceProjectionUrl = 'http://localhost:8080/ap/inventoryBalanceProjection';
+export const bomComponents = "http://localhost:8080/bom/findByParent";
+export const bomCrudUrl  = "http://localhost:8080/bom/crud";
+export const bomWhereUsed = "http://localhost:8080/bom/findByChild";
+export const clearItemBalances = 'http://localhost:8080/clear/itemBalances';
+export const clearOrdersUrl = 'http://localhost:8080/clearAllData';
+export const itemExplosionReportUrl = 'http://localhost:8080/itemReport/explosion';
+export const itemMasterReportUrl = 'http://localhost:8080/itemReport/showAllItems'
+export const itemMaxLevelReportUrl = 'http://localhost:8080/itemReport/calculateMaxDepth';
+export const itemPickAllUrl = 'http://localhost:8080/itemPick/all';
+export const itemPickForBom = 'itemPick/itemsForBom';
 export const itemQueryUrl = 'http://localhost:8080/item/crudQuery'
 export const itemUpdateUrl = 'http://localhost:8080/item/crud'
-export const itemMasterReportUrl = 'http://localhost:8080/itemReport/showAllItems'
-export const itemExplosionReportUrl = 'http://localhost:8080/itemReport/explosion';
-export const itemMaxLevelReportUrl = 'http://localhost:8080/itemReport/calculateMaxDepth';
+export const orderLineItemCrudUrl =  "http://localhost:8080/oli/crud";
+export const orderLineItemQueryUrl =  "http://localhost:8080/oli/query";
+export const planAllUrl = 'http://localhost:8080/ap/basic';
+export const VerifyCredentialsUrlV2 = 'http://localhost:8080/credentials';
+
 export const olderEmptyQueryConstant = { "updatedRows" : [  ] };
 export const newEmptyQueryConstant = { "rows" : [  ] };
-export const bomComponents = "http://localhost:8080/bom/findByParent";
-export const bomWhereUsed = "http://localhost:8080/bom/findByChild";
-export const bomCrudUrl  = "http://localhost:8080/bom/crud";
-
-export const orderLineItemQueryUrl =  "http://localhost:8080/oli/query";
-export const orderLineItemCrudUrl =  "http://localhost:8080/oli/crud";
-export const modernRequestPayloadTemplate =  '{ "rows" : [ ${rowWithQuery} ] }';
 
 
 
 //  Uses GenericSingleIdDto
-export const itemPickAllUrl = 'http://localhost:8080/itemPick/all';
-export const itemPickForBom = 'itemPick/itemsForBom';
 export const genericSingleRequest = { "idToSearchFor" : "1" };
-export const planAllUrl = 'http://localhost:8080/ap/basic';
-export const balanceProjectionUrl = 'http://localhost:8080/ap/inventoryBalanceProjection';
-export const clearOrdersUrl = 'http://localhost:8080/clearAllData';
-export const clearItemBalances = 'http://localhost:8080/clear/itemBalances';
-export const adjustmentQueryUrl = 'http://localhost:8080/adjustment/query';
-export const adjustmentCrudUrl = 'http://localhost:8080/adjustment/crud';
 
 export const ItemQueryParameterConfig = [
     ID_VALIDATION.appendGridFieldOptions( { 'editable': false } ),

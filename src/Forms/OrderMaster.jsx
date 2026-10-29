@@ -23,6 +23,7 @@ import ErrorMessage from "../ErrorMessage.jsx";
 import {ClearOrdersButton} from "../Buttons/ClearOrdersButton.jsx";
 import {extractMessageFromResponse} from "../lib/extractMessageFromResponse.js";
 import {randomId} from "../lib/randomId.js";
+import {OrderAdjustmentButton} from "../Buttons/OrderAdjustmentButton.jsx";
 
 const OrderMaster = () => {
 
@@ -329,6 +330,7 @@ const OrderMaster = () => {
                         <Button variant="outlined" sx={{ mr: 1 }} onClick={addOrder}>Add New</Button>
                         <Button variant="outlined" sx={{ mr: 1 }} onClick={saveChildThenParentResults}>Save Changes</Button>
                         <Button variant="outlined" sx={{ mr: 1 }} onClick={deleteOrder} disabled={!selectedParentOrder}>Delete</Button>
+                        <OrderAdjustmentButton parameters={selectedParentOrder} messageSetter={setMessage} />
                     </Grid>
                 </Grid>
 

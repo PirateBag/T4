@@ -22,35 +22,12 @@ export function httpErrorToString(error) {
         }
     }
 
-export function removeBlanksFromShallowObject(obj, validationRules) {
-    return validationRules.reduce((response, validationRule) => {
-        const type = validationRule.type;
-        const value = obj[validationRule.field];
-
-        if (value === undefined || value === null) {
-            return response;
-        }
-
-        if (type === 'string' || type === 'selectSelect') {
-            const effectiveValue = value.trimEnd();
-            // Note: Ensure .isNotEmpty() is defined on String prototype or use !effectiveValue
-            if (effectiveValue && effectiveValue.length > 0) {
-                response[validationRule.field] = effectiveValue;
-            }
-        } else {
-            response[validationRule.field] = value;
-        }
-
-        return response;
-    }, {}); // Initialized as an object {}
-}
-
 export async function postData( { parameters, url } ) {
-    console.log( "PostData: '" + url + "'" + JSON.stringify(parameters)   );
+    console.log( "HttpUtil.postData Request : '" + url + "'" + JSON.stringify(parameters)   );
     let response = {};
     try {
         response = await axios.post(url, parameters);
-        console.log( "PostData response: '" + JSON.stringify(response.data) + "'" );
+        console.log( "HttpUtil.postData Response: '" + JSON.stringify(response.data) + "'" );
         return response;
     } catch (error) {
         console.error('Error thrown during post:', error);
@@ -61,15 +38,4 @@ export async function postData( { parameters, url } ) {
     }
 }
 
-/**
- * Given a request template and a row of request parameters, return a single row of request parameters.
- * @param {requestTemplate} a string that indicates where via %s substition the parameters should be placed.
- * @param {Object} singleRowOfQueryParameters - The row of query parameters to be placed in the template.
- * @returns {Object} - A single row of request parameters.
- */
-export function placeParametersInTemplate( {requestTemplate, singleRowOfQueryParameters} ) {
-    let finalRequestAsObject;
-    finalRequestAsObject = JSON.parse( requestTemplate.replace("${rowWithQuery}", JSON.stringify(singleRowOfQueryParameters)));
-    return finalRequestAsObject;
-}
 
