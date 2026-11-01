@@ -266,7 +266,7 @@ export function DataGridHelper({
         <div>
             {label && (
                 <Typography variant="h5" gutterBottom sx={{ml: 2, mt: 2}} align={"center"} onClick={handleCheckBoxClick}>
-                    {label}
+                    {label + " ["+rows.length+"]"}
                 </Typography>
             )}
 

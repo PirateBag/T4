@@ -16,3 +16,8 @@ export const objectToStringCredential = (credential) => {
 
     return credential.userName + ", " + credential.token;
 }
+
+export const objectToStringOrder  = (order) => {
+    if ( order === undefined ) return "";
+
+    return order.id + " for item " + order.itemId + " in quantity of " + order.quantityOrdered }

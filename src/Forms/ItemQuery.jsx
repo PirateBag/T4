@@ -20,6 +20,7 @@ import {ItemMasterButton} from "../Buttons/ItemMasterButton.jsx";
 import {MaxLevelButton} from "../Buttons/MaxLevelButton.jsx";
 import {PlanningButton} from "../Buttons/PlanningButton.jsx";
 import OrderMaster from "./OrderMaster.jsx";
+import {SPF_ITEM} from "../enums/screenParameterFormats.js";
 
 
 const ItemQuery = () => {
@@ -68,7 +69,7 @@ const ItemQuery = () => {
         const transitionLabel = "Item Orders" + ItemDtoToStringWithOperation(selectedRow);
 
         const nextScreen = new ScreenTransition(transitionLabel,
-            OrderMaster, CRUD_ACTION_CHANGE, [selectedRow]);
+            OrderMaster, CRUD_ACTION_CHANGE, [selectedRow], SPF_ITEM);
 
         ScreenStack.push(nextScreen);
     }

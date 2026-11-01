@@ -49,6 +49,8 @@ const Adjustment = () => {
     };
 
     const handleAddAdjustment = () => {
+        if ( queryParameters.length === 1 ) return;
+
         setAdjustmentsToAdd([getDefaultAdjustmentValues(1, selectedQueryRow)]);
     };
 
@@ -57,7 +59,7 @@ const Adjustment = () => {
         setAdjustmentsToAdd([{ ...defaultValues, amount: -(defaultValues.amount ?? 0) || 0 }]);
     };
 
-    function mapItemQueryToAdustmentQueryParameters( rowsOfItems ) {
+    function mapItemQueryToAdjustmentQueryParameters( rowsOfItems ) {
         if (!Array.isArray(rowsOfItems)) {
             return [];
         }
@@ -71,24 +73,41 @@ const Adjustment = () => {
         }));
     }
 
+    function mapOrderLineItemsToAdjustmentQueryParameters( rowsOfOrders ) {
+        if (!Array.isArray(rowsOfOrders)) {
+            return [];
+        }
+
+        return rowsOfOrders.map((order, index) => ({
+            lineNo: index + 1,
+            amount: 0,
+            orderId : order.id,
+            itemId: order.itemId,
+            orderType: order.orderType,
+            crudAction: CRUD_ACTION_NONE
+        }));
+    }
+
+
     /**
      *
-     * @param param0.parameters an array of parameter objects.
-     * @param param0.format one of the screenTransitionParameterFormat enum values.
+     * @param parameters an array of parameter objects, never a scalar.
+     * @param format one of the screenTransitionParameterFormat enum values.
      *
      * @returns an adjustment/query compatible parameter object array.
      */
     function queryParametersFromStack( { parameters, format } ) {
-        if ( format === SPF_NONE ) {
-            return mapItemQueryToAdustmentQueryParameters( parameters );
+        if ( !Array.isArray(parameters) ) {
+            throw new Error( "queryParametersFromStack: parameters must be an array" );
         }
 
-        // if ( format === SPF_ORDER_LINE ) {
-        //     return null;
-        //  return mapOrderLineQueryToAdustmentQueryParameters( parameter );
-        // }
-        console.log( "queryParametersFromStack: format not recognized: " + format );
-        return [];
+        if ( format === SPF_NONE ) {
+            return mapItemQueryToAdjustmentQueryParameters( parameters );
+        }
+        if ( format === SPF_ORDER_LINE ) {
+            return mapOrderLineItemsToAdjustmentQueryParameters( parameters );
+        }
+        throw new Error( "queryParametersFromStack: format not recognized: " + format );
     }
 
     // Fetch data on mount if empty
@@ -142,7 +161,6 @@ const Adjustment = () => {
                 rowsOfQueryResults={rowsOfQueryResults}
                 pickListsForSelect = {{ 'itemId' : itemPickList}}
                 handleClear={noop}
-
             />
 
             <hr style={{margin: "20px 0", borderTop: "1px solid #ccc"}}/>
@@ -156,7 +174,7 @@ const Adjustment = () => {
                                 autoHeight={true}
                                 showCellVerticalBorder={true}
                                 showColumnVerticalBorder={true}
-                                handleClearButton={noop()}
+                                handleClearButton={noop}
                 />
             </Box>
 

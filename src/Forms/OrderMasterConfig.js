@@ -9,8 +9,8 @@ import {
 
 export const OrderQueryRequestEditableMetadata = [
     // ID_VALIDATION.appendGridFieldOptions( { 'editable': true, 'headerName' : 'Line', 'field' : 'lineNo', 'width' : 95 } ),
-    ID_VALIDATION.appendGridFieldOptions( { 'editable': true, 'headerName' : 'Order','width' : 100 } ),
-    ID_VALIDATION.appendGridFieldOptions( { 'editable': true , 'field' : 'itemId', 'headerName': 'Item', 'useSelect': true, 'width' : 130 } ),
+    ID_VALIDATION.appendGridFieldOptions( { 'editable': true, 'headerName' : 'Order', 'field' : 'id',    'width' : 100 } ),
+    ID_VALIDATION.appendGridFieldOptions( { 'editable': true , 'headerName' : 'Item', 'width' : 200, 'field' : 'itemId', 'useSelect': true  } ),
     QUANTITY_VALIDATION.appendGridFieldOptions({ 'editable': true, 'headerName': 'Ordered', 'field' : 'quantityOrdered', 'width' : 125 } ),
     QUANTITY_VALIDATION.appendGridFieldOptions({ 'editable': true, 'headerName': 'Assigned', 'field' : 'quantityAssigned', 'width' : 125 } ),
     DATE_VALIDATION.appendGridFieldOptions({ 'editable': true, 'headerName': 'Start', 'field' : 'startDate', 'width' : 130 } ),
@@ -23,7 +23,7 @@ export const OrderQueryRequestEditableMetadata = [
 
 export const OrderLineItemResultsEditableMetaData = [
     ID_VALIDATION.appendGridFieldOptions( { 'headerName' : 'Order', 'width' : 100, 'field' : 'id', 'clickable' : true  } ),
-    ID_VALIDATION.appendGridFieldOptions( { 'editable': true , 'headerName' : 'Item', 'width' : 100, 'field' : 'itemId', 'useSelect': true   } ),
+    ID_VALIDATION.appendGridFieldOptions( { 'editable': true , 'headerName' : 'Item', 'width' : 200, 'field' : 'itemId', 'useSelect': true   } ),
     QUANTITY_VALIDATION.appendGridFieldOptions({ 'editable': true, 'headerName': 'Ordered', 'field' : 'quantityOrdered', 'width' : 120 } ),
     QUANTITY_VALIDATION.appendGridFieldOptions({ 'editable': false, 'headerName': 'Assigned', 'field' : 'quantityAssigned', 'width' : 120 } ),
     DATE_VALIDATION.appendGridFieldOptions({ 'editable': true, 'headerName': 'Start Date', 'field' : 'startDate', 'width' : 130 } ),
@@ -37,7 +37,7 @@ export const OrderLineItemResultsEditableMetaData = [
 export const OrderLineItemComponentResultsMetaData = [
     ID_VALIDATION.appendGridFieldOptions( { 'headerName' : 'Order', 'width' : 100, 'field' : 'id'  } ),
     //  CHECKBOX_VALIDATION.appendGridFieldOptions( { 'editable': true, 'headerName' : 'Delete?', 'width' : 95, 'field' : 'delete', 'clickable' : true  } ),
-    ID_VALIDATION.appendGridFieldOptions( { 'editable': true , 'headerName' : 'Item', 'width' : 100, 'field' : 'itemId', 'useSelect': true   } ),
+    ID_VALIDATION.appendGridFieldOptions( { 'editable': true , 'headerName' : 'Item', 'width' : 200, 'field' : 'itemId', 'useSelect': true   } ),
     QUANTITY_VALIDATION.appendGridFieldOptions({ 'editable': true, 'headerName': 'Ordered', 'field' : 'quantityOrdered', 'width' : 120 } ),
     QUANTITY_VALIDATION.appendGridFieldOptions({ 'editable': true, 'headerName': 'Assigned', 'field' : 'quantityAssigned', 'width' : 120 } ),
     DATE_VALIDATION.appendGridFieldOptions({ 'editable': true, 'headerName': 'Start Date', 'field' : 'startDate', 'width' : 130} ),

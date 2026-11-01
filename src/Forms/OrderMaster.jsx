@@ -3,7 +3,7 @@ import {Box, Button} from '@mui/material';
 import Grid from '@mui/material/Grid';
 import {ScreenStack} from "../Stack.js";
 import {
-     newEmptyQueryConstant, orderLineItemCrudUrl, orderLineItemQueryUrl
+     orderLineItemCrudUrl, orderLineItemQueryUrl
 } from "../Globals.js";
 import DataGridHelper from "../Objects/DataGridHelper.jsx";
 import {
@@ -11,19 +11,20 @@ import {
     OrderLineItemResultsEditableMetaData,
     OrderQueryRequestEditableMetadata
 } from "./OrderMasterConfig.js";
-import {ORDER_TYPE_NA, sourceAndOrderTypeMap} from "../enums/orderType.js";
+import {ORDER_TYPE_NA} from "../enums/orderType.js";
 import {ORDER_STATE_OPEN} from "../enums/orderState.js";
 import {postData} from "../HttpUtils.js";
 import {CRUD_ACTION_CHANGE, CRUD_ACTION_DELETE, CRUD_ACTION_INSERT, CRUD_ACTION_NONE} from "../enums/crudAction.js";
-import {loadItemPickListAll} from "../Objects/ItemPickListService.js";
+import {itemPickListLoader } from "../Objects/ItemPickListService.js";
 import SearchParametersForm from "../Objects/SearchParametersForm.jsx";
 import {noop} from "../lib/noop.js";
 import {formatDate} from "../lib/dates.js";
 import ErrorMessage from "../ErrorMessage.jsx";
 import {ClearOrdersButton} from "../Buttons/ClearOrdersButton.jsx";
 import {extractMessageFromResponse} from "../lib/extractMessageFromResponse.js";
-import {randomId} from "../lib/randomId.js";
+import {minimuimRandomId, randomId} from "../lib/randomId.js";
 import {OrderAdjustmentButton} from "../Buttons/OrderAdjustmentButton.jsx";
+import {objectToStringOrder} from "../lib/ObjectToString.js";
 
 const OrderMaster = () => {
 
@@ -52,17 +53,34 @@ const OrderMaster = () => {
         }
     }
 
-    function mapItemQueryToOliQueryParameters( rowOfItem ) {
-        if ( rowOfItem.id === undefined ) {
-            return newEmptyQueryConstant
+    // function mapItemQueryToOliQueryParameters( rowsOfItem ) {
+    //     if ( rowOfItem.id === undefined ) {
+    //         return newEmptyQueryConstant
+    //     }
+    //
+    //     let oliQueryParameters = { 'itemId' : rowOfItem.id };
+    //     oliQueryParameters.orderType = sourceAndOrderTypeMap[ rowOfItem.sourcing ];
+    //     oliQueryParameters.orderState = ORDER_STATE_OPEN;
+    //
+    //     return oliQueryParameters;
+    // }
+
+    function mapItemToOrderQueryParameters( items ) {
+        if (!Array.isArray( items)) {
+            return [];
         }
 
-        let oliQueryParameters = { 'itemId' : rowOfItem.id };
-        oliQueryParameters.orderType = sourceAndOrderTypeMap[ rowOfItem.sourcing ];
-        oliQueryParameters.orderState = ORDER_STATE_OPEN;
+        let index = 0;
 
-        return oliQueryParameters;
+        return items.map((item ) => ({
+            lineNo: index + 1,
+            amount: 0,
+            id: 0,
+            itemId: item.id,
+            crudAction: CRUD_ACTION_NONE
+        }));
     }
+
 
     // Fetch data on mount if empty
     useEffect(() => {
@@ -70,10 +88,10 @@ const OrderMaster = () => {
             try {
                 if (orderParentQueryResults.length === 0) {
                     if ( ScreenStack.stackTop().data !== undefined) {
-                        const queryParametersForOpeningScreen = mapItemQueryToOliQueryParameters( ScreenStack.stackTop().data[0] );
-                        setQueryParameters( [ { lineNo: 1, ...queryParametersForOpeningScreen } ] );
+                        const queryParametersForOpeningScreen = mapItemToOrderQueryParameters( ScreenStack.stackTop().data );
+                        setQueryParameters( queryParametersForOpeningScreen );
                         const objectToBeTransmitted =
-                            { 'rows' : queryParameters }
+                            { 'rows' : queryParametersForOpeningScreen }
                         const allQueryResultsButShouldOnlyBeOne =  await Promise.all(  [postData( {'parameters' : objectToBeTransmitted, 'url' : orderLineItemQueryUrl}) ] );
 
                         const results = allQueryResultsButShouldOnlyBeOne[0].data?.data || [];
@@ -88,10 +106,9 @@ const OrderMaster = () => {
         };
 
         fetchData().catch(error => setMessage("Promise rejection in fetchData:" + error));
-        loadItemPickListAll({
-            responseSetter: (data) => setItemPickList(data.map(item => ({ value: item.id, label: item.external }))),
-            errorMessageSetter: setMessage
-        });
+        itemPickListLoader(
+            { 'responseSetter' : setItemPickList,'errorMessageSetter': setMessage } )
+            .then(r => console.log( r ) );
 
     }, []); // Dependency array ensures this runs only on mount
 
@@ -104,7 +121,6 @@ const OrderMaster = () => {
         const firstQueryParam = Array.isArray(queryParameters) ? queryParameters[0] : queryParameters;
         const newOrder = {
             id: randomId(),
-            delete: false,
             itemId: firstQueryParam?.itemId,
             quantityOrdered: 0,
             quantityAssigned: 0,
@@ -121,6 +137,16 @@ const OrderMaster = () => {
 
     const deleteOrder = async () => {
         if (!selectedParentOrder) return;
+
+        //  Delete an order that has yet to be saved....
+        if ( selectedParentOrder.id > minimuimRandomId ) {
+            setOrderParentQueryResults(orderParentQueryResults.filter(row => row.id !== selectedParentOrder.id));
+            setMessage( "Cancelling deletion of order " + objectToStringOrder( selectedParentOrder  ) )
+            setSelectedParentOrder(null);
+            setOrderComponentQueryResults([]);
+            return;
+        }
+
 
         const updatedOrders = orderParentQueryResults.map(row =>
             row.id === selectedParentOrder.id ? { ...row, crudAction: CRUD_ACTION_DELETE } : row
@@ -155,7 +181,6 @@ const OrderMaster = () => {
 
         const newComponent = {
             id: Math.floor(Math.random() * 1000000) + 1000001,
-            delete: false,
             itemId: "",
             quantityOrdered: 0,
             quantityAssigned: 0,
@@ -314,7 +339,7 @@ const OrderMaster = () => {
 
             <hr style={{margin: "20px 0", borderTop: "1px solid #ccc"}}/>
 
-            <Box sx={{minHeight: 400, width: '100%', mb: 10}}>
+            <Box sx={{width: '100%', mb: 10}}>
 
                 <DataGridHelper label="Order Query Results"
                                 rows={orderParentQueryResults}
