@@ -5,10 +5,11 @@ import {Button, Checkbox, FormControlLabel, MenuItem, Typography} from "@mui/mat
 import {validateFieldsOfObject} from "../Metadata/ValidateRule.js";
 import * as HttpUtils from "../HttpUtils.js";
 import ReturnButton from "../Buttons/ReturnButton.jsx";
-import {non200ErrorMessage} from "../lib/extractMessageFromResponse.js";
+import {extractMessageFromResponse, non200ErrorMessage} from "../lib/extractMessageFromResponse.js";
+import {itemIdDescription} from "../lib/ObjectToString.js";
 
 export function PropertyGrid({label, objectToPresent, objectSetter, validationRules, handleInputChangeCallback, layout, pickListsForSelect = {},
-                             messageFormSetter, url, actionLabel, objectToStringFormatter, postResponseSaveHandler }) {
+                             messageFormSetter, url, actionLabel,postResponseSaveHandler }) {
 
     const defaultSaveHandler = async (event) => {
         event.preventDefault();
@@ -25,16 +26,23 @@ export function PropertyGrid({label, objectToPresent, objectSetter, validationRu
         const requestMessage = {rows: [objectToPresent]};
         const response = await HttpUtils.postData({'parameters': requestMessage, 'url': url});
         console.log('Property Grid Response is ' + response);
+        const messageFromResponse = extractMessageFromResponse(response);
 
         if ( response.status === 200) {
             //  Backward compatibility for old verifyCredentialsUrlV1
-            let responseLine = null;
+            let responseLine ;
             if (!Array.isArray(response.data) && typeof response.data === 'object' && response.data !== null && 'userName' in response.data && 'token' in response.data && 'status' in response.data) {
-                responseLine = response.data;
+                responseLine = response?.data || {};
             } else {
-                responseLine = response.data.data[ 0 ];
+                responseLine = response?.data?.data[ 0 ] || {};
             }
-            messageFormSetter( (objectToPresent.crudAction ?? "") + objectToStringFormatter( responseLine ) );
+            // messageFormSetter( (objectToPresent.crudAction ?? "") + objectToStringFormatter( responseLine ) );
+            if ( messageFromResponse.length === 0 ) {
+                messageFormSetter( 'Saved ' + itemIdDescription( responseLine ) );
+            } else {
+                messageFormSetter( messageFromResponse );
+            }
+
             if (postResponseSaveHandler !== undefined) {
                 postResponseSaveHandler(response);
             }

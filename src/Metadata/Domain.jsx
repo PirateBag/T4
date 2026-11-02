@@ -158,7 +158,7 @@ export const LEAD_TIME_VALIDATION = new ValidationRule({
     minLengthInChars: 1,
     maxLengthInChars: 9,
     caseConversion: CaseConversion.NONE,
-    whenRequired: REQUIRED_ADD,
+    minValue : 1,
     // defaultValue: 0,
     defaultHeader: 'Lead Time'
 });

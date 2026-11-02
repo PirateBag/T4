@@ -21,7 +21,7 @@ import {
 import {generateDefaultFromRules} from "../Metadata/ValidateRule.js";
 
 import DataGridHelper from "../Objects/DataGridHelper.jsx";
-import {descriptionFromId, loadItemPickListAll} from "../Objects/ItemPickListService";
+import {descriptionFromId, itemPickListLoader, loadItemPickListAll} from "../Objects/ItemPickListService";
 import {ScreenTransition} from "../ScreenTransition.js";
 import BomProperties from "./BomProperties.jsx";
 import {PropertyGrid} from "../Objects/PropertyGrid.jsx";
@@ -44,7 +44,7 @@ const ItemProperties = () => {
     const [components, setComponents] = useState();
     const [saveButtonMessage, setSaveButtonMessage] = useState("Save");
     const [whereUsed, setWhereUsed] = useState([]);
-    const [itemOptions, setItemOptions] = useState([]);
+    const [itemPickList, setItemPickList] = useState([]);
 
 
     // Calculate the total extended cost
@@ -89,27 +89,21 @@ const ItemProperties = () => {
                     const whereUsedResponse = await postData({ parameters: objectToBeTransmitted, url: bomWhereUsed });
                     setWhereUsed(whereUsedResponse.data.data === undefined ? [] : whereUsedResponse.data.data);
 
-                    await loadItemPickListAll({
-                        responseSetter: (data) => {
-                            const formatted = data.map(item => ({
-                                value: item.id,
-                                label: item.external
-                            }));
-                            setItemOptions(formatted);
-                        },
-                        errorMessageSetter: setMessage
-                    });
 
                 } catch (error) {
                     console.error("Error fetching components, whereUsed or picklists:", error);
                     setComponents([]);
                     setWhereUsed([]);
-                    setItemOptions([]);
+                    setItemPickList([]);
                 }
             }
         };
 
         initializeData();
+        itemPickListLoader(
+            { 'responseSetter' : setItemPickList,'errorMessageSetter': setMessage } )
+            .then(r => console.log( r ) );
+
     }, []); // Runs once on mount
 
     useEffect(() => {
@@ -249,7 +243,7 @@ const ItemProperties = () => {
                                   objectToPresent={queryParameters[0] || queryParameters}
                                   validationRules={ItemQueryRequestCrudInsertMetadata}
                                   handleInputChangeCallback={handlePropertiesInputChange}
-                                  pickListsForSelect={{ childId: itemOptions }}
+                                  pickListsForSelect={{ childId: itemPickList }}
                                   actionLabel='Save'
                                   messageFormSetter={setMessage}
                                   url={itemUpdateUrl}/>
@@ -263,7 +257,7 @@ const ItemProperties = () => {
                 <ErrorMessage message={message}/>
 
                 <DataGridHelper
-                    label={descriptionFromId( { pickList: itemOptions, id: queryParameters[0].id }) }
+                    label={descriptionFromId( { pickList: itemPickList, id: queryParameters[0].id }) }
                     rows={queryParameters}
                     columns={ParentItemRules}
                     hideFooter={true}
@@ -271,7 +265,7 @@ const ItemProperties = () => {
                     // handleRowChangeCallback={defaultHandleComponentRowUpdate}
                     onSelectionChange={handleSelectionChange}
                     // onCellClick={undefined}
-                    // pickListsForSelect={{ childId: itemOptions }}
+                    // pickListsForSelect={{ childId: itemPickList }}
                 />
 
 
@@ -302,7 +296,7 @@ const ItemProperties = () => {
                                             handleRowChangeCallback={ComponentsUpdateRowHandler}
                                             onSelectionChange={handleSelectionChange}
                                             onCellClick={undefined}
-                                            pickListsForSelect={{ childId: itemOptions }}
+                                            pickListsForSelect={{ childId: itemPickList }}
                             />
 
                             <Grid container sx={{mt: 2}} size={{xs: 12}}>
@@ -326,7 +320,7 @@ const ItemProperties = () => {
         );
     }
 
-    if ( itemOptions === undefined || itemOptions.length === 0) return "";
+    if ( itemPickList === undefined || itemPickList.length === 0) return "";
     switch (ScreenStack.stackTop().activityState) {
 
         case CRUD_ACTION_INSERT:
