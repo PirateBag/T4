@@ -3,13 +3,10 @@ import ErrorMessage from "../ErrorMessage.jsx";
 import {Box, Button} from '@mui/material';
 import Grid from '@mui/material/Grid';
 import {ItemQueryRequestEditableMetadata, ItemQueryResultsMetadata} from "./ItemQueryConfig.js";
-import {useGridApiRef} from "@mui/x-data-grid";
 import {CRUD_ACTION_CHANGE, CRUD_ACTION_INSERT, CRUD_ACTION_NONE} from "../enums/crudAction.js";
 import {ScreenTransition} from "../ScreenTransition.js";
 import {ScreenStack} from "../Stack.js";
-import {
-    itemQueryUrl
-    } from "../Globals.js";
+import {itemCrudUrl, itemQueryUrl} from "../Globals.js";
 import ItemProperties from "./ItemProperties.jsx";
 import {ItemDtoToStringWithOperation} from "./ItemPropertiesConfig.js";
 import DataGridHelper from "../Objects/DataGridHelper.jsx";
@@ -21,13 +18,11 @@ import {MaxLevelButton} from "../Buttons/MaxLevelButton.jsx";
 import {PlanningButton} from "../Buttons/PlanningButton.jsx";
 import OrderMaster from "./OrderMaster.jsx";
 import {SPF_ITEM} from "../enums/screenParameterFormats.js";
-
+import {randomId} from "../lib/randomId.js";
+import {masterSaveChanges} from "../lib/masterSaveChanges.js";
 
 const ItemQuery = () => {
-
     const [queryParameters, setQueryParameters] = useState([{lineNo: 1}]);
-
-    const apiRef = useGridApiRef();
 
     const [message, setMessage] = useState("");
     const [rowsOfQueryResults, setRowsOfQueryResults] = useState([]);
@@ -35,11 +30,6 @@ const ItemQuery = () => {
     function transitionToAdjustment() {
         let nextScreen = new ScreenTransition("Adjustment Report", Adjustment, CRUD_ACTION_NONE,
             selectedRow ? [selectedRow] : [] );
-        ScreenStack.push(nextScreen);
-    }
-
-    function transitionToItemPropertiesAdd() {
-        const nextScreen = new ScreenTransition("Add new item", ItemProperties, CRUD_ACTION_INSERT, []);
         ScreenStack.push(nextScreen);
     }
 
@@ -72,6 +62,32 @@ const ItemQuery = () => {
             OrderMaster, CRUD_ACTION_CHANGE, [selectedRow], SPF_ITEM);
 
         ScreenStack.push(nextScreen);
+    }
+
+    const addItemToQueryResults = () => {
+        const newItem = {
+            id: randomId(),
+            unitCost : 0.0,
+            sourcing: 'MAN',
+            leadTime: 0,
+            quantityOnHand: 0.0,
+            minimumOrderQuantity: 0,
+            crudAction: CRUD_ACTION_INSERT
+        };
+
+        setRowsOfQueryResults( prev => [newItem, ...prev ] );
+    };
+
+    const deleteRowFromQueryResults = () => {
+        if (!selectedRow || selectedRow.id <= 100000) return;
+        setRowsOfQueryResults(prev => prev.filter(row => row.id !== selectedRow.id));
+        setSelectedRow(null);
+    };
+
+
+    const saveChanges  =  async () => {
+        setMessage("");
+        await masterSaveChanges( rowsOfQueryResults, setMessage, setRowsOfQueryResults, itemCrudUrl );
     }
 
 
@@ -114,9 +130,11 @@ const ItemQuery = () => {
 
 
             <Box sx={{height: 400, width: '100%', mb: 10}}>
-                <DataGridHelper apiRef={apiRef}
+                <DataGridHelper
                                 label="Item Query Results"
                                 rows={rowsOfQueryResults}
+                                setRows={setRowsOfQueryResults}
+                                setMessage={setMessage}
                                 columns={ItemQueryResultsMetadata}
                                 onSelectionChange={handleRowSelectionChange}
                                 getRowClassName={(params) => params.row === selectedRow ? 'selected-row' : ''}
@@ -125,9 +143,7 @@ const ItemQuery = () => {
 
                 <Grid container spacing={1} sx={{mt: 1}}>
                     <Grid size="auto">
-                        <Button variant="outlined" onClick={transitionToItemPropertiesAdd}>Add</Button>
-                    </Grid>
-                    <Grid size="auto">
+                        <Button variant="outlined" sx={{ mr: 1 }} onClick={saveChanges}>Save Changes</Button>
                         <Button variant="outlined" onClick={transitionToItemPropertiesChange} disabled={!selectedRow}>
                             Properties
                         </Button>
@@ -137,6 +153,9 @@ const ItemQuery = () => {
                         <Button variant="outlined" onClick={transitionToAdjustment} disabled={!selectedRow}>
                             Adjustment
                         </Button>
+                        <Button variant="outlined" sx={{ mr: 1 }} onClick={addItemToQueryResults}>New Item</Button>
+
+                        <Button variant="outlined" sx={{ mr: 1 }} onClick={deleteRowFromQueryResults} disabled={!selectedRow || selectedRow.id <= 100000}>Delete</Button>
 
                     </Grid>
                 </Grid>

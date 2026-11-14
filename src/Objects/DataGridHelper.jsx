@@ -1,10 +1,18 @@
 
 import {DataGrid } from "@mui/x-data-grid";
-import {Typography, Checkbox, Button, Box, FormControlLabel} from "@mui/material";
+import {Typography, Checkbox, Button, Box} from "@mui/material";
 import React from "react";
 import {CRUD_ACTION_CHANGE, CRUD_ACTION_DELETE, CRUD_ACTION_NONE} from "../enums/crudAction.js";
 import {postData} from "../HttpUtils.js";
 import {noop} from "../lib/noop.js";
+import {randomId} from "../lib/randomId.js";
+
+
+export const handleRowSelectionChangeDefault = ( { row, setSelected } ) => {
+    setSelected(row);
+};
+
+
 
 export function DataGridHelper({
     label,
@@ -21,11 +29,12 @@ export function DataGridHelper({
     autoPageSize = false,
     hideFooter = false,
     showCellVerticalBorder = false,
-    showColumnVerticalBorder = false,
+    showColumnVerticalBorder = true,
     submitButton = undefined,
     extraButtons = null,
     showDataGrid = true,
     setShowDataGrid = noop,
+    setMessage = null,
     ...rest
 }) {
 
@@ -86,6 +95,7 @@ export function DataGridHelper({
 
     const handleSubmit = async (event) => {
         if (event) event.preventDefault();
+
         if ( setRows ) setRows([]);
         try {
             const response = await postData({
@@ -93,23 +103,23 @@ export function DataGridHelper({
                 url: submitButton.url
             });
             if (response.status === 200) {
-                if ( submitButton.setMessage) submitButton.setMessage("Success, retrieved " + (response.data?.data?.length || 0) + " rows");
+                setMessage("Success, retrieved " + (response.data?.data?.length || 0) + " rows");
                 if ( setRows) setRows(response.data?.data || []);
             } else {
-                if ( submitButton.setMessage) submitButton.setMessage("Error retrieving with response " + response.status);
+                setMessage("Error retrieving with response " + response.status);
             }
         } catch (error) {
-            if (submitButton?.setMessage) submitButton.setMessage("Error: " + error.message);
+            setMessage("Error: " + error.message);
         }
     };
 
 
-    const getRowIdentifier = React.useCallback((row) => {
+    const resolveRowId = React.useCallback((row) => {
         if (!row) return undefined;
         if (hasLineNo && row.lineNo != null) {
             return row.lineNo;
         }
-        return row.id ?? row.Adjustment ?? row.AdjustmentId ?? (safeColumns[0]?.field ? row[safeColumns[0].field] : undefined);
+        return row.id ?? (safeColumns[0]?.field ? row[safeColumns[0].field] : undefined);
     }, [hasLineNo, safeColumns]);
 
     const defaultHandleRowChange = (newRow, oldRow) => {
@@ -129,7 +139,7 @@ export function DataGridHelper({
             if (col && typeof col.validate === 'function') {
                 const errorMessage = col.validate(newRow[col.field]);
                 if (errorMessage) {
-                    throw new Error(errorMessage);
+                    setMessage( errorMessage );
                 }
             }
             if (col && typeof col.reformatStringUsingRules === 'function' && typeof newRow[col.field] === 'string') {
@@ -137,14 +147,17 @@ export function DataGridHelper({
             }
         }
 
-        updatedRow.crudAction = CRUD_ACTION_CHANGE;
+        // updatedRow.crudAction = CRUD_ACTION_CHANGE;
+        if ( updatedRow.crudAction === CRUD_ACTION_NONE ) {
+            updatedRow.crudAction = CRUD_ACTION_CHANGE;
+        }
 
         if (typeof setRows === 'function') {
             setRows(prevRows => {
                 if (Array.isArray(prevRows)) {
-                    const targetId = getRowIdentifier(updatedRow);
+                    const targetId = resolveRowId(updatedRow);
                     if (targetId !== undefined) {
-                        return prevRows.map(row => (getRowIdentifier(row) === targetId ? updatedRow : row));
+                        return prevRows.map(row => (resolveRowId(row) === targetId ? updatedRow : row));
                     }
                     if (prevRows.length === 1) {
                         return [updatedRow];
@@ -189,9 +202,9 @@ export function DataGridHelper({
             } else if (setRows && typeof setRows === 'function') {
                 setRows(prevRows => {
                     if (Array.isArray(prevRows)) {
-                        const targetId = getRowIdentifier(updatedRow);
+                        const targetId = resolveRowId(updatedRow);
                         if (targetId !== undefined) {
-                            return prevRows.map(row => (getRowIdentifier(row) === targetId ? updatedRow : row));
+                            return prevRows.map(row => (resolveRowId(row) === targetId ? updatedRow : row));
                         }
                         if (prevRows.length === 1) {
                             return [updatedRow];
@@ -204,11 +217,12 @@ export function DataGridHelper({
         }
     };
 
-    const handleCheckBoxClick = ( event ) => {
+    const handleCheckBoxClick = ( ) => {
         console.log("Checkbox clicked when checkbox: " + showDataGrid );
         setShowDataGrid && setShowDataGrid(!showDataGrid);
         console.log("Checkbox after clicking: " + showDataGrid );
     }
+
 
 
     // Construct common DataGrid props
@@ -221,12 +235,7 @@ export function DataGridHelper({
         showCellVerticalBorder,
         showColumnVerticalBorder,
         rowSelection: false, // Disable standard MUI selection; handled manually in onCellClick
-        getRowId: (row) => {
-            if (hasLineNo && row.lineNo != null) {
-                return row.lineNo;
-            }
-            return row.id || row.Adjustment || row.AdjustmentId || row[safeColumns[0]?.field] || Math.random();
-        },
+        getRowId: (row) => resolveRowId(row) ?? randomId(),
         onCellClick: handleInternalCellClick,
         hideFooter: shouldHideFooter,
         sx: {

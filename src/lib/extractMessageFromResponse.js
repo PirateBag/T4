@@ -9,6 +9,8 @@ export const non200ErrorMessage = (response) => {
 export function extractMessageFromResponse(response) {
     let rValue = "";
     const errors = response?.data?.errors ?? [];
+
+    if (errors.length === 0) return "Update successful.";
     errors.map((error) => rValue += error.message + "\n");
     return rValue;
 }

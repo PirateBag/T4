@@ -10,7 +10,7 @@ import {
     bomCrudUrl,
     bomWhereUsed,
     ItemQueryParameterConfig,
-    itemUpdateUrl} from "../Globals.js";
+    itemCrudUrl} from "../Globals.js";
 import {
     BomComponentsDto,
     BomDtoToString,
@@ -21,13 +21,8 @@ import {
 import {generateDefaultFromRules} from "../Metadata/ValidateRule.js";
 
 import DataGridHelper from "../Objects/DataGridHelper.jsx";
-import {descriptionFromId, itemPickListLoader, loadItemPickListAll} from "../Objects/ItemPickListService";
+import {descriptionFromId, itemPickListLoader} from "../Objects/ItemPickListService";
 import {ScreenTransition} from "../ScreenTransition.js";
-import BomProperties from "./BomProperties.jsx";
-import {PropertyGrid} from "../Objects/PropertyGrid.jsx";
-import {
-    ItemQueryRequestCrudInsertMetadata
-} from "./ItemQueryConfig.js";
 import OrderMaster from "./OrderMaster.jsx";
 import {postData} from "../HttpUtils.js";
 import {saveCrudObjects} from "../lib/saveCrudObjects.js";
@@ -35,10 +30,11 @@ import {isShallowEqual} from "../lib/isShallowEqual.js";
 import {MaxLevelButton} from "../Buttons/MaxLevelButton.jsx";
 import {ItemExplosionButton} from "../Objects/ItemExplosionButton.jsx";
 import {BalanceProjectionButton} from "../Buttons/BalanceProjectionButton.jsx";
+import {randomId} from "../lib/randomId.js";
 
 const ItemProperties = () => {
 
-    const [selectedRow, setSelectedRow] = useState( undefined );
+    const [selectedComponentRow, setSelectedComponentRow] = useState( null );
     const [message, setMessage] = useState("");
     const [queryParameters, setQueryParameters] = useState( [] );
     const [components, setComponents] = useState();
@@ -112,41 +108,18 @@ const ItemProperties = () => {
             console.log("Total extended cost is " + total);
             const oldParent = queryParameters[0];
 
-            if ( oldParent.unitCost !== total ) {
+            if ( oldParent && oldParent.unitCost !== total ) {
                 setQueryParameters([{...oldParent, unitCost: total}]);
             }
         }
     }, [components]);
 
 
-    const handleSelectionChange = (rows) => {
-        const clickedRow = rows?.[0];
-        if (!clickedRow) {
-            setSelectedRow(undefined);
-            return;
-        }
-        setSelectedRow(prev => {
-            if (prev && (prev.id === clickedRow.id || prev === clickedRow || isShallowEqual(prev, clickedRow))) {
-                return undefined;
-            }
-            return clickedRow;
-        });
+
+    const handleRowSelectionChange = (rows) => {
+        setSelectedComponentRow(rows?.[0] ?? null);
     };
 
-    const handlePropertiesInputChange = (rule) => {
-        return (event) => {
-            let value = rule.type === 'checkbox' ? event.target.checked : event.target.value;
-            if (rule.type === 'number') {
-                value = value === '' ? undefined : Number(value);
-            }
-            if (Array.isArray(queryParameters)) {
-                const current = queryParameters[0] || {};
-                setQueryParameters([{...current, [rule.field]: value}]);
-            } else {
-                setQueryParameters({...queryParameters, [rule.field]: value});
-            }
-        }
-    }
 
 
     async function ComponentsUpdateRowHandler(newValue, oldValue) {
@@ -183,7 +156,7 @@ const ItemProperties = () => {
             setMessage(finalMessage);
 
             const objectToBeTransmitted = { 'rows' : [updatedQueryParameters]  };
-            await postData({ parameters: objectToBeTransmitted, url: itemUpdateUrl });
+            await postData({ parameters: objectToBeTransmitted, url: itemCrudUrl });
 
             //  Return the updated Component Row...
             return updatedRow
@@ -191,39 +164,34 @@ const ItemProperties = () => {
         return updatedRow
     }
 
-    async function transitionToComponentDelete() {
-        if (selectedRow  === undefined ) {
-            setMessage("Please select a row to delete.");
-            return;
-        }
-        const objectToBeTransmitted = {
-            updatedRows: [{...selectedRow, crudAction: CRUD_ACTION_DELETE}]
+    const addItemToQueryResults = () => {
+        const newItem = {
+            id: randomId(),
+            parentId: queryParameters[0]?.id,
+            unitCost: 0.0,
+            quantityPer: 0,
+            extendedCost: 0.0,
+            crudAction: CRUD_ACTION_INSERT
         };
 
-        try {
-            await postData({ parameters: objectToBeTransmitted, url: bomCrudUrl });
-            setComponents(prev => prev.filter(row => row.id !== selectedRow.id));
-            setSelectedRow( undefined );
-        } catch (error) {
-            console.error("Error deleting component:", error);
-            setMessage("Error deleting component: " + error.message);
-        }
-    }
-    function transitionToComponentAdd() {
-        ScreenStack.push(new ScreenTransition("Add Component for" + queryParameters, BomProperties, CRUD_ACTION_INSERT,
-            queryParameters));
-        setSelectedRow( undefined );
-    }
+        setComponents( prev => [newItem, ...(prev || [])] );
+    };
+
+    const deleteRowFromQueryResults = () => {
+        if (!selectedComponentRow || selectedComponentRow.id <= 100000) return;
+        setComponents(prev => prev.filter(row => row.id !== selectedComponentRow.id));
+        setSelectedComponentRow( null );
+    };
 
     async function saveParentItemChanges() {
-        if (selectedRow) {
-            if (Array.isArray(selectedRow) && selectedRow.length === 1) {
-                selectedRow[0].crudAction = CRUD_ACTION_DELETE;
-            } else if (!Array.isArray(selectedRow)) {
-                selectedRow.crudAction = CRUD_ACTION_DELETE;
+        if (selectedComponentRow) {
+            if (Array.isArray(selectedComponentRow) && selectedComponentRow.length === 1) {
+                selectedComponentRow[0].crudAction = CRUD_ACTION_DELETE;
+            } else if (!Array.isArray(selectedComponentRow)) {
+                selectedComponentRow.crudAction = CRUD_ACTION_DELETE;
             }
         }
-        await saveCrudObjects({ objectToBeTransmitted: queryParameters, messageSetter: setMessage, updatedRowsSetter: setQueryParameters, updateUrl: itemUpdateUrl });
+        await saveCrudObjects({ objectToBeTransmitted: queryParameters, messageSetter: setMessage, updatedRowsSetter: setQueryParameters, updateUrl: itemCrudUrl });
     }
 
 
@@ -233,39 +201,26 @@ const ItemProperties = () => {
     if (components === undefined ) return (<div>
         <Typography variant="h5" gutterBottom sx={{ml: 2, mt: 2}} align={"center"}>Loading Components</Typography></div>);
 
-    function renderInsertForm() {
-        return (
-            <div>
-                <br/>
-                    <ErrorMessage message={message}/>
-                    <br/>
-                    <PropertyGrid label="Create a new item with the following details:"
-                                  objectToPresent={queryParameters[0] || queryParameters}
-                                  validationRules={ItemQueryRequestCrudInsertMetadata}
-                                  handleInputChangeCallback={handlePropertiesInputChange}
-                                  pickListsForSelect={{ childId: itemPickList }}
-                                  actionLabel='Save'
-                                  messageFormSetter={setMessage}
-                                  url={itemUpdateUrl}/>
-            </div>
-        );
-    }
     function renderUpdateOrDeleteForm() {
-
+        const isAnItemSelected = Boolean(selectedComponentRow);
+        if ( itemPickList === undefined || itemPickList.length === 0) return "";
         return (
             <div>
                 <ErrorMessage message={message}/>
 
                 <DataGridHelper
-                    label={descriptionFromId( { pickList: itemPickList, id: queryParameters[0].id }) }
+                    label={descriptionFromId( { pickList: itemPickList, id: queryParameters[0]?.id }) }
                     rows={queryParameters}
                     columns={ParentItemRules}
                     hideFooter={true}
                     setRows={setQueryParameters}
                     // handleRowChangeCallback={defaultHandleComponentRowUpdate}
-                    onSelectionChange={handleSelectionChange}
+                    onSelectionChange={handleRowSelectionChange}
                     // onCellClick={undefined}
-                    // pickListsForSelect={{ childId: itemPickList }}
+                    getRowClassName={(params) => (params.row === selectedComponentRow || (selectedComponentRow && params.row?.id !== undefined && params.row?.id === selectedComponentRow?.id)) ? 'selected-row' : ''}
+                    sx={{'& .selected-row .MuiDataGrid-cell': {backgroundColor: '#e3f2fd'}}}
+                    showCellVerticalBorder={true}
+                    showColumnVerticalBorder={true}
                 />
 
 
@@ -275,8 +230,7 @@ const ItemProperties = () => {
                                 >{saveButtonMessage}</Button>
                         <ReturnButton label="Return" sx={{ mr: 1 }} noContainer />
                         <Button variant="outlined" onClick={saveParentItemChanges}
-                                sx={{ mr: 1 }}
-                                disabled={!selectedRow || Object.keys(selectedRow).length === 0}>Delete Item</Button>
+                                sx={{ mr: 1 }}>Delete Item</Button>
                     </Grid>
                     <br/>
                     <Grid size="auto">
@@ -290,28 +244,35 @@ const ItemProperties = () => {
                 <Box sx={{height: 400, width: '100%', mb: 10}}>
                     {ScreenStack.stackTop().activityState === CRUD_ACTION_CHANGE && (
                         <>
-                            <DataGridHelper label={components.length === 0 ? "There are no components of " + queryParameters[0].description : "Components of " + queryParameters[0].description }
+                            <DataGridHelper label={components.length === 0 ? "There are no components of " + queryParameters[0]?.description : "Components of " + queryParameters[0]?.description }
                                             rows={components}
                                             columns={BomComponentsDto}
                                             handleRowChangeCallback={ComponentsUpdateRowHandler}
-                                            onSelectionChange={handleSelectionChange}
-                                            onCellClick={undefined}
+                                            onSelectionChange={handleRowSelectionChange}
                                             pickListsForSelect={{ childId: itemPickList }}
+                                            getRowClassName={(params) => (params.row === selectedComponentRow || (selectedComponentRow && params.row?.id !== undefined && params.row?.id === selectedComponentRow?.id)) ? 'selected-row' : ''}
+                                            sx={{'& .selected-row .MuiDataGrid-cell': {backgroundColor: '#e3f2fd'}}}
+                                            showCellVerticalBorder={true}
+                                            showColumnVerticalBorder={true}
                             />
 
                             <Grid container sx={{mt: 2}} size={{xs: 12}}>
                                 <Grid size={{xs: 'auto'}}>
-                                    <Button variant="outlined" sx={{ mr: 1 }} onClick={transitionToComponentDelete}>Delete Component</Button>
-                                    <Button variant="outlined" onClick={transitionToComponentAdd}>Add</Button>
+                                    <Button variant="outlined" sx={{ mr: 1 }} onClick={addItemToQueryResults}>New Component</Button>
+                                    <Button variant="outlined" sx={{ mr: 1 }} onClick={deleteRowFromQueryResults} disabled={!isAnItemSelected }>Delete</Button>
 
                                 </Grid>
                             </Grid>
 
                             <DataGridHelper
-                                label={whereUsed.length === 0 ? queryParameters[0].description + " is not a component of any item." : "Items where " + queryParameters[0].description + " is used."}
+                                label={whereUsed.length === 0 ? queryParameters[0]?.description + " is not a component of any item." : "Items where " + queryParameters[0]?.description + " is used."}
                                 rows={whereUsed}
                                 columns={BomParentsDto}
-                                onSelectionChange={undefined}
+                                onSelectionChange={handleRowSelectionChange}
+                                getRowClassName={(params) => (params.row === selectedComponentRow || (selectedComponentRow && params.row?.id !== undefined && params.row?.id === selectedComponentRow?.id)) ? 'selected-row' : ''}
+                                sx={{'& .selected-row .MuiDataGrid-cell': {backgroundColor: '#e3f2fd'}}}
+                                showCellVerticalBorder={true}
+                                showColumnVerticalBorder={true}
                             />
                         </>
                     )}
@@ -319,22 +280,6 @@ const ItemProperties = () => {
             </div>
         );
     }
-
-    if ( itemPickList === undefined || itemPickList.length === 0) return "";
-    switch (ScreenStack.stackTop().activityState) {
-
-        case CRUD_ACTION_INSERT:
-            return renderInsertForm();
-        case CRUD_ACTION_CHANGE:
-            return renderUpdateOrDeleteForm();
-        default:
-            return(
-                <div>
-                <Typography variant="h5" gutterBottom sx={{ml: 2, mt: 2}} align={"center"}>
-                    Illegal State:  Form Caller passed  {ScreenStack.stackTop().activityState}
-                </Typography>
-                </div>
-            )
-    }
+    return renderUpdateOrDeleteForm();
 }
 export default ItemProperties;

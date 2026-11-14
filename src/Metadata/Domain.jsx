@@ -89,8 +89,8 @@ export const COST_VALIDATION = new ValidationRule({
     minLengthInChars: 1,
     maxLengthInChars: 10,
     caseConversion: CaseConversion.NONE,
-    whenRequired: REQUIRED_ADD,
     // defaultValue: 0.0,
+    minValue: 0.0,
     defaultHeader: 'Unit Cost'
 });
 

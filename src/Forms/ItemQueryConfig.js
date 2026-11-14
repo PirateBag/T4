@@ -23,10 +23,10 @@ export const ItemQueryRequestCrudInsertMetadata = [
     //  ID_VALIDATION.appendGridFieldOptions( { 'editable': false, hidden: true, whenRequired: REQUIRED_NONE } ),
     DESCRIPTION_VALIDATION.appendGridFieldOptions({ 'editable': true }),
     COST_VALIDATION.appendGridFieldOptions({ 'editable': true,'headerName': 'Unit Cost' } ),
-    SOURCING_VALIDATION.appendGridFieldOptions({ 'editable': true, whenRequired: REQUIRED_ADD } ),
+    SOURCING_VALIDATION.appendGridFieldOptions({ 'editable': true } ),
     //  Not allowed for Insert.
     //  MAX_DEPTH_VALIDATION.appendGridFieldOptions({ 'editable': false, whenRequired: REQUIRED_NONE } ),
-    LEAD_TIME_VALIDATION.appendGridFieldOptions({ 'editable': true, whenRequired: REQUIRED_ADD } ),
+    LEAD_TIME_VALIDATION.appendGridFieldOptions({ 'editable': true } ),
     //  On Hand not allowed for Insert.
     //  QUANTITY_VALIDATION.appendGridFieldOptions({ 'editable': false, 'headerName': 'On Hand',whenRequired: REQUIRED_NONE} ),
     CRUD_VALIDATION.appendGridFieldOptions( { 'editable': false, 'hidden': 'true'} )
@@ -43,7 +43,7 @@ export const ItemQueryResultsMetadata  = [
     MAX_DEPTH_VALIDATION.appendGridFieldOptions( { 'editable': false, 'headerName': 'Depth', width: 100 } ),
     LEAD_TIME_VALIDATION.appendGridFieldOptions({ 'editable': true, 'headerName': 'Lead Time', width: 125 }   ),
     QUANTITY_VALIDATION.appendGridFieldOptions( { 'editable': false, 'headerName': 'On Hand', width: 125, 'field' : 'quantityOnHand' } ),
-    QUANTITY_VALIDATION.appendGridFieldOptions( { 'editable': false, 'headerName': 'Minimum Order Quantity',
-            width: 125, 'field' : 'minimumOrderQuantity' } )
+    QUANTITY_VALIDATION.appendGridFieldOptions( { 'editable': true, 'headerName': 'Minimum Order Quantity',
+            width: 125, 'field' : 'minimumOrderQuantity', 'minValue' : 0.0 } )
     ];
 
