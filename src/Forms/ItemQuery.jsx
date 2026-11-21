@@ -19,7 +19,6 @@ import {PlanningButton} from "../Buttons/PlanningButton.jsx";
 import OrderMaster from "./OrderMaster.jsx";
 import {SPF_ITEM} from "../enums/screenParameterFormats.js";
 import {randomId} from "../lib/randomId.js";
-import {masterSaveChanges} from "../lib/masterSaveChanges.js";
 
 const ItemQuery = () => {
     const [queryParameters, setQueryParameters] = useState([{lineNo: 1}]);
@@ -35,13 +34,16 @@ const ItemQuery = () => {
 
     const [selectedRow, setSelectedRow] = useState(null);
 
-    // Clear the selection whenever a new query replaces the results
+    // Keep the selected row current when results are edited, or clear it if it was removed
     useEffect(() => {
-        setSelectedRow(null);
+        setSelectedRow(previous => previous
+            ? rowsOfQueryResults.find(row => row.id === previous.id) ?? null
+            : null);
     }, [rowsOfQueryResults]);
 
     const handleRowSelectionChange = (rows) => {
         setSelectedRow(rows?.[0] ?? null);
+        setMessage( null );
     }
 
     const transitionToItemPropertiesChange = () => {
@@ -85,10 +87,14 @@ const ItemQuery = () => {
     };
 
 
-    const saveChanges  =  async () => {
-        setMessage("");
-        await masterSaveChanges( rowsOfQueryResults, setMessage, setRowsOfQueryResults, itemCrudUrl );
-    }
+    // //  const saveChanges  =  async () => {
+    //     setMessage("");
+    //     await masterSaveChanges(
+    //         { 'rows' : queryParameters,
+    //         'messageSetter': setMessage,
+    //         'updateRowsSetter' : setRowsOfQueryResults,
+    //         'url' : itemCrudUrl } );
+    // }
 
 
     return (
@@ -139,26 +145,17 @@ const ItemQuery = () => {
                                 onSelectionChange={handleRowSelectionChange}
                                 getRowClassName={(params) => params.row === selectedRow ? 'selected-row' : ''}
                                 sx={{'& .selected-row .MuiDataGrid-cell': {backgroundColor: '#e3f2fd'}}}
+                                submitButton={{'label': 'Save', 'url': itemCrudUrl}}
+                                extraButtons={
+                                    <>
+                                    <Button variant="outlined" onClick={transitionToItemPropertiesChange} disabled={!selectedRow}>Properties</Button>
+                                    <Button variant="outlined" onClick={transitionToOrders} disabled={!selectedRow}>Orders</Button>
+                                    <Button variant="outlined" onClick={transitionToAdjustment} disabled={!selectedRow}>Adjustment</Button>
+                                    <Button variant="outlined" sx={{ mr: 1 }} onClick={addItemToQueryResults}>New Item</Button>
+                                    <Button variant="outlined" sx={{ mr: 1 }} onClick={deleteRowFromQueryResults} disabled={!selectedRow || selectedRow.id <= 100000}>Cancel Insert</Button>
+                                    </>
+                                }
                 />
-
-                <Grid container spacing={1} sx={{mt: 1}}>
-                    <Grid size="auto">
-                        <Button variant="outlined" sx={{ mr: 1 }} onClick={saveChanges}>Save Changes</Button>
-                        <Button variant="outlined" onClick={transitionToItemPropertiesChange} disabled={!selectedRow}>
-                            Properties
-                        </Button>
-                        <Button variant="outlined" onClick={transitionToOrders} disabled={!selectedRow}>
-                            Orders
-                        </Button>
-                        <Button variant="outlined" onClick={transitionToAdjustment} disabled={!selectedRow}>
-                            Adjustment
-                        </Button>
-                        <Button variant="outlined" sx={{ mr: 1 }} onClick={addItemToQueryResults}>New Item</Button>
-
-                        <Button variant="outlined" sx={{ mr: 1 }} onClick={deleteRowFromQueryResults} disabled={!selectedRow || selectedRow.id <= 100000}>Delete</Button>
-
-                    </Grid>
-                </Grid>
 
             </Box>
         </div>

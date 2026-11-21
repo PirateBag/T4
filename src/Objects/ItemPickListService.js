@@ -62,7 +62,7 @@ export async function itemPickListLoader({responseSetter, errorMessageSetter}) {
 
 export function mapItemsToPicklist(items) {
     if (items.length === 0) throw new Error("No items");
-    const pickList = items.map(item => ({'value': item.id, 'label': item.external}));
+    const pickList = items.map(item => ({'value': item.id, 'label': item.external, ...item}));
     if (pickList.length !== items.length) throw new Error("items.length != pciklist.length");
     return pickList;
 };

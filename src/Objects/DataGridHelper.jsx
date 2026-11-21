@@ -3,16 +3,11 @@ import {DataGrid } from "@mui/x-data-grid";
 import {Typography, Checkbox, Button, Box} from "@mui/material";
 import React from "react";
 import {CRUD_ACTION_CHANGE, CRUD_ACTION_DELETE, CRUD_ACTION_NONE} from "../enums/crudAction.js";
-import {postData} from "../HttpUtils.js";
 import {noop} from "../lib/noop.js";
 import {randomId} from "../lib/randomId.js";
-
-
-export const handleRowSelectionChangeDefault = ( { row, setSelected } ) => {
-    setSelected(row);
-};
-
-
+import {masterSaveChanges} from "../lib/masterSaveChanges.js";
+import Grid from "@mui/material/Grid";
+import ReturnButton from "../Buttons/ReturnButton.jsx";
 
 export function DataGridHelper({
     label,
@@ -37,8 +32,6 @@ export function DataGridHelper({
     setMessage = null,
     ...rest
 }) {
-
-
 
     const safeRows = React.useMemo(() => rows || [], [rows]);
     const safeColumns = React.useMemo(() =>
@@ -95,22 +88,11 @@ export function DataGridHelper({
 
     const handleSubmit = async (event) => {
         if (event) event.preventDefault();
-
-        if ( setRows ) setRows([]);
-        try {
-            const response = await postData({
-                parameters: { 'rows': rows },
-                url: submitButton.url
-            });
-            if (response.status === 200) {
-                setMessage("Success, retrieved " + (response.data?.data?.length || 0) + " rows");
-                if ( setRows) setRows(response.data?.data || []);
-            } else {
-                setMessage("Error retrieving with response " + response.status);
-            }
-        } catch (error) {
-            setMessage("Error: " + error.message);
-        }
+        await masterSaveChanges( {
+            'rows': rows,
+            'messageSetter' : setMessage,
+            'updatedRowsSetter' : setRows,
+            url: submitButton.url } )
     };
 
 
@@ -288,8 +270,8 @@ export function DataGridHelper({
                     {submitButton && (
                         <Button variant="contained" type="button" onClick={handleSubmit}>
                             {submitButton.label}
-                        </Button>
-                    )}
+                        </Button> ) }
+                        <ReturnButton type="button" noContainer />
                     {extraButtons}
                 </Box>
             )}
