@@ -21,7 +21,7 @@ import {SPF_ITEM} from "../enums/screenParameterFormats.js";
 import {randomId} from "../lib/randomId.js";
 
 const ItemQuery = () => {
-    const [queryParameters, setQueryParameters] = useState([{lineNo: 1}]);
+    const [queryParameters, setQueryParameters] = useState([{lineNo: 1, description : "blue" }]);
 
     const [message, setMessage] = useState("");
     const [rowsOfQueryResults, setRowsOfQueryResults] = useState([]);
@@ -85,17 +85,6 @@ const ItemQuery = () => {
         setRowsOfQueryResults(prev => prev.filter(row => row.id !== selectedRow.id));
         setSelectedRow(null);
     };
-
-
-    // //  const saveChanges  =  async () => {
-    //     setMessage("");
-    //     await masterSaveChanges(
-    //         { 'rows' : queryParameters,
-    //         'messageSetter': setMessage,
-    //         'updateRowsSetter' : setRowsOfQueryResults,
-    //         'url' : itemCrudUrl } );
-    // }
-
 
     return (
         <div>

@@ -1,14 +1,12 @@
 import React, {useEffect, useState} from 'react';
 import ErrorMessage from "../ErrorMessage.jsx";
 import {Box, Button, Typography} from '@mui/material';
-import {CRUD_ACTION_CHANGE, CRUD_ACTION_INSERT, CRUD_ACTION_NONE} from "../enums/crudAction.js";
+import {CRUD_ACTION_DELETE, CRUD_ACTION_INSERT, CRUD_ACTION_NONE} from "../enums/crudAction.js";
 import {ScreenStack} from "../Stack.js";
 import {bomComponents, bomCrudUrl, bomWhereUsed, itemCrudUrl} from "../Globals.js";
 import {
     BomComponentsDto,
-    BomDtoToString,
     BomParentsDto,
-    ItemDtoToString,
     ParentItemRules
 } from "./ItemPropertiesConfig.js";
 import DataGridHelper from "../Objects/DataGridHelper.jsx";
@@ -16,7 +14,7 @@ import {descriptionFromId, itemPickListLoader} from "../Objects/ItemPickListServ
 import {ScreenTransition} from "../ScreenTransition.js";
 import OrderMaster from "./OrderMaster.jsx";
 import {postData} from "../HttpUtils.js";
-import {isShallowEqual} from "../lib/isShallowEqual.js";
+
 import {MaxLevelButton} from "../Buttons/MaxLevelButton.jsx";
 import {ItemExplosionButton} from "../Objects/ItemExplosionButton.jsx";
 import {BalanceProjectionButton} from "../Buttons/BalanceProjectionButton.jsx";
@@ -91,53 +89,18 @@ const ItemProperties = () => {
 
     const handleParentRowSelectChange = (rows) => {
         setSelectedParentRow(rows?.[0] ?? null);
+        setMessage( null );
+
     };
 
     const handleComponentRowSelectionChange = (rows) => {
         setSelectedComponentRow(rows?.[0] ?? null);
+        setMessage( null );
     };
 
-
-    async function ComponentsUpdateRowHandler(newValue, oldValue) {
-        if (isShallowEqual(newValue, oldValue)) {
-            console.log("Row " + oldValue.id + " unchanged, skipping update");
-            return;
-        }
-        newValue.crudAction = newValue.crudAction === CRUD_ACTION_INSERT ? CRUD_ACTION_INSERT : CRUD_ACTION_CHANGE;
-        const updatedRow = {...newValue};
-        updatedRow.extendedCost = updatedRow.quantityPer * updatedRow.unitCost;
-
-        const objectToBeTransmitted = {'rows': [updatedRow]};
-        await postData({parameters: objectToBeTransmitted, url: bomCrudUrl});
-        console.log("Response " + BomDtoToString(updatedRow));
-
-        if (updatedRow.extendedCost !== oldValue.extendedCost) {
-            const line1 = "Extended component cost changed from " + oldValue.extendedCost + " to " + updatedRow.extendedCost;
-
-            const proposedNewCostAfterAdjustments = adjustTotalExtendedCost(
-                {
-                    "originalCost": totalExtendedCost,
-                    "newRow": updatedRow,
-                    "oldRow": oldValue
-                })
-
-
-            const updatedQueryParameters = {...queryParameters, unitCost: proposedNewCostAfterAdjustments};
-            setQueryParameters([updatedQueryParameters]);
-
-            const line2 = "Updated unit cost for parent: "
-                + ItemDtoToString(updatedQueryParameters);
-            console.log(line2);
-            const finalMessage = (message ? message + "\n" : "") + line1 + "\n" + line2;
-            setMessage(finalMessage);
-
-            const objectToBeTransmitted = {'rows': [updatedQueryParameters]};
-            await postData({parameters: objectToBeTransmitted, url: itemCrudUrl});
-
-            //  Return the updated Component Row...
-            return updatedRow
-        }
-        return updatedRow
+    const showLog = (label, rows)  => {
+        console.log( label + JSON.stringify(rows) );
+        setMessage( JSON.stringify( rows, null, 2  ) );
     }
 
     const addItemToQueryResults = () => {
@@ -154,7 +117,14 @@ const ItemProperties = () => {
     };
 
     const deleteRowFromQueryResults = () => {
-        if (!selectedComponentRow || selectedComponentRow.id <= 100000) return;
+        if ( selectedComponentRow)
+        if ( selectedComponentRow.id <= 100000) {
+            setComponents(prev => prev.map(row =>
+                row.id === selectedComponentRow.id ? {...row, crudAction: CRUD_ACTION_DELETE} : row
+            ));
+            setMessage( "Press 'SAVE' to complete deletion.")
+            return;
+        }
         setComponents(prev => prev.filter(row => row.id !== selectedComponentRow.id));
         setSelectedComponentRow(null);
     };
@@ -179,6 +149,7 @@ const ItemProperties = () => {
                 columns={ParentItemRules}
                 hideFooter={true}
                 setRows={setQueryParameters}
+                setMessage={setMessage}
                 onSelectionChange={handleParentRowSelectChange}
                 getRowClassName={(params) => (params.row === selectedParentRow || (selectedParentRow && params.row?.id !== undefined && params.row?.id === selectedParentRow?.id)) ? 'selected-row' : ''}
                 sx={{'& .selected-row .MuiDataGrid-cell': {backgroundColor: '#e3f2fd'}}}
@@ -203,21 +174,24 @@ const ItemProperties = () => {
                 <DataGridHelper
                     label={components.length === 0 ? "There are no components of " + queryParameters[0]?.description : "Components of " + queryParameters[0]?.description}
                     rows={components}
+                    setRows={setComponents}
                     columns={BomComponentsDto}
-                    handleRowChangeCallback={ComponentsUpdateRowHandler}
                     onSelectionChange={handleComponentRowSelectionChange}
+                    setMessage={setMessage}
                     pickListsForSelect={{childId: itemPickList}}
                     getRowClassName={(params) => (params.row === selectedComponentRow || (selectedComponentRow && params.row?.id !== undefined && params.row?.id === selectedComponentRow?.id)) ? 'selected-row' : ''}
                     sx={{'& .selected-row .MuiDataGrid-cell': {backgroundColor: '#e3f2fd'}}}
                     showCellVerticalBorder={true}
                     showColumnVerticalBorder={true}
-                    submitButton={{'label': 'save', 'url': bomCrudUrl}}
+                    submitButton={{'label': 'saveMe', 'url': bomCrudUrl}}
                     extraButtons={
                         <>
                             <Button variant="outlined" sx={{mr: 1}} onClick={addItemToQueryResults}>New
                                 Component</Button>
                             <Button variant="outlined" sx={{mr: 1}} onClick={deleteRowFromQueryResults}
                                     disabled={!isAnItemSelected}>Delete</Button>
+                            <Button variant="outlined" sx={{mr: 1}} onClick={() => showLog( "Components: ", components)}
+                                    >Log</Button>
                         </>
                     }
                 />

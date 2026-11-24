@@ -71,7 +71,7 @@ export class ValidationRule {
             return this.applyRulesToDoubleValue(Number(value));
         } else if (this.type === "text" || this.type === "password" || this.type === "singleSelect" || this.type === String)  {
             return this.applyRulesToStringValue(String(value));
-        } else if (this.type === "boolean" || this.type === "checkbox" || this.type === Boolean) {
+        } else if (this.type === "boolean" || this.type === Boolean) {
             return null;
         } else {
             throw new Error('Cannot enforce rules on this type.  ' + this.type);

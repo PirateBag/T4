@@ -1,12 +1,11 @@
 
 import {DataGrid } from "@mui/x-data-grid";
-import {Typography, Checkbox, Button, Box} from "@mui/material";
+import {Typography, Button, Box} from "@mui/material";
 import React from "react";
 import {CRUD_ACTION_CHANGE, CRUD_ACTION_DELETE, CRUD_ACTION_NONE} from "../enums/crudAction.js";
 import {noop} from "../lib/noop.js";
 import {randomId} from "../lib/randomId.js";
 import {masterSaveChanges} from "../lib/masterSaveChanges.js";
-import Grid from "@mui/material/Grid";
 import ReturnButton from "../Buttons/ReturnButton.jsx";
 
 export function DataGridHelper({
@@ -33,6 +32,14 @@ export function DataGridHelper({
     ...rest
 }) {
 
+    if ( submitButton && (setMessage === undefined || typeof setMessage !== 'function' ) ) {
+        throw new Error("DataGridHelper: submit buttons require setMessage");
+    }
+
+    if ( submitButton && (setRows === undefined || typeof setRows !== 'function' ) ) {
+        throw new Error("DataGridHelper: submit buttons require setRows");
+    }
+
     const safeRows = React.useMemo(() => rows || [], [rows]);
     const safeColumns = React.useMemo(() =>
         (columns || []).map(col => {
@@ -51,35 +58,6 @@ export function DataGridHelper({
                     console.log(`No picklist options found for field: ${newCol.field}`);
                 }
             }
-
-            if (newCol.type === 'checkbox') {
-                newCol = {
-                    ...newCol,
-                    type: 'boolean',
-                    renderCell: (params) => {
-                        const cellValue = params.value !== undefined ? params.value : params.row[params.field];
-                        const isChecked = cellValue === true || cellValue === 'x' || cellValue === 'X';
-                        return <Checkbox checked={isChecked} readOnly size="small" />;
-                    },
-                    renderEditCell: (params) => {
-                        const cellValue = params.value !== undefined ? params.value : params.row[params.field];
-                        const isChecked = cellValue === true || cellValue === 'x' || cellValue === 'X';
-                        return (
-                            <Checkbox
-                                checked={isChecked}
-                                onChange={(e) => {
-                                    params.api.setEditCellValue({
-                                        id: params.id,
-                                        field: params.field,
-                                        value: e.target.checked
-                                    });
-                                }}
-                                size="small"
-                            />
-                        );
-                    }
-                };
-            }
             return newCol;
         }), [columns, pickListsForSelect]);
 
@@ -95,7 +73,6 @@ export function DataGridHelper({
             url: submitButton.url } )
     };
 
-
     const resolveRowId = React.useCallback((row) => {
         if (!row) return undefined;
         if (hasLineNo && row.lineNo != null) {
@@ -105,14 +82,9 @@ export function DataGridHelper({
     }, [hasLineNo, safeColumns]);
 
     const defaultHandleRowChange = (newRow, oldRow) => {
-        if (!setRows) {
-            throw new Error("DataGridHelper: defaultHandleRowChange requires a rows setter function (e.g. setRows) when no custom handleRowChangeCallback is provided.");
-        }
-
         if (!newRow) {
             return oldRow;
         }
-
         const updatedRow = { ...newRow };
 
         const changedColumns = (columns || []).filter(col => !oldRow || newRow[col.field] !== oldRow[col.field]);
@@ -129,7 +101,6 @@ export function DataGridHelper({
             }
         }
 
-        // updatedRow.crudAction = CRUD_ACTION_CHANGE;
         if ( updatedRow.crudAction === CRUD_ACTION_NONE ) {
             updatedRow.crudAction = CRUD_ACTION_CHANGE;
         }
@@ -160,43 +131,6 @@ export function DataGridHelper({
         if (onSelectionChange) {
             onSelectionChange([params.row]);
         }
-
-        const validationRuleForField = columns.find(col => col.field === params.field);
-        if (validationRuleForField && validationRuleForField.type === 'checkbox') {
-            const currentValue = params.value !== undefined ? params.value : params.row[params.field];
-            const isCurrentlyChecked = currentValue === true || currentValue === 'x' || currentValue === 'X';
-            const newCheckValue = !isCurrentlyChecked;
-            const newCrudAction = newCheckValue ? CRUD_ACTION_DELETE : CRUD_ACTION_NONE;
-
-            params.api.updateRows([{ id: params.id, [params.field]: newCheckValue, 'crudAction' : newCrudAction }]);
-
-            const updatedRow = { ...params.row, [params.field]: newCheckValue, crudAction: newCrudAction };
-            console.log('DataGridHelper:handleInternalCellClick:updatedCheckBox', {
-                field: params.field,
-                oldValue: currentValue,
-                newValue: newCheckValue,
-                newCrudAction: newCrudAction,
-                updatedRow: updatedRow
-            });
-
-            if (handleRowChangeCallback) {
-                handleRowChangeCallback(updatedRow, params.row);
-            } else if (setRows && typeof setRows === 'function') {
-                setRows(prevRows => {
-                    if (Array.isArray(prevRows)) {
-                        const targetId = resolveRowId(updatedRow);
-                        if (targetId !== undefined) {
-                            return prevRows.map(row => (resolveRowId(row) === targetId ? updatedRow : row));
-                        }
-                        if (prevRows.length === 1) {
-                            return [updatedRow];
-                        }
-                        return prevRows.map(row => (row === params.row ? updatedRow : row));
-                    }
-                    return updatedRow;
-                });
-            }
-        }
     };
 
     const handleCheckBoxClick = ( ) => {
@@ -204,8 +138,6 @@ export function DataGridHelper({
         setShowDataGrid && setShowDataGrid(!showDataGrid);
         console.log("Checkbox after clicking: " + showDataGrid );
     }
-
-
 
     // Construct common DataGrid props
     const gridProps = {
@@ -252,6 +184,8 @@ export function DataGridHelper({
         },
         ...rest
     };
+
+
 
     return (
         <div>
